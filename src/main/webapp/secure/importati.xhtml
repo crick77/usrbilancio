@@ -1,0 +1,513 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"                
+                template="/WEB-INF/template.xhtml"
+                xmlns:pe="primefaces.extensions">
+
+    <ui:define name="title">Ordinativi in lavorazione</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewParam name="d" value="#{importatiController.dataCaricamento}" />
+            <f:viewAction action="#{importatiController.init()}" />
+        </f:metadata>                
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+            <p:growl id="msg" showDetail="true" escape="false"/>
+
+            <h:panelGroup id="page" layout="block" styleClass="grid">
+                <div class="col-12 md:col-12 lg:col-12">
+                    <p:panel header="ORDINATIVI IMPORTATI" style="min-height: 400px">
+                        <div class="grid formgrid">
+                            <div class="field col-12 md:col-3 toggleswitch-box">                           
+                                <p:toggleSwitch id="mostratutti" value="#{importatiController.mostraTutti}" onIcon="pi pi-check" offIcon="pi pi-times">
+                                    <p:ajax listener="#{importatiController.cambioMostraTutti}" update="ordinativi allegati-panel"/>
+                                </p:toggleSwitch>
+                                <p:outputLabel value="Mostra ordinativi importati da tutti gli utenti" styleClass="padding" />
+                            </div>                        
+                        </div>
+                        <h:panelGroup id="table" layout="block" styleClass="grid">
+                            <div class="col-12">
+                                <p:dataTable id="ordinativi" value="#{importatiController.ordinativi}" var="o" selection="#{importatiController.ordinativiSelezionati}" rowKey="#{o.id}" 
+                                             paginator="true" rows="100" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" filteredValue="#{importatiController.ordinativiFiltrati}" globalFilterFunction="#{importatiController.filtroGlobale}"
+                                             rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" widgetVar="ordinativiTable" selectionPageOnly="false" size="small" rowStyleClass="#{importatiController.rowColor(o)}">
+                                    <p:ajax event="toggleSelect" listener="#{importatiController.verificaTrasferibilita}" update="form:txSelezionatiLibrocassa form:txSelezionatiLibrocassaCompl form:txSelezionatiLibrocassaConsol form:allegati-panel" />                                    
+                                    <p:ajax event="rowSelectCheckbox" listener="#{importatiController.verificaTrasferibilita}" update="form:txSelezionatiLibrocassa form:txSelezionatiLibrocassaCompl form:txSelezionatiLibrocassaConsol form:allegati-panel" />
+                                    <p:ajax event="rowUnselectCheckbox" listener="#{importatiController.verificaTrasferibilita}" update="form:txSelezionatiLibrocassa form:txSelezionatiLibrocassaCompl form:txSelezionatiLibrocassaConsol form:allegati-panel" />
+
+                                    <f:facet name="header">
+                                        <div class="flex">      
+                                            <div class="flex" style="width: 300px">
+
+                                                <div style="width: 50%">
+                                                    Totale da lavorare:
+                                                </div>
+                                                <div style="width: 45%; text-align: right">
+                                                    <h:outputText value="#{importatiController.totale}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="flex" style="width: 300px">
+                                                <div style="width: 50%">
+                                                    IVA da lavorare:
+                                                </div>
+                                                <div style="width: 45%; text-align: right">
+                                                    <h:outputText value="#{importatiController.totaleIVA}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-content-end" style="width: 100%">
+                                                <p:inputText id="globalFilter" onkeyup="PF('ordinativiTable').filter()" style="width:300px" placeholder="Ricerca globale">                                                    
+                                                    <p:ajax event="keyup" listener="#{importatiController.aggiornaParziale()}" process="@this" update="parziale parzialeiva" />
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column selectionBox="true" style="width:16px;text-align:center"/>
+
+                                    <p:column headerText="COMPET." style="width: 6%;" styleClass="ellipsis" sortBy="#{importatiController.decodeCapitoloCompetenza(o.idCompetenza).anno} | #{importatiController.decodeCapitoloCompetenza(o.idCompetenza).descrizione}" sortable="true">
+                                        <ui:fragment rendered="#{not empty o.idCompetenza}">
+                                            <i jsf:id="infoCapComp" class="pi pi-info-circle" /><p:tooltip for="infoCapComp" escape="false" value="Capitolo #{importatiController.decodeCapitoloCompetenza(o.idCompetenza).descrizione}&lt;br/&gt;Competenza #{importatiController.decodeCapitoloCompetenza(o.idCompetenza).anno}" position="top" />
+                                            #{importatiController.decodeCapitoloCompetenza(o.idCompetenza).anno} | #{importatiController.decodeCapitoloCompetenza(o.idCompetenza).descrizione}
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column headerText="CONTO" style="width: 5%" sortable="true" sortBy="#{formatter.codiceComposto(importatiController.decodeCodice(o.idCodice))}">
+                                        <ui:fragment rendered="#{not empty o.idCodice}">
+                                            <i jsf:id="infoCodice" class="pi pi-info-circle" />
+                                            #{formatter.codiceComposto(importatiController.decodeCodice(o.idCodice))}
+                                            <p:tooltip for="infoCodice" value="#{importatiController.decodeCodice(o.idCodice).descrizione}" position="bottom" />
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column headerText="RTS" style="width: 3%" sortable="true" sortBy="#{importatiController.decodeTipoRts(o.idTipoRts).codice}">
+                                        <ui:fragment rendered="#{not empty o.idTipoRts}">
+                                            <i jsf:id="infoRts" class="pi pi-info-circle" />
+                                            #{importatiController.decodeTipoRts(o.idTipoRts).codice}    
+                                            <p:tooltip for="infoRts" value="#{importatiController.decodeTipoRts(o.idTipoRts).descrizione}" position="bottom" />
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column headerText="DOC." style="width: 4%" sortable="true" sortBy="#{importatiController.decodeTipoDocumento(o.idTipoDocumento).descrizione}">
+                                        #{importatiController.decodeTipoDocumento(o.idTipoDocumento).descrizione}    
+                                    </p:column>
+                                    <p:column headerText="N." style="width: 3%" sortable="true" sortBy="#{o.numeroDocumento}">
+                                        #{o.numeroDocumento}
+                                    </p:column>
+                                    <p:column headerText="DEL" style="width: 4%" sortable="true" sortBy="#{o.dataDocumento}">
+                                        <h:outputText value="#{o.dataDocumento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="N. ORD." style="width: 4%" sortable="true" sortBy="#{o.numeroPagamento}" styleClass="word-wrap">
+                                        #{o.numeroPagamento}
+                                    </p:column>
+                                    <p:column headerText="DEL" style="width: 4%" sortable="true" sortBy="#{o.dataPagamento}">
+                                        <h:outputText value="#{o.dataPagamento}" style="width: 3%">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="BENEFICIARIO" sortable="true" sortBy="#{o.beneficiario}" styleClass="word-wrap">
+                                        #{o.beneficiario}    
+                                    </p:column>
+                                    <p:column headerText="DESCRIZIONE" sortable="true" sortBy="#{o.descrizioneRts}" styleClass="word-wrap">
+                                        #{o.descrizioneRts}    
+                                    </p:column>
+                                    <p:column headerText="IMPORTO" style="width: 5%; text-align: right;" sortable="true" sortBy="#{o.importo}">
+                                        <h:outputText value="#{o.importo}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="FATT. N." style="width: 5%" sortable="true" sortBy="#{o.fatturaNumero}" styleClass="word-wrap">
+                                        #{o.fatturaNumero}
+                                    </p:column>
+                                    <p:column headerText="DEL" style="width: 4%" sortable="true" sortBy="#{o.fatturaData}">
+                                        <h:outputText value="#{o.fatturaData}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="IVA" style="width: 3%; text-align: right" sortable="true" sortBy="#{o.importoIva}">
+                                        <h:outputText value="#{o.importoIva}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="UTENTE" style="width: 4%" styleClass="ellipsis" sortable="true" sortBy="#{o.proprietario}" title="#{o.proprietario}">
+                                        #{o.proprietario}
+                                    </p:column>
+                                    <p:column headerText="ELAB. IL" style="width: 4%" sortable="true" sortBy="#{o.dataElaborazione}" sortOrder="desc">
+                                        <h:outputText value="#{o.dataElaborazione}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>                                    
+                                    <p:column style="width: 7%; text-align: center;">
+                                        <p:commandButton id="note" icon="pi pi-book" title="Note" type="button" styleClass="ui-button-help" disabled="#{empty o.note}"/>&#160;
+                                        <p:overlayPanel for="note" style="width:350px" showCloseIcon="true" >
+                                            <h5>Note</h5>
+                                            <p>#{o.note}</p>
+                                        </p:overlayPanel>
+                                        <p:menuButton value="Azioni" styleClass="ui-button-danger" menuStyleClass="fit-width">
+                                            <p:menuitem id="mostrallegati" value="Allegati" title="Allegati" process="@this" update=":form:allegati-panel" icon="pi pi-paperclip" action="#{importatiController.aggiornaAllegati()}">
+                                                <f:setPropertyActionListener value="#{o}" target="#{importatiController.ordinativo}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="modifica" value="Modifica" title="Modifica" process="@this" update=":form:ordinativo-content" oncomplete="PF('ordinativoDialog').show()" icon="pi pi-pencil">
+                                                <f:setPropertyActionListener value="#{o}" target="#{importatiController.ordinativo}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="duplica" value="Duplica" title="Duplica" process="@this" update=":form:ordinativi" icon="pi pi-copy" oncomplete="PF('duplicaOrdinativoDialog').show()">
+                                                <f:setPropertyActionListener value="#{o}" target="#{importatiController.ordinativo}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="elimina" value="Elimina" icon="pi pi-trash" title="Elimina" process="@this" oncomplete="PF('deleteOrdinativoDialog').show()">
+                                                <f:setPropertyActionListener value="#{o}" target="#{importatiController.ordinativo}" />
+                                            </p:menuitem>
+                                            <p:divider rendered="#{importatiController.isTrasferibile(o)}"/>
+                                            <p:menuitem id="librocassa" value="Libro cassa" icon="pi pi-file-arrow-up" title="Trasferici nel libro cassa" process="@this" oncomplete="PF('trasferisciOrdinativoDialog').show()" rendered="#{importatiController.isTrasferibile(o) and (importatiController.decodeCapitoloCompetenza(o.idCompetenza).daconsolidare==0)}">
+                                                <f:setPropertyActionListener value="#{o}" target="#{importatiController.ordinativo}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="librocassacompleto" value="Lib.Cassa Completato" icon="pi pi-file-check" title="Trasferici nel libro cassa come completato (pronto per la stampa)" process="@this" oncomplete="PF('trasferisciOrdinativoCompletoDialog').show()" rendered="#{importatiController.isTrasferibile(o) and (importatiController.decodeCapitoloCompetenza(o.idCompetenza).daconsolidare==0)}">
+                                                <f:setPropertyActionListener value="#{o}" target="#{importatiController.ordinativo}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="librocassadaconsol" value="Lib.Cassa da Consol." icon="pi pi-file-check" title="Trasferici nel libro cassa come DA CONSOLIDARE" process="@this" oncomplete="PF('trasferisciOrdinativoConsolidaDialog').show()" rendered="#{importatiController.isTrasferibile(o)}">
+                                                <f:setPropertyActionListener value="#{o}" target="#{importatiController.ordinativo}" />
+                                            </p:menuitem>
+                                        </p:menuButton>
+                                    </p:column>
+
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column colspan="11" style="text-align: right" footerText="Parziale:"/>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{importatiController.parziale}" id="parziale">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column colspan="2" />
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{importatiController.parzialeIVA}" id="parzialeiva">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </div>
+                            <ui:fragment id="bottoniera">
+                                <div class="col-1">
+                                    <p:commandButton id="aggiornaOrdinativi" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{importatiController.aggiornaOrdinativi()}" process="@this" update="@form"/>
+                                </div>
+                                <div class="col-2 center">
+                                    <p:commandButton id="txSelezionatiLibrocassa" value="Trasf. in Libro Cassa" styleClass="ui-button-help" icon="pi pi-book" process="@this" oncomplete="PF('trasferisciOrdinativiDialog').show()" disabled="#{not importatiController.canTransferMulti or importatiController.multiDaConsolidare}"/>
+                                </div>
+                                <div class="col-2 center">
+                                    <p:commandButton id="txSelezionatiLibrocassaCompl" value="Trasf. in Libro Cassa Completati" styleClass="ui-button-primary" icon="pi pi-file-check" process="@this" oncomplete="PF('trasferisciOrdinativiCompletiDialog').show()" disabled="#{not importatiController.canTransferMulti or importatiController.multiDaConsolidare}"/>
+                                </div>
+                                <div class="col-2 center">
+                                    <p:commandButton id="txSelezionatiLibrocassaConsol" value="Trasf. in Libro Cassa Da Consol." styleClass="ui-button-secondary" icon="pi pi-objects-column" process="@this" oncomplete="PF('trasferisciOrdinativiConsolidaDialog').show()" disabled="#{not importatiController.canTransferMulti}"/>
+                                </div>
+                            </ui:fragment>
+                        </h:panelGroup>
+                    </p:panel>
+
+                    <h:panelGroup id="allegati-panel" layout="block">
+                        <p:panel header="ALLEGATI ORD. #{importatiController.descrizioneOrdinativo}" style="min-height: 400px" rendered="#{not empty importatiController.ordinativo}">                            
+                            <div class="grid">
+                                <div class="col-12 md:col-8">
+                                    <p:dataTable id="allegati" value="#{importatiController.allegati}" var="a" size="small">
+                                        <p:column headerText="DOCUMENTO" sortBy="#{a.nomefile}" styleClass="word-wrap">
+                                            #{a.nomefile}
+                                        </p:column>
+                                        <p:column headerText="GRUPPO" sortBy="#{a.gruppo}" sortOrder="asc" styleClass="word-wrap" width="12%">
+                                            #{a.gruppo}
+                                        </p:column>
+                                        <p:column headerText="DESCRIZIONE" styleClass="word-wrap">
+                                            #{a.descrizione}
+                                        </p:column>
+                                        <p:column style="width: 3%">
+                                            <p:commandButton id="allegato" icon="pi pi-eye" title="Mostra allegato" process="@this" update=":form:docviewer :form:msg" oncomplete="PF('documentoDialog').show()">
+                                                <f:setPropertyActionListener value="#{a}" target="#{importatiController.allegato}" />
+                                            </p:commandButton>
+                                        </p:column>
+                                        <p:column style="width: 3%">
+                                            <p:linkButton id="download" icon="pi pi-download" title="Scarica allegato" styleClass="ui-button-help" href="#{request.contextPath}/download?scope=OA&#38;id=#{a.id}" />
+                                        </p:column>
+                                        <p:column style="width: 3%">                                            
+                                            <p:commandButton id="modificaAllegato" icon="pi pi-pencil" title="Modifica descrizione allegato" process="@this" update=":form:descrizione-documento-content :form:msg" oncomplete="PF('descrizioneDocumentoDialog').show()" styleClass="ui-button-success">
+                                                <f:setPropertyActionListener value="#{a}" target="#{importatiController.allegato}" />
+                                            </p:commandButton>
+                                        </p:column>
+                                        <p:column style="width: 3%">
+                                            <p:commandButton id="elimina" icon="pi pi-trash" title="Elimina" styleClass="ui-button-danger" process="@this" update="allegati" oncomplete="PF('deleteAllegatoDialog').show()">
+                                                <f:setPropertyActionListener value="#{a}" target="#{importatiController.allegato}" />
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div> 
+                            </div>
+                            <div class="grid">
+                                <div class="col-5">
+                                    <p:commandButton id="nuovoAllegato" value="Aggiungi allegati" icon="pi pi-plus-circle" styleClass="ui-button-primary" process="@this" update="allegati" oncomplete="PF('allegatiDialog').show()"/>
+                                </div>                       
+                                <div class="col-1" style="text-align: right;">
+                                    <p:commandButton id="aggiornaAllegati" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{importatiController.aggiornaAllegati()}" process="@this" update="allegati"/>
+                                </div>
+                            </div>
+                        </p:panel>
+                    </h:panelGroup>
+
+                    <p:dialog header="Ordinativo" showEffect="fade" modal="true" widgetVar="ordinativoDialog" responsive="true" width="60%">
+                        <p:outputPanel id="ordinativo-content" class="ui-fluid grid formgrid" >
+                            <div class="field col-12">
+                                <p:outputLabel for="dlgcapcomp">Capitolo/Competenza Aperti *</p:outputLabel>
+                                <p:selectOneMenu id="dlgcapcomp" value="#{importatiController.ordinativoCapComp}" hideNoSelectionOption="#{not empty importatiController.ordinativoCapComp}" converter="capCompConverter"
+                                                 panelStyle="width:600px" filter="true" filterMatchMode="contains" filterNormalize="true" var="capComp">                                
+                                    <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                    <f:selectItems value="#{importatiController.capCompAperti}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione} - #{c.anno}" />
+
+                                    <p:column style="width: 10%">
+                                        <f:facet name="header">
+                                            <h:outputText value="Anno" />
+                                        </f:facet>
+                                        <h:outputText value="#{capComp.anno}" />
+                                    </p:column>  
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Capitolo" />
+                                        </f:facet>
+                                        <h:outputText value="#{capComp.descrizione}" />
+                                    </p:column>                                                                      
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="codice">Conto *</p:outputLabel>
+                                <p:selectOneMenu id="codice" value="#{importatiController.ordinativoCodice}" hideNoSelectionOption="#{not empty importatiController.ordinativoCodice}"
+                                                 panelStyle="width:400px" filter="true" filterMatchMode="contains" var="codice" converter="codiciConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                    <f:selectItems value="#{importatiController.codici}" var="c" itemValue="#{c}" itemLabel="#{formatter.codiceComposto(c)}: #{c.descrizione}" />
+
+                                    <p:column style="width: 12%">
+                                        <h:outputText value="#{formatter.codiceComposto(codice)}" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Descrizione"/>
+                                        </f:facet>
+                                        <h:outputText value="#{codice.descrizione}"/>
+                                    </p:column>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="tiports">RTS *</p:outputLabel>
+                                <p:selectOneMenu id="tiports" value="#{importatiController.ordinativoTipoRts}" hideNoSelectionOption="#{not empty importatiController.ordinativoTipoRts}"
+                                                 converter="tipoRtsConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                    <f:selectItems value="#{importatiController.tipiRts}" var="c" itemValue="#{c}" itemLabel="#{c.codice}: #{c.descrizione}" />                               
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="tipodocumento">Tipo Documeto</p:outputLabel>
+                                <p:selectOneMenu id="tipodocumento" value="#{importatiController.ordinativoTipoDocumento}" hideNoSelectionOption="#{not empty importatiController.ordinativoTipoDocumento}"
+                                                 converter="tipoDocumentoConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                    <f:selectItems value="#{importatiController.tipiDocumento}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione}" />                               
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="numerodocumento">N. Documento</p:outputLabel>
+                                <p:inputText id="numerodocumento" value="#{importatiController.ordinativo.numeroDocumento}" maxlength="32" /> 
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="datadocumento">Data Documento</p:outputLabel>
+                                <p:datePicker id="datadocumento" value="#{importatiController.ordinativo.dataDocumento}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="numpagamento">N. Ordinativo</p:outputLabel>
+                                <p:inputText id="numpagamento" value="#{importatiController.ordinativo.numeroPagamento}" maxlength="32" /> 
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="datapagmento">Data Ordinativo</p:outputLabel>
+                                <p:datePicker id="datapagmento" value="#{importatiController.ordinativo.dataPagamento}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                            </div> 
+                            <div class="field col-2">
+                                <p:outputLabel for="dataricevimento">Data Ricevimento</p:outputLabel>
+                                <p:datePicker id="dataricevimento" value="#{importatiController.ordinativo.dataRicevimento}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                            </div> 
+                            <div class="field col-12">
+                                <p:outputLabel for="beneficiario">Beneficiario</p:outputLabel>
+                                <p:inputText id="beneficiario" value="#{importatiController.ordinativo.beneficiario}" maxlength="255" />                                
+                            </div>    
+                            <div class="field col-12">
+                                <p:outputLabel for="descrizionerts">Descrizione</p:outputLabel>
+                                <p:inputTextarea id="descrizionerts" value="#{importatiController.ordinativo.descrizioneRts}" maxlength="512" rows="2" />                                
+                            </div> 
+                            <div class="field col-2">
+                                <p:outputLabel for="importo">Importo</p:outputLabel>
+                                <p:inputNumber id="importo" value="#{importatiController.ordinativo.importo}" 
+                                                decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />                                
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="fatturanum">Fattura N.</p:outputLabel>
+                                <p:inputText id="fatturanum" value="#{importatiController.ordinativo.fatturaNumero}" maxlength="64" />                                
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="fatturadata">Data Fattura</p:outputLabel>
+                                <p:datePicker id="fatturadata" value="#{importatiController.ordinativo.fatturaData}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="importoiva">IVA</p:outputLabel>
+                                <p:inputNumber id="importoiva" value="#{importatiController.ordinativo.importoIva}" 
+                                               decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />                                
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="importoritenuta">Ritenuta</p:outputLabel>
+                                <p:inputNumber id="importoritenuta" value="#{importatiController.ordinativo.importoRitenuta}" 
+                                                decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />                                
+                            </div>
+                            <div class="field col-2">
+                                <p:outputLabel for="cu" style="width: 100%">CU</p:outputLabel>
+                                <p:toggleSwitch id="cu" value="#{importatiController.ordinativoFlag}" onIcon="pi pi-check" offIcon="pi pi-times" />                                    
+                            </div>
+                            <div class="field col-6">
+                                <p:outputLabel for="note">Note</p:outputLabel>
+                                <p:inputTextarea id="note" value="#{importatiController.ordinativo.note}" rows="2" maxlength="255"/>
+                            </div>                            
+                            <div class="field col-6">
+                                <p:outputLabel for="noterag">Note Ragioneria</p:outputLabel>
+                                <p:inputTextarea id="noterag" value="#{importatiController.ordinativo.noterag}" rows="2" maxlength="255"/>
+                            </div>                            
+                            <ui:fragment rendered="#{empty importatiController.ordinativo.id}">
+                                <div class="field col-12">
+                                    <p:fileUpload value="#{importatiController.documentFiles}" mode="simple" dragDropSupport="false"
+                                                  multiple="true" update="msg" sizeLimit="4000000" fileLimit="10"
+                                                  allowTypes="/(\.|\/)(pdf)$/"/>
+                                </div>
+                            </ui:fragment>
+                            <div class="field col-12">
+                                I campi contrassegnati con un * sono obbligatori per rendere trasferibile l'ordinativo.
+                            </div>
+                        </p:outputPanel>
+
+                        <f:facet name="footer">
+                            <p:commandButton value="Salva" icon="pi pi-check" action="#{importatiController.salvaOrdinativo()}" update="ordinativi ordinativo-content msg" process="ordinativo-content @this" />
+                            <p:commandButton value="Annulla" icon="pi pi-times" update="page" immediate="true" onclick="PF('ordinativoDialog').hide()" class="ui-button-secondary">
+                                <f:setPropertyActionListener target="#{importatiController.ordinativo}" value="#{null}" />
+                            </p:commandButton>
+                        </f:facet>
+                    </p:dialog>
+
+                    <p:dialog header="Documento" showEffect="fade" modal="true" widgetVar="documentoDialog" responsive="true" width="60%">
+                        <p:outputPanel id="documento-content" class="ui-fluid" > 
+                            <pe:documentViewer id="docviewer" value="#{docController.stream}" width="100%" height="500">
+                                <f:param name="x" value="#{importatiController.timeStamp}" />
+                                <f:param name="scope" value="OA" />
+                                <f:param name="id" value="#{importatiController.allegato.id}" />
+                            </pe:documentViewer>
+                        </p:outputPanel>
+
+                        <f:facet name="footer">
+                            <p:commandButton value="Chiudi" icon="pi pi-times" update="page" immediate="true" action="#{importatiController.pulisciAllegato()}" oncomplete="PF('documentoDialog').hide()" class="ui-button-secondary" />
+                        </f:facet>
+                    </p:dialog>    
+
+                    <p:dialog header="Descrizione Documento" showEffect="fade" modal="true" widgetVar="descrizioneDocumentoDialog" responsive="true" width="30%">
+                        <p:outputPanel id="descrizione-documento-content" class="ui-fluid" > 
+                            <p:outputLabel for="gruppoDoc" value="Gruppo" />
+                            <p:inputText id="gruppoDoc" value="#{importatiController.allegato.gruppo}" maxlength="32" />
+                            <p:outputLabel for="descrizioneDoc" value="Descrizione" />
+                            <p:inputText id="descrizioneDoc" value="#{importatiController.allegato.descrizione}" maxlength="255" />
+                        </p:outputPanel>
+
+                        <f:facet name="footer">
+                            <p:commandButton value="Salva" icon="pi pi-save" update="allegati descrizione-documento-content msg" process="descrizione-documento-content @this" action="#{importatiController.modificaAllegato()}" class="ui-button-primary" />
+                            <p:commandButton value="Annulla" icon="pi pi-times" immediate="true" onclick="PF('descrizioneDocumentoDialog').hide()" class="ui-button-secondary" />
+                        </f:facet>
+                    </p:dialog>
+
+                    <p:confirmDialog widgetVar="trasferisciOrdinativoDialog" showEffect="fade" width="300" message="Trasferire l'ordinativo selezionato con tutti gli allegati nel libro cassa? L'operazione sarà irreversibile!" header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.trasferisci(false)}" process="@this" update="ordinativi allegati-panel msg" oncomplete="PF('trasferisciOrdinativoDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('trasferisciOrdinativoDialog').hide()" />
+                    </p:confirmDialog>
+
+                    <p:confirmDialog widgetVar="trasferisciOrdinativoCompletoDialog" showEffect="fade" width="300" header="Conferma" severity="warn">
+                        <f:facet name="message">
+                            Trasferire l'ordinativo selezionato come <b>COMPLETATO</b> con tutti gli allegati nel libro cassa?<br/>L'operazione sarà irreversibile!
+                        </f:facet>
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.trasferisci(true)}" process="@this" update="ordinativi msg" oncomplete="PF('trasferisciOrdinativoCompletoDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('trasferisciOrdinativoCompletoDialog').hide()" />
+                    </p:confirmDialog>                    
+
+                    <p:confirmDialog widgetVar="trasferisciOrdinativoConsolidaDialog" showEffect="fade" width="300" header="Conferma" severity="warn">
+                        <f:facet name="message">
+                            Trasferire l'ordinativo selezionato come <b>DA CONSOLIDARE</b> con tutti gli allegati nel libro cassa?<br/>L'operazione sarà irreversibile!
+                        </f:facet>
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.trasferisciConsolidare()}" process="@this" update="ordinativi msg" oncomplete="PF('trasferisciOrdinativoConsolidaDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('trasferisciOrdinativoConsolidaDialog').hide()" />
+                    </p:confirmDialog>
+
+                    <p:confirmDialog widgetVar="trasferisciOrdinativiDialog" showEffect="fade" width="300" message="Trasferire gli ordinativi selezionati con tutti gli allegati nel libro cassa? L'operazione sarà irreversibile!" header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.trasferisciSelezionati(false)}" process="@this" update="ordinativi allegati-panel msg" oncomplete="PF('trasferisciOrdinativiDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('trasferisciOrdinativiDialog').hide()" />
+                    </p:confirmDialog>
+
+                    <p:confirmDialog widgetVar="trasferisciOrdinativiCompletiDialog" showEffect="fade" width="300" header="Conferma" severity="warn">
+                        <f:facet name="message">
+                            Trasferire gli ordinativi selezionati come <b>COMPLETATI</b> con tutti gli allegati nel libro cassa?<br/>L'operazione sarà irreversibile!
+                        </f:facet>
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.trasferisciSelezionati(true)}" process="@this" update="ordinativi msg" oncomplete="PF('trasferisciOrdinativiCompletiDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('trasferisciOrdinativiCompletiDialog').hide()" />
+                    </p:confirmDialog> 
+
+                    <p:confirmDialog widgetVar="trasferisciOrdinativiConsolidaDialog" showEffect="fade" width="300" header="Conferma" severity="warn">
+                        <f:facet name="message">
+                            Trasferire gli ordinativi selezionati come <b>DA CONSOLIDARE</b> con tutti gli allegati nel libro cassa?<br/>L'operazione sarà irreversibile!
+                        </f:facet>
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.trasferisciConsolidatiSelezionati()}" process="@this" update="ordinativi msg" oncomplete="PF('trasferisciOrdinativiConsolidaDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('trasferisciOrdinativiConsolidaDialog').hide()" />
+                    </p:confirmDialog>
+
+                    <p:confirmDialog widgetVar="deleteOrdinativoDialog" showEffect="fade" width="300" message="Eliminare l'ordinativo con tutti gli allegati? L'operazione sarà irreversibile!" header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.eliminaOrdinativo()}" process="@this" update="ordinativi allegati-panel msg" oncomplete="PF('deleteOrdinativoDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('deleteOrdinativoDialog').hide()" />
+                    </p:confirmDialog>
+
+                    <p:confirmDialog widgetVar="deleteAllegatoDialog" showEffect="fade" width="300" message="Eliminare l'allegato? L'operazione sarà irreversibile!" header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.eliminaAllegato()}" process="@this" update="allegati msg" oncomplete="PF('deleteAllegatoDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('deleteAllegatoDialog').hide()" />
+                    </p:confirmDialog>
+                    
+                    <p:confirmDialog widgetVar="duplicaOrdinativoDialog" showEffect="fade" width="300" message="Duplicare l'ordinativo selezionat? NOTA: Gli allegati NON verranno duplicati." header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{importatiController.duplica()}" process="@this" update="ordinativi allegagati-panel msg" oncomplete="PF('duplicaOrdinativoDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('duplicaOrdinativoDialog').hide()" />
+                    </p:confirmDialog>
+                </div>
+            </h:panelGroup>        
+        </h:form>
+
+        <h:form id="uploadForm" enctype="multipart/form-data">
+            <p:dialog header="Allegati" showEffect="fade" modal="true" widgetVar="allegatiDialog" responsive="true" width="30%">
+                <p:outputPanel id="allegati-content" class="ui-fluid" >                       
+                    <p:fileUpload id="documenti" value="#{importatiController.documentFiles}" mode="simple" dragDropSupport="true" update="form:msg"  
+                                  label="Seleziona documenti" style="width:100%" multiple="true">
+                        <p:validateFile sizeLimit="67108864" />
+                    </p:fileUpload>
+                    <p:outputLabel value="Gruppo:" for="gruppo" />
+                    <p:inputText value="#{importatiController.gruppo}" maxlength="32" id="gruppo" />
+                </p:outputPanel>
+
+                <f:facet name="footer">
+                    <p:commandButton id="aggiungiAll" value="Aggiungi allegati" action="#{importatiController.aggiungiAllegati()}" update="form:allegati" ajax="false" icon="pi pi-save" />
+                    <p:commandButton id="annullaAll" value="Annulla" process="@none" immediate="true" update="form:allegati" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('allegatiDialog').hide()"/>
+                </f:facet>
+            </p:dialog>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

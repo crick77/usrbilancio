@@ -1,0 +1,163 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Importa Quietanza Or.Te.S.</ui:define>
+
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{importQOrtesController.init()}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+            <p:growl id="msg" showDetail="true" escape="false"/>
+
+            <h:panelGroup id="page" layout="block" styleClass="grid">
+                <div class="col-12 md:col-12 lg:col-12">
+                    <p:panel header="IMPORTAZIONE QUIETANZA Or.Te.S." rendered="#{importQOrtesController.quietanza==null}">
+                        <div class="grid formgrid">
+                            <div class="field col-2 md:col-2">
+                                <p:fileUpload value="#{importQOrtesController.file}" mode="simple" dragDropSupport="true" multiple="false" update="@form" sizeLimit="67108864" allowTypes="/(\.|\/)(pdf)$/" 
+                                              cancelLabel="Annulla" uploadLabel="Carica" label="Seleziona documento" widgetVar="uploadBtn" />
+                            </div>
+                            <div class="field col-6 md:col-6">
+                                <p:commandButton id="elabora" icon="pi pi-wrench" value="Elabora documento" action="#{importQOrtesController.elabora()}" update="@form" ajax="false" widgetVar="elaboraBtn"
+                                                 onclick="PF('elaboraBtn').disabled = true;PF('uploadBtn').disabled = true;"/>
+                            </div>
+                        </div>
+                    </p:panel>
+                </div>
+                <div class="col-12 md:col-6 lg:col-6">
+                    <p:panel header="QUIETANZA IN IMPORTAZIONE" style="min-height: 400px" rendered="#{importQOrtesController.quietanza!=null}">
+                        <p:outputPanel id="quietanza-content" class="ui-fluid grid formgrid" >                                                                                 
+                            <div class="field col-12">
+                                <p:outputLabel for="dlgcapcomp">Capitolo/Competenza</p:outputLabel>
+                                <p:selectOneMenu id="dlgcapcomp" value="#{importQOrtesController.quietanzaCapComp}" hideNoSelectionOption="#{not empty importQOrtesController.quietanzaCapComp}" converter="capCompConverter"
+                                                 style="min-width: 600px" panelStyle="width:600px" filter="true" filterMatchMode="contains" filterNormalize="true" var="capComp" required="true" requiredMessage="Capitolo/Competenza obbligario">                                
+                                    <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                    <f:selectItems value="#{importQOrtesController.capComp}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione} - #{c.anno}" />
+
+                                    <p:column style="width: 10%">
+                                        <f:facet name="header">
+                                            <h:outputText value="Anno" />
+                                        </f:facet>
+                                        <h:outputText value="#{capComp.anno}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Capitolo" />
+                                        </f:facet>
+                                        <h:outputText value="#{capComp.descrizione}" />
+                                    </p:column>                                    
+                                    <p:column style="width: 10%; text-align: center">
+                                        <f:facet name="header">
+                                            <h:outputText value="Chiuso" />
+                                        </f:facet>
+                                        <ui:fragment rendered="#{capComp.chiuso==1}">
+                                            <i class="pi pi-check-circle" />
+                                        </ui:fragment>
+                                    </p:column>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="codice">Conto</p:outputLabel>
+                                <p:selectOneMenu id="codice" value="#{importQOrtesController.quietanzaCodice}" required="true" requiredMessage="Conto obbligatorio" hideNoSelectionOption="#{not empty importQOrtesController.quietanzaCodice}"
+                                                 panelStyle="width:400px" filter="true" filterMatchMode="contains" var="codice" converter="codiciConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                    <f:selectItems value="#{importQOrtesController.codici}" var="c" itemValue="#{c}" itemLabel="#{formatter.codiceComposto(c)}: #{c.descrizione}" />
+
+                                    <p:column style="width: 12%">
+                                        <h:outputText value="#{formatter.codiceComposto(codice)}" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Descrizione"/>
+                                        </f:facet>
+                                        <h:outputText value="#{codice.descrizione}"/>
+                                    </p:column>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="tiports">RTS</p:outputLabel>
+                                <p:selectOneMenu id="tiports" value="#{importQOrtesController.quietanzaTipoRts}" required="true" requiredMessage="Codice RTS obbligatorio" hideNoSelectionOption="#{not empty importQOrtesController.quietanzaTipoRts}"
+                                                 converter="tipoRtsConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                    <f:selectItems value="#{importQOrtesController.tipiRtsList}" var="c" itemValue="#{c}" itemLabel="#{c.codice}: #{c.descrizione}" />                               
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="tipodocumento">Tipo Documento</p:outputLabel>
+                                <p:selectOneMenu id="tipodocumento" value="#{importQOrtesController.quietanzaTipoDocumento}" hideNoSelectionOption="#{not empty importQOrtesController.quietanzaTipoDocumento}"
+                                                 converter="tipoDocumentoConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                    <f:selectItems value="#{importQOrtesController.tipiDocumento}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione}" />                               
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="numdocumento">N. Documento</p:outputLabel>
+                                <p:inputText id="numdocumento" value="#{importQOrtesController.quietanza.numeroDocumento}" maxlength="32"/> 
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="datadocumento">Data Documento</p:outputLabel>
+                                <p:datePicker id="datadocumento" value="#{importQOrtesController.quietanza.dataDocumento}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="numpagamento">N. Pagamento</p:outputLabel>
+                                <p:inputText id="numpagamento" value="#{importQOrtesController.quietanza.numeroPagamento}" required="true" requiredMessage="N. pagamento obbligatorio" maxlength="32"/> 
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="datapagmento">Data Pagamento</p:outputLabel>
+                                <p:datePicker id="datapagmento" value="#{importQOrtesController.quietanza.dataPagamento}" required="true" requiredMessage="Data pagamento obbligatorio" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="ordinante">Ordinante</p:outputLabel>
+                                <p:inputText id="ordinante" value="#{importQOrtesController.quietanza.ordinante}" maxlength="255" required="true" requiredMessage="Ordinante obbligatorio"/>                                
+                            </div>    
+                            <div class="field col-12">
+                                <p:outputLabel for="descrizioneord">Descrizione Ordinanza</p:outputLabel>
+                                <p:inputTextarea id="descrizioneord" value="#{importQOrtesController.quietanza.descrizioneOrdinanza}" maxlength="512" rows="2" required="true" requiredMessage="Descrizione ordinanza obbligatoria"/>                                
+                            </div> 
+                            <div class="field col-4">
+                                <p:outputLabel for="importo">Importo</p:outputLabel>
+                                <p:inputNumber id="importo" value="#{importQOrtesController.quietanza.importo}" required="true" requiredMessage="Importo obbligatorio" 
+                                                decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />                                
+                            </div>
+                            <div class="field col-1">
+                                <p:outputLabel for="flag">Commissario</p:outputLabel>
+                                <p:toggleSwitch id="flag" value="#{importQOrtesController.quietanza.flag}" converter="booleanIntConverter" />
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="note">Note</p:outputLabel>
+                                <p:inputTextarea id="note" value="#{importQOrtesController.quietanza.note}" rows="2" maxlength="255"/>
+                            </div>                    
+                            <div class="field col-12">
+                                <span class="red">IL DOCUMENTO <b>#{importQOrtesController.file.fileName}</b>&#160;VERRA' AUTOMATICAMENTE ALLEGATO ALLA QUIETANZA.</span>
+                            </div>
+                            <div class="field col-2">
+                                <p:commandButton value="Salva" icon="pi pi-check" action="#{importQOrtesController.salva()}" update="page msg" process="quietanza-content @this"/>
+                            </div>
+                            <div class="field col-2">
+                                <p:commandButton value="Annulla" icon="pi pi-times" update="page msg" immediate="true" action="#{importQOrtesController.annulla()}" class="ui-button-secondary">
+                                    <p:confirm type="popup" header="Conferma" message="Annullare il caricamento?&lt;br/&gt;I dati veranno definitivamente persi!" icon="pi pi-info-circle" escape="false" />
+                                </p:commandButton>
+                            </div>
+                        </p:outputPanel>
+                    </p:panel>
+                </div>
+            </h:panelGroup>
+
+            <p:confirmPopup global="true">
+                <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no"/>
+                <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes ui-button-flat" />
+            </p:confirmPopup>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

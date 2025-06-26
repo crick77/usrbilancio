@@ -1,0 +1,354 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:jsf="jakarta.faces"
+                xmlns:p="primefaces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Quietanze</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{elencoQuietanzeController.init()}" />
+        </f:metadata>        
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+            <h:panelGroup id="page" layout="block" styleClass="grid">
+                <div class="col-12 md:col-12 lg:col-12">
+                    <p:panel header="ELENCO COMPLETO QUIETANZE" style="min-height: 400px">
+                        <div class="grid">                            
+                            <div class="col-12">
+                                <p:remoteCommand name="handleFilterEvent" actionListener="#{elencoQuietanzeController.aggiornaTotale()}" update="quietanze:totaleParziale" process="@this" />
+                                <p:dataTable id="quietanze" value="#{elencoQuietanzeController.quietanze}" var="q" paginator="true" rows="100" paginatorPosition="bottom" rowKey="#{q.id}" selectionMode="single"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" stripedRows="true"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" filteredValue="#{elencoQuietanzeController.quietanzeFiltrate}" rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}"
+                                             globalFilterFunction="#{elencoQuietanzeController.filtroGlobale}" widgetVar="quietanzeTable" filterBy="#{elencoQuietanzeController.filterBy}" size="small">
+                                    <p:ajax event="filter" oncomplete="handleFilterEvent();" />
+
+                                    <f:facet name="header">
+                                        <div class="flex">                                            
+                                            <div class="flex justify-content-end" style="width: 100%">
+                                                <p:commandButton process="@this" value="Excel" icon="pi pi-file-excel" styleClass="mr-2 mb-2 ui-button-outlined ui-button-success" title="Esporta elenco tabella in Excel">
+                                                    <p:dataExporter type="xlsxstream" target="quietanze" fileName="quietanze" />
+                                                </p:commandButton>
+                                                <p:commandButton process="@this" value="PDF" icon="pi pi-file-pdf" styleClass="mr-2 mb-2 ui-button-outlined ui-button-danger" title="Esporta elenco tabella in PDF">
+                                                    <p:dataExporter type="pdf" target="quietanze" fileName="quietanze" />
+                                                </p:commandButton>                                                
+                                                <p:inputText id="globalFilter" onkeyup="PF('quietanzeTable').filter()" style="width:300px"
+                                                             placeholder="Ricerca globale" />&#160;
+                                                <p:commandButton value="Pulisci filtri" icon="pi pi-filter" action="#{elencoQuietanzeController.clearFilters(true)}" process="@this" update="@form" styleClass="ui-button-help" />
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column headerText="COMPETENZA/CAPITOLO" style="width: 10%" sortable="true" sortBy="#{elencoQuietanzeController.decodeCapComp(q.idCompetenza).anno} | #{elencoQuietanzeController.decodeCapComp(q.idCompetenza).descrizione}" filterBy="#{elencoQuietanzeController.decodeCapComp(q.idCompetenza).anno} | #{elencoQuietanzeController.decodeCapComp(q.idCompetenza).descrizione}" filterFunction="#{elencoQuietanzeController.filterFunctionCapitoli}" exportFunction="#{tableExporterController.decodeCompetenza(q.idCompetenza)}">
+                                        <f:facet name="filter">
+                                            <p:selectCheckboxMenu widgetVar="capcompcbm" label="Nessuna selezione" updateLabel="true" selectedLabel="Selezione effettuata." onchange="PF('quietanzeTable').filter()" styleClass="custom-filter" style="min-width: 100% !important" filter="true" filterMatchMode="contains" value="#{elencoQuietanzeController.selectedCapitoli}">
+                                                <f:selectItems value="#{elencoQuietanzeController.capitoli}" />                                                                                                   
+                                            </p:selectCheckboxMenu>
+                                        </f:facet>
+                                        #{elencoQuietanzeController.decodeCapComp(q.idCompetenza).anno} | #{elencoQuietanzeController.decodeCapComp(q.idCompetenza).descrizione}
+                                    </p:column>
+                                    <p:column style="width: 1%" exportHeaderValue="STATO" exportFunction="#{tableExporterController.decodeStato(elencoQuietanzeController.decodeCapComp(q.idCompetenza).chiuso)}">
+                                        <f:facet name="header">
+                                            <i jsf:id="statocap" class="pi pi-lock" /><p:tooltip for="statocap" value="STATO DEL CAPITOLO" position="top" />
+                                        </f:facet>
+                                        <ui:fragment rendered="#{elencoQuietanzeController.decodeCapComp(q.idCompetenza).chiuso eq 1}">
+                                            <i jsf:id="chiuso" class="pi pi-check-circle" /><p:tooltip for="chiuso" position="top" value="Capitolo chiuso" />
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{elencoQuietanzeController.decodeCapComp(q.idCompetenza).chiuso eq 2}">
+                                            <i jsf:id="inattesa" class="pi pi-clock" /><p:tooltip for="inattesa" position="top" value="Capitolo in attesa di chiusura" />
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column field="idCodice" headerText="CONTO" style="width: 6%;" filterMatchMode="exact" exportFunction="#{tableExporterController.decodeConto(q.idCodice)}">
+                                        <f:facet name="filter">                                           
+                                            <p:selectOneMenu value="#{elencoQuietanzeController.quietanzaCodiceFiltro}" panelStyle="width:400px" filter="true" filterMatchMode="contains" var="codice" onchange="PF('quietanzeTable').filter()" styleClass="custom-filter" style="min-width: 100% !important">
+                                                <f:selectItem itemValue="#{null}" itemLabel="*" noSelectionOption="true" />
+                                                <f:selectItems value="#{elencoQuietanzeController.codici}" var="c" itemValue="#{c.id}" itemLabel="#{formatter.codiceComposto(c)}" />
+
+                                                <p:column style="width: 12%">
+                                                    <h:outputText value="#{formatter.codiceComposto(elencoQuietanzeController.decodeCodice(codice))}" />
+                                                </p:column>
+
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Descrizione"/>
+                                                    </f:facet>
+                                                    <h:outputText value="#{elencoQuietanzeController.decodeCodice(codice).descrizione}"/>
+                                                </p:column>
+                                            </p:selectOneMenu>
+                                        </f:facet>
+                                        <i jsf:id="infoCodice" class="pi pi-info-circle" />
+                                        #{formatter.codiceComposto(elencoQuietanzeController.decodeCodice(q.idCodice))}
+                                        <p:tooltip for="infoCodice" value="#{elencoQuietanzeController.decodeCodice(q.idCodice).descrizione}" position="bottom" />
+                                    </p:column>                                    
+                                    <p:column field="idTipoRts" headerText="RTS" style="width: 4%;" filterMatchMode="exact" exportFunction="#{tableExporterController.decodeRts(q.idTipoRts)}">
+                                        <f:facet name="filter">
+                                            <p:selectOneMenu onchange="PF('quietanzeTable').filter()" styleClass="custom-filter" style="width: 100%;">
+                                                <f:selectItem itemLabel="*" itemValue="#{null}" noSelectionOption="true" />
+                                                <f:selectItems value="#{elencoQuietanzeController.tipiRtsList}" var="tr" itemLabel="#{tr.codice}: #{tr.descrizione}" itemValue="#{tr.id}" />
+                                            </p:selectOneMenu>
+                                        </f:facet>
+                                        <i jsf:id="infoRts" class="pi pi-info-circle" />
+                                        #{elencoQuietanzeController.decodeTipoRts(q.idTipoRts).codice}    
+                                        <p:tooltip for="infoRts" value="#{elencoQuietanzeController.decodeTipoRts(q.idTipoRts).descrizione}" position="bottom" />
+                                    </p:column>
+                                    <p:column field="idTipoDocumento" headerText="DOCUMENTO" style="width: 6%;" filterMatchMode="exact" exportFunction="#{tableExporterController.decodeDocumento(q.idTipoDocumento)}">
+                                        <f:facet name="filter">
+                                            <p:selectOneMenu onchange="PF('quietanzeTable').filter()" styleClass="custom-filter" style="width: 100%;">
+                                                <f:selectItem itemLabel="*" itemValue="#{null}" noSelectionOption="true" />
+                                                <f:selectItems value="#{elencoQuietanzeController.tipiDocumentoList}" var="td" itemLabel="#{td.descrizione}" itemValue="#{td.id}" />
+                                            </p:selectOneMenu>
+                                        </f:facet>
+                                        #{elencoQuietanzeController.decodeTipoDocumento(q.idTipoDocumento).descrizione}    
+                                    </p:column>
+                                    <p:column field="numeroDocumento" headerText="N." style="width: 3%;" filterMatchMode="contains" sortFunction="#{sorter.sortStringAsInt}" sortBy="#{q.numeroDocumento}">
+                                        <f:facet name="filter">
+                                            <p:inputText id="filtronumerodoc" onkeyup="PF('quietanzeTable').filter()" style="width: 100%;" />
+                                        </f:facet>
+                                        #{q.numeroDocumento}    
+                                    </p:column>
+                                    <p:column field="dataDocumento" headerText="DEL" style="width: 9%;" filterMatchMode="between" exportFunction="#{tableExporterController.decodeDate(q.dataDocumento)}">
+                                        <f:facet name="filter">
+                                            <p:datePicker selectionMode="range" onchange="PF('quietanzeTable').filter()" onblur="PF('quietanzeTable').filter()" monthNavigator="true" yearNavigator="true" mask="true" pattern="dd-MM-yyyy" showOnFocus="false" />                                            
+                                        </f:facet>
+                                        <h:outputText value="#{q.dataDocumento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column field="numeroPagamento" headerText="N.QUI." style="width: 4%;" filterMatchMode="contains" sortFunction="#{sorter.sortStringAsInt}" sortBy="#{q.numeroPagamento }">
+                                        #{q.numeroPagamento}
+                                    </p:column>
+                                    <p:column field="dataPagamento" headerText="DEL" style="width: 9%;" filterMatchMode="between" exportFunction="#{tableExporterController.decodeDate(q.dataPagamento)}" sortBy="#{q.dataPagamento}" sortOrder="desc">
+                                        <f:facet name="filter">
+                                            <p:datePicker selectionMode="range" onchange="PF('quietanzeTable').filter()" onblur="PF('quietanzeTable').filter()" monthNavigator="true" yearNavigator="true" mask="true" pattern="dd-MM-yyyy" showOnFocus="false" />
+                                        </f:facet>
+                                        <h:outputText value="#{q.dataPagamento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column field="ordinante" headerText="ORDINANTE" filterMatchMode="contains">
+                                        #{q.ordinante}    
+                                    </p:column>
+                                    <p:column field="descrizioneOrdinanza" headerText="DESCRIZIONE" filterMatchMode="contains">
+                                        #{q.descrizioneOrdinanza}    
+                                    </p:column>
+                                    <p:column field="importo" headerText="IMPORTO" style="width: 5%; text-align: right;" filterMatchMode="contains" exportFunction="#{tableExporterController.decodeImpoto(q.importo)}">
+                                        <h:outputText value="#{q.importo}" styleClass="#{q.importo lt 0 ? 'red' : ''}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column style="width: 2%; text-align: center;" exportable="false">
+                                        <p:commandButton id="note" icon="pi pi-book" title="Note" type="button" styleClass="ui-button-help" disabled="#{empty q.note}"/>
+                                        <p:overlayPanel for="note" style="width:350px" showCloseIcon="true" >
+                                            <h5>Note</h5>
+                                            <p>#{q.note}</p>
+                                        </p:overlayPanel>
+                                    </p:column>
+                                    <p:column style="width: 4%;" exportHeaderValue="ID" exportValue="#{q.id}">
+                                        <p:menuButton value="Azioni" styleClass="ui-button-danger">
+                                            <p:menuitem id="allegato" icon="pi pi-paperclip" value="Documento" title="Documento" process="@this" update=":form:documento-content :form:msg" oncomplete="PF('documentoDialog').show()">
+                                                <f:setPropertyActionListener value="#{q}" target="#{elencoQuietanzeController.quietanza}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="modifica" icon="pi pi-pencil" value="Modifica" title="Modifica" process="@this" update=":form:quietanza-content" rendered="#{elencoQuietanzeController.modificabile(q)}">
+                                                <f:setPropertyActionListener value="#{q}" target="#{elencoQuietanzeController.quietanza}" />
+                                                <f:setPropertyActionListener value="#{true}" target="#{elencoQuietanzeController.dialogShow}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="mostra" icon="pi pi-eye" value="Mostra" title="Mostra" process="@this" update=":form:quietanza-content" rendered="#{not elencoQuietanzeController.modificabile(q)}">
+                                                <f:setPropertyActionListener value="#{q}" target="#{elencoQuietanzeController.quietanza}" />
+                                                <f:setPropertyActionListener value="#{true}" target="#{elencoQuietanzeController.dialogShow}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="duplica" icon="pi pi-copy" value="Duplica" title="Duplica" process="@this" oncomplete="PF('duplicaQuietanzaConfirmDialog').show()" rendered="#{elencoQuietanzeController.modificabile(q)}">
+                                                <f:setPropertyActionListener value="#{q}" target="#{elencoQuietanzeController.quietanza}" />
+                                            </p:menuitem>
+                                            <p:divider rendered="#{elencoQuietanzeController.modificabile(q)}"/>       
+                                            <p:menuitem id="elimina" icon="pi pi-trash" value="Elimina" title="Elimina" styleClass="ui-button-danger" process="@this" oncomplete="PF('deleteQuietanzaDialog').show()" rendered="#{elencoQuietanzeController.modificabile(q)}">
+                                                <f:setPropertyActionListener value="#{q}" target="#{elencoQuietanzeController.quietanza}" />
+                                            </p:menuitem>
+                                        </p:menuButton>                                                                               
+                                    </p:column>
+
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column colspan="11" style="text-align: right" footerText="Totale parziale:"/>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{elencoQuietanzeController.totale}" id="totaleParziale">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </div>                            
+                            <div class="col-1">
+                                <p:commandButton id="aggiornaQuietanze" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{elencoQuietanzeController.aggiornaQuietanze()}" process="@this" update="quietanze"/>
+                            </div>
+                        </div>
+                    </p:panel>
+
+                    <p:dialog id="quietanza-content" header="Quietanza" showEffect="fade" modal="true" widgetVar="quietanzaDialog" responsive="true" width="30%" visible="#{elencoQuietanzeController.dialogShow}">
+                        <p:outputPanel class="ui-fluid grid formgrid" >                                                                                 
+                            <div class="field col-12">
+                                <p:outputLabel for="dlgcapcomp">
+                                    Capitolo/Competenza
+                                    <ui:fragment rendered="#{elencoQuietanzeController.quietanzaCapComp.chiuso eq 1}">
+                                        <span class="red bold">&#160;[CHIUSO]</span>
+                                    </ui:fragment>
+                                    <ui:fragment rendered="#{elencoQuietanzeController.quietanzaCapComp.chiuso eq 2}">
+                                        <span class="orange bold">&#160;[IN ATTESA]</span>
+                                    </ui:fragment>
+                                </p:outputLabel>
+                                <p:selectOneMenu id="dlgcapcomp" value="#{elencoQuietanzeController.quietanzaCapComp}" hideNoSelectionOption="#{not empty elencoQuietanzeController.quietanzaCapComp}" converter="capCompConverter"
+                                                 panelStyle="width:600px" filter="true" filterMatchMode="contains" filterNormalize="true" var="capComp">                                
+                                    <f:selectItem itemValue="#{null}" itemLabel="" noSelectionOption="true" />
+                                    <f:selectItems value="#{elencoQuietanzeController.capComp}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione} - #{c.anno}" />
+
+                                    <p:column style="width: 10%">
+                                        <f:facet name="header">
+                                            <h:outputText value="Anno" />
+                                        </f:facet>
+                                        <h:outputText value="#{capComp.anno}" />
+                                    </p:column>
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Capitolo" />
+                                        </f:facet>
+                                        <h:outputText value="#{capComp.descrizione}" />
+                                    </p:column>                                    
+                                    <p:column style="width: 10%; text-align: center">
+                                        <f:facet name="header">
+                                            <h:outputText value="Chiuso" />
+                                        </f:facet>
+                                        <ui:fragment rendered="#{capComp.chiuso==1}">
+                                            <i class="pi pi-check-circle" />
+                                        </ui:fragment>
+                                    </p:column>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="codice">Conto</p:outputLabel>
+                                <p:selectOneMenu id="codice" value="#{elencoQuietanzeController.quietanzaCodice}" hideNoSelectionOption="#{not empty elencoQuietanzeController.quietanzaCodice}"
+                                                 panelStyle="width:400px" filter="true" filterMatchMode="contains" var="codice" converter="codiciConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="" noSelectionOption="true" />
+                                    <f:selectItems value="#{elencoQuietanzeController.codici}" var="c" itemValue="#{c}" itemLabel="#{formatter.codiceComposto(c)}: #{c.descrizione}" />
+
+                                    <p:column style="width: 12%">
+                                        <h:outputText value="#{formatter.codiceComposto(codice)}" />
+                                    </p:column>
+
+                                    <p:column>
+                                        <f:facet name="header">
+                                            <h:outputText value="Descrizione"/>
+                                        </f:facet>
+                                        <h:outputText value="#{codice.descrizione}"/>
+                                    </p:column>
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="tiports">RTS</p:outputLabel>
+                                <p:selectOneMenu id="tiports" value="#{elencoQuietanzeController.quietanzaTipoRts}" hideNoSelectionOption="#{not empty elencoQuietanzeController.quietanzaTipoRts}"
+                                                 converter="tipoRtsConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="" noSelectionOption="true" />
+                                    <f:selectItems value="#{elencoQuietanzeController.tipiRtsList}" var="c" itemValue="#{c}" itemLabel="#{c.codice}: #{c.descrizione}" />                               
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="tipodocumento">Tipo Documento</p:outputLabel>
+                                <p:selectOneMenu id="tipodocumento" value="#{elencoQuietanzeController.quietanzaTipoDocumento}" hideNoSelectionOption="#{not empty elencoQuietanzeController.quietanzaTipoDocumento}"
+                                                 converter="tipoDocumentoConverter">
+                                    <f:selectItem itemValue="#{null}" itemLabel="" noSelectionOption="true" />
+                                    <f:selectItems value="#{elencoQuietanzeController.tipiDocumento}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione}" />                               
+                                </p:selectOneMenu>
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="numdocumento">N. Documento</p:outputLabel>
+                                <p:inputText id="numdocumento" value="#{elencoQuietanzeController.quietanza.numeroDocumento}" maxlength="32"/> 
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="datadocumento">Data Documento</p:outputLabel>
+                                <p:datePicker id="datadocumento" value="#{elencoQuietanzeController.quietanza.dataDocumento}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="numpagamento">N. Quietanza</p:outputLabel>
+                                <p:inputText id="numpagamento" value="#{elencoQuietanzeController.quietanza.numeroPagamento}" maxlength="32"/> 
+                            </div>
+                            <div class="field col-4">
+                                <p:outputLabel for="datapagmento">Data Quietanza</p:outputLabel>
+                                <p:datePicker id="datapagmento" value="#{elencoQuietanzeController.quietanza.dataPagamento}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="ordinante">Ordinante</p:outputLabel>
+                                <p:inputText id="ordinante" value="#{elencoQuietanzeController.quietanza.ordinante}" maxlength="255" />                                
+                            </div>    
+                            <div class="field col-12">
+                                <p:outputLabel for="descrizioneord">Descrizione Ordinanza</p:outputLabel>
+                                <p:inputTextarea id="descrizioneord" value="#{elencoQuietanzeController.quietanza.descrizioneOrdinanza}" maxlength="512" rows="2" required="true" />                                
+                            </div> 
+                            <div class="field col-4">
+                                <p:outputLabel for="importo">Importo</p:outputLabel>
+                                <p:inputNumber id="importo" value="#{elencoQuietanzeController.quietanza.importo}" 
+                                                decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />                                
+                            </div>
+                            <div class="field col-12">
+                                <p:outputLabel for="note">Note</p:outputLabel>
+                                <p:inputTextarea id="note" value="#{elencoQuietanzeController.quietanza.note}" rows="2" maxlength="255"/>
+                            </div>          
+                            <ui:fragment rendered="#{elencoQuietanzeController.modificabile()}">
+                                <div class="field col-12">
+                                    <p:outputLabel for="documento">Documento</p:outputLabel>&#160;&#160;&#160;
+                                    <p:fileUpload id="documento" value="#{elencoQuietanzeController.documento}" mode="simple" dragDropSupport="true"  update="msg"  skinSimple="true" label="Seleziona PDF" style="width:100%" validateContentType="true" accept=".pdf" >
+                                        <p:validateFile sizeLimit="67108864" allowTypes="/(\.|\/)(pdf)$/" fileLimit="1" />
+                                    </p:fileUpload>
+                                </div>
+                                <ui:fragment rendered="#{not empty elencoQuietanzeController.quietanza.nomefile and not empty elencoQuietanzeController.quietanza.nomefileLocale}">
+                                    <div class="field col-12">
+                                        <span class="red">IL RECORD CONTIENE GIA' UN DOCUMENTO. SELEZIONANDONE UN ALTRO ESSO VERRA' SOSTITUITO.</span>
+                                    </div>
+                                </ui:fragment>
+                            </ui:fragment>
+                        </p:outputPanel>
+
+                        <f:facet name="footer">                            
+                            <p:commandButton value="Salva" icon="pi pi-save" action="#{elencoQuietanzeController.salva()}" update="quietanze quietanza-content msg" process="quietanza-content @this" class="ui-button-help" disabled="#{not elencoQuietanzeController.modificabile()}" />
+                            <p:commandButton value="Chiudi" icon="pi pi-times" process="@this" update="page" class="ui-button-secondary">
+                                <f:setPropertyActionListener value="#{false}" target="#{elencoQuietanzeController.dialogShow}" />   
+                            </p:commandButton>
+                        </f:facet>
+                    </p:dialog>
+
+                    <p:dialog header="Documento" showEffect="fade" modal="true" widgetVar="documentoDialog" responsive="true" width="60%">                    
+                        <p:outputPanel id="documento-content" class="ui-fluid" > 
+                            <p:media id="docviewer" value="#{docController.stream}" player="pdf" width="100%" height="500" cache="false">                            
+                                <f:param name="x" value="#{elencoQuietanzeController.timeStamp}" />
+                                <f:param name="scope" value="Q" />
+                                <f:param name="id" value="#{elencoQuietanzeController.quietanza.id}" />
+                            </p:media>
+                        </p:outputPanel>
+
+                        <f:facet name="footer">                       
+                            <p:commandButton value="Chiudi" icon="pi pi-times" update="page" immediate="true" onclick="PF('documentoDialog').hide()" class="ui-button-secondary" />
+                        </f:facet>
+                    </p:dialog>
+
+                    <p:confirmDialog widgetVar="deleteQuietanzaDialog" showEffect="fade" width="300" message="Eliminare la quietanza?" header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{elencoQuietanzeController.elimina()}" process="@this" update="quietanze msg" oncomplete="PF('deleteQuietanzaDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('deleteQuietanzaDialog').hide()" />
+                    </p:confirmDialog>
+                    
+                    <p:confirmDialog widgetVar="duplicaQuietanzaConfirmDialog" showEffect="fade" width="300" message="Duplicare la quietanza? NOTA: L'allegato non verrà duplicato." header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{elencoQuietanzeController.duplica()}" process="@this" update="quietanze msg" oncomplete="PF('duplicaQuietanzaConfirmDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('duplicaQuietanzaConfirmDialog').hide()" />
+                    </p:confirmDialog> 
+                    
+                    <p:growl id="msg" showDetail="true" escape="false"/>
+                </div>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

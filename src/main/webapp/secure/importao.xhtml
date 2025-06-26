@@ -1,0 +1,59 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Importa ordinativi</ui:define>
+
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{importaOrdinativiController.init()}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+            <p:growl id="msg" showDetail="true" escape="false"/>
+
+            <h:panelGroup id="page" layout="block" styleClass="grid">
+                <div class="col-12 md:col-12 lg:col-12">
+                    <p:panel header="IMPORTAZIONE ORDINATIVI GEOCOS">
+                        <div class="grid formgrid">
+                            <div class="field col-3 md:col-3">
+                                <p:fileUpload value="#{importaOrdinativiController.documenti}" mode="simple" dragDropSupport="true" multiple="true" update="@form" 
+                                              cancelLabel="Annulla" uploadLabel="Carica" label="Seleziona documenti" widgetVar="uploadBtn">
+                                    <p:validateFile sizeLimit="67108864" allowTypes="/(\.|\/)(pdf)$/" />
+                                </p:fileUpload>
+                            </div>
+                            <div class="field col-2 md:col-2">
+                                <p:commandButton id="elabora" icon="pi pi-wrench" value="Elabora documenti" action="#{importaOrdinativiController.elabora()}" update="@form" ajax="false" widgetVar="elaboraBtn"
+                                                 onclick="PF('elaboraBtn').disabled = true;PF('uploadBtn').disabled = true;"/>
+                            </div>
+                        </div>
+                    </p:panel>
+
+                    <p:panel header="RISULTATO IMPORTAZIONE" style="min-height: 400px" rendered="#{importaOrdinativiController.result!=null}">
+                        <p:dataTable id='result' value="#{importaOrdinativiController.result}" var='r' rowStyleClass="#{r.error ? 'bad' : 'good'}">
+                            <p:column headerText="DOCUMENTO" style="width: 20%">
+                                #{r.file}
+                            </p:column>
+                            <p:column headerText="ESITO" style="width: 20%">
+                                #{r.messaggio}
+                            </p:column>
+                            <p:column headerText="NOTE">
+                                <h:outputText value="#{r.note}" styleClass="red" />
+                            </p:column>
+                            <f:facet name="footer" rendered="#{not importaOrdinativiController.allErrors(importaOrdinativiController.result)}">
+                                <p:commandButton id="vaiimportati" action="#{importaOrdinativiController.vediImportati()}" value="Vai agli importati" icon="pi pi-briefcase" />
+                            </f:facet>
+                        </p:dataTable>
+                    </p:panel>
+                </div>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

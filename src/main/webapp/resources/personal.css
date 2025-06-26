@@ -1,0 +1,195 @@
+/*
+Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/CascadeStyleSheet.css to edit this template
+*/
+/* 
+    Created on : 24-lug-2024, 12.24.15
+    Author     : riccardo.iovenitti
+*/
+
+.red {
+    color: red;
+}
+
+.green {
+    color: green;
+}
+
+.orange {
+    color: orange;
+}
+
+.card-header {
+    font-size: 29px !important;
+    justify-content: right !important;
+}
+
+.ellipsis {
+    word-wrap:normal;
+    white-space:nowrap;
+    overflow:hidden;
+    -o-text-overflow:ellipsis;
+    text-overflow:ellipsis;
+}
+
+.toggleswitch-box {
+    display: flex;
+    align-items: center;
+    /* justify-content: space-between; */
+    height: 1.75em;
+}
+
+.toggleswitch-box.toggleswitch-box-border {
+    padding: 5px 5px;
+    border-style: solid;
+    border-color: #00aae1;
+    border-width: 1px;
+    border-radius: 50px;
+}
+
+.toggleswitch-box.toggleswitch-box-border:hover {
+    border-color: #673AB7;
+    border-width: 2px;
+}
+
+.padding {
+    padding-left: 1rem;
+}
+
+.toright {
+    text-align: end;
+}
+
+.choose {
+    width: 30%;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.ordinativo {
+    background-color: #fcd7d7 !important;
+}
+
+.quietanza {
+    background-color: #d8ffc8 !important;
+}
+
+.movimento_virtuale {
+    background-color: #fff1ae !important;
+}
+
+.data {
+    background-color: #fff1ae;
+}
+
+.importo {
+    background-color: #CFDDF2;
+}
+
+.conto {
+    background-color: #e0f6b1;
+}
+
+.codice {
+    background-color: #e9e0f4;
+}
+
+.testo {
+    background-color: #f0d1d0;
+}
+
+.competenze {
+    background-color: #EDE8DC;
+}
+
+.tipologia {
+    background-color: whitesmoke;
+}
+
+.annocompetenza {
+    background-color: #d4ffea;
+}
+
+.bad {
+    background-color: #ffd5d5 !important;
+}
+
+.good {
+    background-color: #d9ffd5 !important;
+}
+
+.fit-width {
+    width: fit-content !important;
+}
+
+.lightgreen {
+    background-color: #d8ffc8 !important;
+}
+
+.lightyellow {
+    background-color: lemonchiffon !important;
+}
+
+.lightcyan {
+    background-color: #c8f8ff !important;
+}
+
+.choose {
+    width: 30%;
+}
+
+td.detail {
+    padding: 3px 4px !important;
+    border: 1px solid;
+    border-color: #BBB #D9D9D9 #DDD !important;
+    border-radius: 4px !important;
+    vertical-align: top;
+    font: 1em monospace;
+    text-align: left;
+    white-space: pre-wrap;
+    background: #F9F9F9;
+    outline: none;
+}
+th.detail {
+    border: 1px solid;
+    border-color: #BBB #D9D9D9 #DDD !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+}
+
+.full-space {
+    width: 100% !important;
+}
+
+.center {
+    text-align: center;
+}
+
+.group-single {
+}
+
+.group-even {
+    background-color: #f9ebca !important;
+}
+
+.group-odd {
+    background-color: #caf9f3 !important;
+}
+
+.word-wrap {
+    word-wrap: break-word;
+}
+
+.right {
+    text-align: right;
+}
+
+.dialog-fix {
+    z-index: 9998 !important;
+}
+
+.top-most {
+    z-index: 9999 !important;
+}

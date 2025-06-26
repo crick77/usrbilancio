@@ -1,0 +1,396 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                template="/WEB-INF/template.xhtml"
+                xmlns:pe="primefaces.extensions">
+
+    <ui:define name="title">Movimenti Virtuali Elenco</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{movimentiCompletiController.init()}" />
+        </f:metadata>        
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+            <p:growl id="msg" showDetail="true" escape="false"/>
+
+            <h:panelGroup id="page" layout="block" styleClass="grid">
+                <div class="col-12 md:col-12 lg:col-12">
+                    <p:panel header="ELENCO COMPLETO MOVIMENTI VIRTUALI" style="min-height: 400px">
+                        <h:panelGroup id="table" layout="block" styleClass="grid">
+                            <div class="col-11">
+                                <p:commandButton value="Nuovo" update="movimento-content" action="#{movimentiCompletiController.nuovo()}" process="@this" oncomplete="PF('movimentoDialog').show()" icon="pi pi-plus" />                                    
+                            </div>
+                            <div class="col-1" style="text-align: right;">
+                                <p:commandButton id="aggiornaMovimenti2" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{movimentiCompletiController.aggiornaMovimenti()}" process="@this" update="movimenti"/>
+                            </div> 
+                            <div class="col-12">
+                                <p:remoteCommand name="handleFilterEvent" process="@this" update="movimenti:totaleparziale" actionListener="#{movimentiCompletiController.aggiornaParziale()}" />
+                                <p:dataTable id="movimenti" value="#{movimentiCompletiController.movimenti}" var="mov" selectionMode="single" selection="#{movimentiCompletiController.movimento}" rowKey="#{mov.id}" stripedRows="true"
+                                             paginator="true" rows="100" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" filteredValue="#{movimentiCompletiController.movimentiFiltrati}" 
+                                             globalFilterFunction="#{movimentiCompletiController.filtroGlobale}" widgetVar="movimentiTable" size="small">
+                                    <p:ajax event="rowSelect" listener="#{movimentiCompletiController.aggiornaMovimenti()}" />
+                                    <p:ajax event="filter" oncomplete="handleFilterEvent();" />
+
+                                    <f:facet name="header">
+                                        <div class="flex">      
+                                            <div class="flex" style="width: 250px">
+                                                Totale:&#160;&#160;  
+                                                <h:outputText value="#{movimentiCompletiController.totale}" styleClass="#{movimentiCompletiController.totale lt 0 ? 'red' : ''}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </div>
+                                            <div class="flex justify-content-end" style="width: 100%">                                                
+                                                <p:selectOneMenu id="statocapfilter" value="#{movimentiCompletiController.statoCapitoloFilter}">                                                    
+                                                    <p:ajax event="change" process="@this" listener="#{movimentiCompletiController.filtraStatoCapitolo}" oncomplete="PF('movimentiTable').filter()"  />
+                                                    <f:selectItem itemValue="-1" itemLabel="STATO INDIFFERENTE" />
+                                                    <f:selectItem itemValue="0" itemLabel="APERTI" />
+                                                    <f:selectItem itemValue="1" itemLabel="CHIUSI" />
+                                                    <f:selectItem itemValue="2" itemLabel="IN ATTESA" />
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="flex justify-content-end" style="width: 50%">
+                                                <p:commandButton process="@this" value="Excel" icon="pi pi-file-excel" styleClass="mr-2 mb-2 ui-button-outlined ui-button-success" title="Esporta elenco tabella in Excel">
+                                                    <p:dataExporter type="xlsxstream" target="movimenti" fileName="movimentivirtuali" />
+                                                </p:commandButton>
+                                                <p:inputText id="globalFilter" onkeyup="PF('movimentiTable').filter()" style="width:300px" placeholder="Ricerca globale">                                                    
+                                                    <p:ajax event="keyup" process="@this" listener="#{movimentiCompletiController.aggiornaParziale()}" update="totaleparziale"  />
+                                                </p:inputText>&#160;
+                                                <p:commandButton value="Pulisci filtri" icon="pi pi-filter" action="#{movimentiCompletiController.clearFilters(true)}" process="@this" update="@form" styleClass="ui-button-help" />
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column headerText="COMPETENZA/CAPITOLO" style="width: 15%" filterBy="#{movimentiCompletiController.decodeCapComp(mov.idCompetenza).anno} | #{movimentiCompletiController.decodeCapComp(mov.idCompetenza).descrizione}" filterFunction="#{movimentiCompletiController.filterFunctionCapitoli}" exportFunction="#{tableExporterController.decodeCompetenza(mov.idCompetenza)}">
+                                        <f:facet name="filter">
+                                            <p:selectCheckboxMenu widgetVar="capcompcbm" label="Nessuna selezione" updateLabel="true" selectedLabel="Selezione effettuata." onchange="PF('movimentiTable').filter()" styleClass="custom-filter" style="min-width: 100% !important" filter="true" filterMatchMode="contains" value="#{movimentiCompletiController.selectedCapitoli}">
+                                                <f:selectItems value="#{movimentiCompletiController.capitoli}" />                                                                                                   
+                                            </p:selectCheckboxMenu>
+                                        </f:facet>
+                                        #{movimentiCompletiController.decodeCapComp(mov.idCompetenza).anno} | #{movimentiCompletiController.decodeCapComp(mov.idCompetenza).descrizione}
+                                    </p:column> 
+                                    <p:column style="width: 1%" exportHeaderValue="STATO" exportFunction="#{tableExporterController.decodeStato(movimentiCompletiController.decodeCapComp(mov.idCompetenza).chiuso)}" >
+                                        <f:facet name="header">
+                                            <i jsf:id="statocap" class="pi pi-lock" /><p:tooltip for="statocap" value="STATO DEL CAPITOLO" position="top" />
+                                        </f:facet>                                         
+                                        <ui:fragment rendered="#{movimentiCompletiController.decodeCapComp(mov.idCompetenza).chiuso eq 1}">
+                                            <i jsf:id="chiuso" class="pi pi-check-circle" /><p:tooltip for="chiuso" position="top" value="Capitolo chiuso" />
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{movimentiCompletiController.decodeCapComp(mov.idCompetenza).chiuso eq 2}">
+                                            <i jsf:id="inattesa" class="pi pi-clock" /><p:tooltip for="inattesa" position="top" value="Capitolo in attesa di chiusura" />
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column field="idCodice" headerText="CONTO" style="width: 6%" filterMatchMode="exact" exportFunction="#{tableExporterController.decodeConto(mov.idCodice)}">
+                                        <f:facet name="filter">                                           
+                                            <p:selectOneMenu value="#{movimentiCompletiController.movimentoCodiceFiltro}" panelStyle="width:400px" filter="true" filterMatchMode="contains" var="codice" onchange="PF('movimentiTable').filter()" styleClass="custom-filter" style="min-width: 100% !important;">
+                                                <f:selectItem itemValue="#{null}" itemLabel="*" noSelectionOption="true" />
+                                                <f:selectItems value="#{movimentiCompletiController.codici}" var="c" itemValue="#{c.id}" itemLabel="#{formatter.codiceComposto(c)}" />
+                                                <p:ajax event="change" process="@this" listener="#{movimentiCompletiController.aggiornaParziale()}" update="totaleparziale"  />
+
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Conto"/>
+                                                    </f:facet>
+                                                    <h:outputText value="#{formatter.codiceComposto(movimentiCompletiController.decodeCodice(codice))}" />
+                                                </p:column>
+
+                                                <p:column>
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Descrizione"/>
+                                                    </f:facet>
+                                                    <h:outputText value="#{movimentiCompletiController.decodeCodice(codice).descrizione}"/>
+                                                </p:column>
+                                            </p:selectOneMenu>
+                                        </f:facet>
+                                        <ui:fragment rendered="#{not empty mov.idCodice}">
+                                            <i jsf:id="infoCodice" class="pi pi-info-circle" />
+                                            #{formatter.codiceComposto(movimentiCompletiController.decodeCodice(mov.idCodice))}<p:tooltip for="infoCodice" value="#{movimentiCompletiController.decodeCodice(mov.idCodice).descrizione}" position="bottom" />
+                                        </ui:fragment>
+                                    </p:column>                                 
+                                    <p:column headerText="DOC." style="width: 4%" field="idTipoDocumento" filterMatchMode="exact" exportFunction="#{tableExporterController.decodeDocumento(mov.idTipoDocumento)}">
+                                        <f:facet name="filter">
+                                            <p:selectOneMenu onchange="PF('movimentiTable').filter()" styleClass="custom-filter" style="width: 100%;">
+                                                <f:selectItem itemLabel="*" itemValue="#{null}" noSelectionOption="true" />
+                                                <f:selectItems value="#{movimentiCompletiController.tipiDocumentoList}" var="td" itemLabel="#{td.descrizione}" itemValue="#{td.id}" />
+                                            </p:selectOneMenu>
+                                        </f:facet>
+                                        #{movimentiCompletiController.decodeTipoDocumento(mov.idTipoDocumento).descrizione}
+                                    </p:column>
+                                    <p:column headerText="N." style="width: 4%" field="numeroDocumento" filterMatchMode="contains" sortFunction="#{sorter.sortStringAsInt}" sortBy="#{mov.numeroDocumento}" exportValue="#{mov.numeroDocumento}">
+                                        #{mov.numeroDocumento}
+                                    </p:column>
+                                    <p:column field="dataDocumento" headerText="DEL" style="width: 9%;" filterMatchMode="between" exportFunction="#{tableExporterController.decodeDate(mov.dataDocumento)}">
+                                        <f:facet name="filter">
+                                            <p:datePicker selectionMode="range" onchange="PF('movimentiTable').filter()" onblur="PF('movimentiTable').filter()" monthNavigator="true" yearNavigator="true" mask="true" pattern="dd-MM-yyyy" showOnFocus="false" />                                            
+                                        </f:facet>
+                                        <h:outputText value="#{mov.dataDocumento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="N. PAG." style="width: 4%" field="numeroPagamento" filterMatchMode="contains" sortFunction="#{sorter.sortStringAsInt}" sortBy="#{mov.numeroPagamento}" exportValue="#{mov.numeroPagamento}">
+                                        #{mov.numeroPagamento}
+                                    </p:column>
+                                    <p:column field="dataPagamento" headerText="DEL" style="width: 9%;" filterMatchMode="between" exportFunction="#{tableExporterController.decodeDate(mov.dataPagamento)}">
+                                        <f:facet name="filter">
+                                            <p:datePicker selectionMode="range" onchange="PF('movimentiTable').filter()" onblur="PF('movimentiTable').filter()" monthNavigator="true" yearNavigator="true" mask="true" pattern="dd-MM-yyyy" showOnFocus="false" />
+                                        </f:facet>
+                                        <h:outputText value="#{mov.dataPagamento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="NOMINATIVO" field="nominativo" filterMatchMode="contains" exportValue="#{mov.nominativo}">
+                                        <h:outputText value="#{mov.nominativo}" />
+                                    </p:column>             
+                                    <p:column headerText="DESCRIZIONE" field="descrizioneRagioneria" filterMatchMode="contains" exportValue="#{empty mov.descrizioneRagioneria ? '' : mov.descrizioneRagioneria}">
+                                        <h:outputText value="#{mov.descrizioneRagioneria}" />
+                                    </p:column>
+                                    <p:column headerText="IMPORTO" style="width: 5%; text-align: right;" field="importo" filterMatchMode="contains" exportFunction="#{tableExporterController.decodeImpoto(mov.importo)}">
+                                        <h:outputText value="#{mov.importo}" styleClass="#{mov.importo lt 0 ? 'red' : ''}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column style="width: 9%; text-align: center" exportHeaderValue="NOTE" exportValue="#{empty mov.note ? '' : mov.note}">
+                                        <p:commandButton id="note" icon="pi pi-book" title="Note" type="button" styleClass="ui-button-help" disabled="#{empty mov.note}"/>&#160;
+                                        <p:overlayPanel for="note" style="width:350px" showCloseIcon="true" >
+                                            <h5>Note</h5>
+                                            <p>#{mov.note}</p>
+                                        </p:overlayPanel>                                        
+                                        <p:commandButton id="documento" icon="pi pi-file" title="Documento" process="@this" update=":form:documento-content :form:msg" onclick="PF('documentoDialog').show()" disabled="#{empty mov.nomefile}">
+                                            <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
+                                        </p:commandButton>&#160;
+                                        <p:menuButton value="Azioni" styleClass="ui-button-danger">
+                                            <p:menuitem id="modifica" icon="pi pi-pencil" value="Modifica" action="#{movimentiCompletiController.modifica()}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()" rendered="#{not movimentiCompletiController.chiuso(mov)}">                                                
+                                                <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="mostra" icon="pi pi-eye" value="Mostra" action="#{movimentiCompletiController.mostra()}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()" rendered="#{movimentiCompletiController.chiuso(mov)}">                                                
+                                                <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="duplica" icon="pi pi-clone" value="Duplica" action="#{movimentiCompletiController.duplica()}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()">
+                                                <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
+                                            </p:menuitem>
+                                            <p:separator rendered="#{not movimentiCompletiController.chiuso}"/>
+                                            <p:menuitem id="elimina" icon="pi pi-trash" value="Elimina" process="@this" oncomplete="PF('deleteMovimentoDialog').show()" rendered="#{not movimentiCompletiController.chiuso(mov)}">
+                                                <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
+                                            </p:menuitem>
+                                            <p:menuitem id="trasformaq" icon="pi pi-objects-column" value="Trasf. in Quietanza" title="Trasforma in quietanza" process="@this" oncomplete="PF('trasformaDialog').show()" rendered="#{not movimentiCompletiController.chiuso(mov)}">
+                                                <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
+                                                <f:setPropertyActionListener value="#{false}" target="#{movimentiCompletiController.usaDescrizioneDocumento}" />
+                                                <f:setPropertyActionListener value="#{false}" target="#{movimentiCompletiController.usaOrdinanteDocumento}" />
+                                            </p:menuitem>
+                                        </p:menuButton>                                        
+                                    </p:column>
+
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column colspan="10" style="text-align:right" footerText="Totale parziale:"/>
+                                            <p:column style="text-align:right">
+                                                <f:facet name="footer" >
+                                                    <h:outputText value="#{movimentiCompletiController.totaleParziale}" id="totaleparziale" styleClass="#{movimentiCompletiController.totaleParziale lt 0 ? 'red' : ''}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </div>
+                            <div class="col-11">
+                                <p:commandButton value="Nuovo" update="movimento-content" action="#{movimentiCompletiController.nuovo()}" process="@this" oncomplete="PF('movimentoDialog').show()" icon="pi pi-plus" />                                    
+                            </div>
+                            <div class="col-1" style="text-align: right;">
+                                <p:commandButton id="aggiornaMovimenti" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{movimentiCompletiController.aggiornaMovimenti()}" process="@this" update="movimenti"/>
+                            </div>                            
+                        </h:panelGroup>
+
+                        <p:dialog id="movimento-content" header="#{movimentiCompletiController.azione} Movimento Virtuale" showEffect="fade" modal="true" widgetVar="movimentoDialog" responsive="true" width="30%">
+                            <p:outputPanel id="movimento-data" class="ui-fluid grid formgrid" >
+                                <ui:fragment rendered="#{(movimentiCompletiController.azione eq 'Modifica') or (movimentiCompletiController.azione eq 'Duplica') or (movimentiCompletiController.azione eq 'Mostra')}">
+                                    <div class="field col-12">
+                                        <p:outputLabel for="capcompprov">Capitolo/Competenza origine</p:outputLabel>
+                                        <ui:fragment rendered="#{movimentiCompletiController.movimentoCapComp.chiuso eq 1}">
+                                            <span class="red bold">&#160;[CHIUSO]</span>
+                                        </ui:fragment>
+                                        <p:inputText id="capcompprov" value="#{movimentiCompletiController.movimentoCapComp.anno} | #{movimentiCompletiController.movimentoCapComp.descrizione}" readonly="true"/>
+                                    </div>        
+                                </ui:fragment>
+                                <ui:fragment rendered="#{(movimentiCompletiController.azione eq 'Modifica') or (movimentiCompletiController.azione eq 'Duplica') or (movimentiCompletiController.azione eq 'Nuovo')}">
+                                    <div class="field col-12">
+                                        <p:outputLabel for="dlgcapcomp">Capitolo/Competenza destinazione</p:outputLabel>                                   
+                                        <ui:fragment rendered="#{movimentiCompletiController.movimentoCapComp.chiuso eq 2}">
+                                            <span class="orange bold">&#160;[IN ATTESA]</span>
+                                        </ui:fragment>
+                                        <p:selectOneMenu id="dlgcapcomp" value="#{movimentiCompletiController.movimentoCapComp}" hideNoSelectionOption="#{not empty movimentiCompletiController.movimentoCapComp}" converter="capCompConverter"
+                                                         panelStyle="width:600px" filter="true" filterMatchMode="contains" filterNormalize="true" var="capComp" required="true" requiredMessage="Capitolo/Competenza obbligario">                                
+                                            <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                            <f:selectItems value="#{movimentiCompletiController.capCompAperti}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione} - #{c.anno}" />
+
+                                            <p:column style="width: 10%">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Anno" />
+                                                </f:facet>
+                                                <h:outputText value="#{capComp.anno}" />
+                                            </p:column>
+                                            <p:column>
+                                                <f:facet name="header">
+                                                    <h:outputText value="Capitolo" />
+                                                </f:facet>
+                                                <h:outputText value="#{capComp.descrizione}" />
+                                            </p:column>                                        
+                                            <p:column style="width: 10%; text-align: center">
+                                                <f:facet name="header">
+                                                    <h:outputText value="Chiuso" />
+                                                </f:facet>
+                                                <ui:fragment rendered="#{capComp.chiuso==1}">
+                                                    <i class="pi pi-check-circle" />
+                                                </ui:fragment>
+                                            </p:column>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </ui:fragment>
+
+                                <div class="field col-12">
+                                    <p:outputLabel for="conto">Conto</p:outputLabel>
+                                    <p:selectOneMenu id="conto" value="#{movimentiCompletiController.movimentoCodice}" required="true" requiredMessage="Conto obbligatorio" hideNoSelectionOption="#{not empty movimentiCompletiController.movimentoCodice}"
+                                                     panelStyle="width:400px" filter="true" filterMatchMode="contains" var="codice" converter="codiciConverter">
+                                        <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                        <f:selectItems value="#{movimentiCompletiController.codici}" var="c" itemValue="#{c}" itemLabel="#{formatter.codiceComposto(c)}: #{c.descrizione}" />
+
+                                        <p:column style="width: 12%">
+                                            <h:outputText value="#{formatter.codiceComposto(codice)}" />
+                                        </p:column>
+
+                                        <p:column>
+                                            <f:facet name="header">
+                                                <h:outputText value="Descrizione"/>
+                                            </f:facet>
+                                            <h:outputText value="#{codice.descrizione}"/>
+                                        </p:column>
+                                    </p:selectOneMenu>
+                                </div>                                
+                                <div class="field col-4">
+                                    <p:outputLabel for="tipodocumento">Tipo Documento</p:outputLabel>
+                                    <p:selectOneMenu id="tipodocumento" value="#{movimentiCompletiController.movimentoTipoDocumento}" hideNoSelectionOption="#{not empty movimentiCompletiController.movimentoTipoDocumento}"
+                                                     converter="tipoDocumentoConverter" required="true" requiredMessage="Tipo documento obbligatorio">
+                                        <f:selectItem itemValue="#{null}" itemLabel="Selezionare..." noSelectionOption="true" />
+                                        <f:selectItems value="#{movimentiCompletiController.tipiDocumento}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione}" />                               
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="field col-4">
+                                    <p:outputLabel for="numerodocumento">N. Documento</p:outputLabel>
+                                    <p:inputText id="numerodocumento" value="#{movimentiCompletiController.movimento.numeroDocumento}" maxlength="32" /> 
+                                </div>
+                                <div class="field col-4">
+                                    <p:outputLabel for="datadocumento">Data Documento</p:outputLabel>
+                                    <p:datePicker id="datadocumento" value="#{movimentiCompletiController.movimento.dataDocumento}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false"> 
+                                        <p:ajax event="change" process="@this" />
+                                    </p:datePicker>
+                                </div>
+                                <div class="field col-4">
+                                    <p:outputLabel for="numpagamento">N. Pagamento</p:outputLabel>
+                                    <p:inputText id="numpagamento" value="#{movimentiCompletiController.movimento.numeroPagamento}" maxlength="32"/> 
+                                </div>
+                                <div class="field col-4">
+                                    <p:outputLabel for="datapagmento">Data Pagamento</p:outputLabel>
+                                    <p:datePicker id="datapagmento" value="#{movimentiCompletiController.movimento.dataPagamento}" showTime="false" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false" /> 
+                                </div>
+                                <div class="field col-12">
+                                    <p:outputLabel for="@next">Nominativo</p:outputLabel>
+                                    <p:inputText id="nominativo" value="#{movimentiCompletiController.movimento.nominativo}" maxlength="255" required="true" requiredMessage="Nominativo obbligatorio"/>
+                                </div> 
+                                <div class="field col-12">
+                                    <p:outputLabel for="descrizionerts">Descrizione</p:outputLabel>
+                                    <p:inputText id="descrizionerts" value="#{movimentiCompletiController.movimento.descrizioneRagioneria}" maxlength="255" />                                
+                                </div> 
+                                <div class="field col-3">
+                                    <p:outputLabel for="importo">Importo</p:outputLabel>
+                                    <p:inputNumber id="importo" value="#{movimentiCompletiController.movimento.importo}" required="true" requiredMessage="Importo obbligatorio" 
+                                                   decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />                                
+                                </div>                                
+                                <div class="field col-12">
+                                    <p:outputLabel for="note">Note</p:outputLabel>
+                                    <p:inputTextarea id="note" value="#{movimentiCompletiController.movimento.note}" rows="2" maxlength="255"/>
+                                </div>
+                                <ui:fragment rendered="#{not movimentiCompletiController.chiuso(movimentiCompletiController.movimento) or (movimentiCompletiController.azione eq 'Modifica') or (movimentiCompletiController.azione eq 'Duplica') or (movimentiCompletiController.azione eq 'Nuovo')}">
+                                    <div class="field col-12">                                        
+                                        <p:outputLabel for="documento">Documento</p:outputLabel>
+                                        <p:fileUpload id="documento" value="#{movimentiCompletiController.documento}" update="msg" mode="simple" skinSimple="true"  label="Seleziona PDF"
+                                                      accept=".pdf" style="width: 100%">
+                                            <p:validateFile sizeLimit="67108864" allowTypes="/(\.|\/)(pdf)$/" />
+                                        </p:fileUpload>
+                                    </div>
+                                    <ui:fragment rendered="#{not empty movimentiCompletiController.movimento.nomefile and not empty movimentiCompletiController.movimento.nomefileLocale}">
+                                        <div class="field col-12">
+                                            <span class="red">IL RECORD CONTIENE GIA' UN DOCUMENTO. SELEZIONANDONE UN ALTRO ESSO VERRA' SOSTITUITO.</span>
+                                        </div>
+                                    </ui:fragment>
+                                </ui:fragment>
+                            </p:outputPanel>
+                            <f:facet name="footer">
+                                <p:commandButton value="Salva" icon="pi pi-check" action="#{movimentiCompletiController.salva()}" update="movimenti movimento-data msg" process="movimento-content @this" rendered="#{(not movimentiCompletiController.chiuso(movimentiCompletiController.movimento)) or (movimentiCompletiController.azione eq 'Modifica') or (movimentiCompletiController.azione eq 'Duplica') or (movimentiCompletiController.azione eq 'Nuovo')}" />
+                                <p:commandButton value="Annulla" icon="pi pi-times" update="page" immediate="true" onclick="PF('movimentoDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:dialog header="Documento" showEffect="fade" modal="true" widgetVar="documentoDialog" responsive="true" width="60%" dynamic="true">                    
+                            <p:outputPanel id="documento-content" class="ui-fluid" >                                 
+                                <pe:documentViewer id="docviewer" value="#{docController.stream}" width="100%" height="500">
+                                    <f:param name="x" value="#{movimentiCompletiController.timeStamp}" />
+                                    <f:param name="scope" value="MV" />
+                                    <f:param name="id" value="#{movimentiCompletiController.movimento.id}" />
+                                </pe:documentViewer>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">                       
+                                <p:commandButton value="Chiudi" icon="pi pi-times" update="page" immediate="true" onclick="PF('documentoDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteMovimentoDialog" showEffect="fade" width="300" message="Eliminare il movimento virtuale? L'operazione sarà irreversibile!" header="Conferma" severity="warn">
+                            <p:commandButton value="Si" icon="pi pi-check" actionListener="#{movimentiCompletiController.elimina()}" process="@this" update="movimenti msg" oncomplete="PF('deleteMovimentoDialog').hide()"/>
+                            <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('deleteMovimentoDialog').hide()" />
+                        </p:confirmDialog>
+                    </p:panel>
+                </div>
+            </h:panelGroup>
+
+            <p:dialog header="Trasforma in Quietanza" showEffect="fade" modal="true" widgetVar="trasformaDialog" responsive="true" width="40%">                    
+                <p:outputPanel id="documentoupload-content" class="ui-fluid" >  
+                    <div class="col-12">
+                        <p:outputLabel for="@next">Tipo RTS</p:outputLabel>
+                        <p:selectOneMenu id="tiports" value="#{movimentiCompletiController.tipoRts}" converter="tipoRtsConverter" required="true" requiredMessage="Tipo RTS obbligatorio!" hideNoSelectionOption="#{not empty movimentiCompletiController.tipoRts}">
+                            <f:selectItem itemValue="#{null}" itemLabel="Selezionare una voce dall'elenco..." noSelectionOption="true" />
+                            <f:selectItems value="#{movimentiCompletiController.tipiRts}" var="t" itemValue="#{t}" itemLabel="#{t.codice} [#{t.descrizione}]" />
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="col-12">
+                        <p:outputLabel for="@next">Usa descrizione documento</p:outputLabel>
+                        <p:toggleSwitch id="prefdescr" value="#{movimentiCompletiController.usaDescrizioneDocumento}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                    </div>
+                    <div class="col-12">
+                        <p:outputLabel for="@next">Usa ordinante documento</p:outputLabel>
+                        <p:toggleSwitch id="preford" value="#{movimentiCompletiController.usaOrdinanteDocumento}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                    </div>
+                    <div class="col-12">
+                        <p:outputLabel value="I dati del movimento virtuale andranno a completare quelli del file caricato. Successivamente il movimento virtuale verrà rimosso." /><br/><br/>
+                        <p:fileUpload value="#{movimentiCompletiController.documento}" mode="simple" dragDropSupport="true" multiple="false" id="file" 
+                                      cancelLabel="Annulla" uploadLabel="Carica" label="Seleziona documento" widgetVar="uploadBtn">
+                            <p:validateFile sizeLimit="67108864" allowTypes="/(\.|\/)(pdf)$/" />
+                        </p:fileUpload>
+                    </div>
+                </p:outputPanel>
+
+                <f:facet name="footer">                       
+                    <p:commandButton value="Carica" icon="pi pi-upload" process="@this file tiports" update="msg table tiports" action="#{movimentiCompletiController.trasforma()}" class="ui-button-primary" />
+                    <p:commandButton value="Chiudi" icon="pi pi-times" process="@none" immediate="true" onclick="PF('trasformaDialog').hide()" class="ui-button-secondary" />
+                </f:facet>
+            </p:dialog>            
+        </h:form>    
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,102 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Rettifiche IVA</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{rettificheIvaController.init()}" />
+        </f:metadata>
+    </ui:define>
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">
+                        <h4>Gestione Rettifiche IVA</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="col-6">
+                    <div class="card">                          
+                        <div class="grid" jsf:id="rettifichePanel">
+                            <div class="col-12">
+                                <p:remoteCommand name="refresh" update="rettifiche" />
+                                <p:dataTable id="rettifiche" value="#{rettificheIvaController.rettifiche}" var="r" rowKey="#{r.anno}" widgetVar="rettificheTable" size="small" editable="true" stripedRows="true">
+                                    <p:ajax event="rowEdit" listener="#{rettificheIvaController.onRowEdit}" update=":form:msg :form:nuovo :form:aggiorna :form:elimina"/>
+                                    <p:ajax event="rowEditCancel" listener="#{rettificheIvaController.onRowCancel}" update=":form:msg :form:nuovo :form:aggiorna :form:elimina"/>
+                                    <p:ajax event="rowEditInit" listener="#{rettificheIvaController.onRowEditInit}" update=":form:nuovo :form:aggiorna :form:elimina"/>
+                                    
+                                    <p:column headerText="ANNO" style="width: 15%">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{r.anno}"/>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:spinner id="anno" value="#{r.anno}" style="width:100%" min="2017" thousandSeparator="" />
+                                            </f:facet>
+                                        </p:cellEditor>                                        
+                                    </p:column>
+                                    <p:column headerText="IVA ANAGRAFICA" styleClass="right">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{r.ivaAnagrafica}"/>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputNumber id="ivaanagrafica" value="#{r.ivaAnagrafica}" required="true" requiredMessage="IVA anagrafica obbligatoria" 
+                                                                decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />        
+                                            </f:facet>
+                                        </p:cellEditor>                                        
+
+                                    </p:column>                                                                
+                                    <p:column headerText="IVA PAGATA" styleClass="right">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{r.ivaPagata}"/>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputNumber id="ivapagata" value="#{r.ivaPagata}" required="true" requiredMessage="IVA pagata obbligatoria" 
+                                                                decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />        
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>                                                                
+                                    <p:column style="width:12rem" styleClass="center">
+                                        <p:rowEditor editTitle="Modifica" cancelTitle="Annulla" saveTitle="Salva"/>
+                                    </p:column>
+                                    <p:column style="width:6rem">   
+                                        <p:commandButton id="elimina" icon="pi pi-trash" styleClass="rounded-button ui-button-flat ui-button-danger" disabled="#{rettificheIvaController.editing}" action="#{rettificheIvaController.elimina(r)}" 
+                                                         process="@this" update="rettifiche :form:msgs :form:msg :form:nuovo :form:aggiorna :form:elimina" title="Elimina">
+                                            <p:confirm type="popup" header="Elimina" message="Eliminare il record selezionato?" icon="pi pi-exclamation-triangle"/>
+                                        </p:commandButton>
+                                    </p:column>                                    
+                                </p:dataTable>
+                            </div>
+                            <div class="col-1">
+                                <p:commandButton id="nuovo" value="Nuovo" icon="pi pi-plus-circle" styleClass="ui-button-primary" action="#{rettificheIvaController.nuovo()}" process="@this" update="@form" disabled="#{rettificheIvaController.editing}" />
+                            </div>                                                   
+                            <div class="col-9" />
+                            <div class="col-1">
+                                <p:commandButton id="aggiorna" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{rettificheIvaController.init()}" process="@this" update="@form" disabled="#{rettificheIvaController.editing}" />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>                     
+            </div>
+
+            <p:growl id="msg" showDetail="true" escape="false"/>
+
+            <p:confirmPopup global="true">
+                <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no"/>
+                <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes ui-button-flat" />
+            </p:confirmPopup>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,55 @@
+<ui:composition
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets"
+    xmlns:p="primefaces"
+    xmlns:pv="http://primefaces.org/verona">
+
+    <div class="layout-menu-wrapper">
+        <div class="layout-menu-container">
+            <h:form id="menuForm">
+                <pv:menu widgetVar="VeronaMenuWidget">
+                    <p:menuitem id="m_dashboard" value="Dashboard" icon="pi pi-fw pi-home" outcome="/secure/index"/>
+                    <p:submenu id="m_commissario" label="Commissario" icon="pi pi-fw pi-warehouse">                        
+                        <p:menuitem id="m_situazione" value="Situazione" icon="pi pi-fw pi-camera" outcome="/secure/situazione"/>
+                    </p:submenu>
+                    <p:submenu id="m_entrate" label="Entrate" icon="pi pi-fw pi-download">                        
+                        <p:menuitem id="m_capitoli" value="Capitoli/Competenze" icon="pi pi-fw pi-wallet" outcome="/secure/capitoli"/>
+                        <p:divider />
+                        <p:menuitem id="m_quietanze" value="Quietanze" icon="pi pi-fw pi-inbox" outcome="/secure/quietanze"/>
+                        <!-- <p:menuitem id="m_importaq" value="Importa" icon="pi pi-fw pi-file-import" outcome="/secure/importaq"/> -->
+                        <p:menuitem id="m_importaqortes" value="Importa Or.Te.S." icon="pi pi-fw pi-file-import" outcome="/secure/importaqortes"/>
+                        <p:menuitem id="m_elencoq" value="Elenco Quietanze" icon="pi pi-fw pi-inbox" outcome="/secure/elencoq"/>
+                    </p:submenu>
+                    <p:submenu id="m_usicte" label="Uscite" icon="pi pi-fw pi-upload">
+                        <p:menuitem id="m_ordinativi" value="Ordinativi" icon="pi pi-fw pi-file-export" outcome="/secure/ordinativi"/>
+                        <p:menuitem id="m_iva" value="IVA" icon="pi pi-fw pi-euro" outcome="/secure/iva"/>
+                        <p:menuitem id="m_ritenuta" value="Ritenuta" icon="pi pi-fw pi-cart-arrow-down" outcome="/secure/ritenuta"/>
+                        <!-- <p:menuitem id="m_importao" value="Importa Geocos" icon="pi pi-fw pi-file-import" outcome="/secure/importao"/> -->
+                        <p:menuitem id="m_importaortes" value="Importa Or.Te.S." icon="pi pi-fw pi-file-import" outcome="/secure/importaortes"/>
+                        <p:menuitem id="m_importati" value="Importati" icon="pi pi-fw pi-cog" outcome="/secure/importati"/>
+                        <p:menuitem id="m_incompleti" value="Incompleti" icon="pi pi-fw pi-sitemap" outcome="/secure/incompleti"/>
+                        <p:menuitem id="m_elencoo" value="Elenco Ordinativi" icon="pi pi-fw pi-inbox" outcome="/secure/elencoo"/>
+                    </p:submenu>
+                    <p:submenu id="m_contabilita" label="Contabilita" icon="pi pi-fw pi-arrow-right-arrow-left">
+                        <p:menuitem id="m_movvirt" value="Movimenti Virtuali" icon="pi pi-fw pi-money-bill" outcome="/secure/movimenti"/>
+                        <p:menuitem id="m_movvirtc" value="Elenco completo movimenti" icon="pi pi-fw pi-money-bill" outcome="/secure/movimentic"/>
+                        <p:menuitem id="m_rettificheiva" value="Rettifiche IVA" icon="pi pi-fw pi-window-maximize" outcome="/secure/rettificheiva"/>
+                    </p:submenu>
+                    <p:submenu id="m_stampe" label="Stampe" icon="pi pi-fw pi-print">
+                        <!-- <p:menuitem id="m_dastampare" value="Da Stampare" icon="pi pi-fw pi-list-check" outcome="/secure/stampare"/> -->
+                        <p:menuitem id="m_consolidato" value="Da Consolidare" icon="pi pi-fw pi-database" outcome="/secure/consolidare"/>                        
+                    </p:submenu>
+                    <p:submenu id="m_altro" label="Altro" icon="pi pi-fw pi-shopping-bag">
+                        <p:menuitem id="m_ricerca" value="Ricerca globale" icon="pi pi-fw pi-search" outcome="/secure/ricerca"/>
+                        <p:menuitem id="m_codici" value="Gestione conti" icon="pi pi-fw pi-qrcode" outcome="/secure/codici"/>
+                        <p:menuitem id="m_rts" value="Gestione tipi RTS" icon="pi pi-fw pi-database" outcome="/secure/rts"/>
+                        <p:menuitem id="m_log" value="Registro operazioni" icon="pi pi-fw pi-book" outcome="/secure/logop" rendered="#{activeUser.currentUser.attributes.admin eq 1}"/>
+                    </p:submenu>
+                    <p:menuitem id="m_uscita" value="Uscita" icon="pi pi-fw pi-sign-out" outcome="/secure/uscita"/>
+                </pv:menu>
+            </h:form>
+        </div>
+    </div>
+</ui:composition>

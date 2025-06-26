@@ -1,0 +1,188 @@
+<ui:composition 
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets"
+    xmlns:p="primefaces"
+    xmlns:pv="http://primefaces.org/verona"
+    xmlns:c="jakarta.tags.core">
+
+    <div class="topbar">
+        <h:form id="topbarForm">
+            <div class="topbar-main">
+                <a href="#" id="menu-button">
+                    <span class="pi pi-bars"></span>
+                </a>
+                <p:graphicImage name="images/libra.svg" library="verona-layout" styleClass="logo"/>
+                <div class="app-name">
+                    USRBILANCIO
+                </div>
+
+                <a href="#" id="user-display">
+                    <span class="username">#{activeUser.currentUser.username}</span>
+                    <span class="userrole">#{activeUser.currentUser.attributes.admin eq 1 ? 'Admin' : 'Utente'}</span>
+                    <p:graphicImage name="images/avatar/#{activeUser.currentUser.attributes.gender.toLowerCase()}.svg" library="verona-layout" />
+                </a>
+
+<!--                    
+                <ul id="topbar-menu" class="fadeInDown animated">
+                    <li class="search-item">
+                        <div>
+                            <p:inputText type="text" placeholder="Search" />
+                            <span class="pi pi-search"></span>
+                        </div>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="topbar-icon pi pi-fw pi-user"></i>
+                            <span class="topbar-item-name">PROFILE</span>
+                        </a>
+                        <ul>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-user"></i>
+                                    <span>Profile</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-lock"></i>
+                                    <span>Privacy</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-cog"></i>
+                                    <span>Settings</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-sign-out"></i>
+                                    <span>Logout</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="topbar-icon pi pi-fw pi-cog"></i>
+                            <span class="topbar-item-name">SETTINGS</span>
+                        </a>
+                        <ul>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-palette"></i>
+                                    <span>Change Theme</span>
+                                    <span class="topbar-submenuitem-badge">4</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-star"></i>
+                                    <span>Favorites</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-lock"></i>
+                                    <span>Lock Screen</span>
+                                    <span class="topbar-submenuitem-badge">2</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-image"></i>
+                                    <span>Wallpaper</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="topbar-icon material-icons animated swing pi pi-fw pi-envelope"></i>
+                            <span class="topbar-item-name">MESSAGES</span>
+                            <span class="topbar-badge animated rubberBand">4</span>
+                        </a>
+                        <ul>
+                            <li role="menuitem">
+                                <a href="#" class="topbar-message">
+                                    <p:graphicImage name="images/avatar1.png" library="verona-layout" width="35"/>
+                                    <span>Give me a call</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#" class="topbar-message">
+                                    <p:graphicImage name="images/avatar2.png" library="verona-layout" width="35"/>
+                                    <span>Reports attached</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#" class="topbar-message">
+                                    <p:graphicImage name="images/avatar3.png" library="verona-layout" width="35"/>
+                                    <span>About your invoice</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#" class="topbar-message">
+                                    <p:graphicImage name="images/avatar2.png" library="verona-layout" width="35"/>
+                                    <span>Meeting today</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#" class="topbar-message">
+                                    <p:graphicImage name="images/avatar4.png" library="verona-layout" width="35"/>
+                                    <span>Out of office</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">
+                            <i class="topbar-icon pi pi-fw pi-bell"></i>
+                            <span class="topbar-item-name">NOTIFICATIONS</span>
+                            <span class="topbar-badge animated rubberBand">2</span>
+                        </a>
+                        <ul>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-sliders-h"></i>
+                                    <span>Pending tasks</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-calendar"></i>
+                                    <span>Meeting today</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-download"></i>
+                                    <span>Download</span>
+                                </a>
+                            </li>
+                            <li role="menuitem">
+                                <a href="#">
+                                    <i class="pi pi-fw pi-ticket"></i>
+                                    <span>Book flight</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+-->
+            </div>
+        </h:form>
+        
+        <c:choose>
+            <c:when test="#{activeUser.currentUser.attributes.pubblica==1}">
+                <ui:include src="./menup.xhtml" />
+            </c:when>
+            <c:otherwise>
+                <ui:include src="./menu.xhtml" />
+            </c:otherwise>
+        </c:choose>        
+    </div>
+
+</ui:composition>

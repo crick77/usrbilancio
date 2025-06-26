@@ -1,0 +1,51 @@
+<!DOCTYPE html [
+    <!ENTITY nbsp "&#160;"> 
+]> 
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="primefaces">
+    <f:view transient="true">
+        <h:head>
+            <f:facet name="first">
+                <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+                <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+                <meta name="mobile-web-app-capable" content="yes" />
+            </f:facet>
+            <h:outputStylesheet name="personal.css" />
+            <title>USRBILANCIO</title>
+        </h:head>
+
+        <h:body styleClass="login-body">
+            <h:form id="loginForm">
+                <div class="login-panel ui-fluid">
+                    <div class="grid">
+                        <div class="col-12 logo-container">
+                            <p:graphicImage name="images/libra.svg" library="verona-layout" />
+                            <h1>USRBILANCIO</h1>
+                            <h6 style="margin: 0 0 1.5rem 0; font-size: 0.8rem">v. #{versionController.currentVersion}</h6>
+                            <h2>BENVENUTO, EFFETTUA IL LOGIN</h2>
+                        </div>
+                        <div class="col-12">
+                            <p:inputText placeholder="Username" value="#{authController.username}" required="true" requiredMessage="Campo obbligatorio" />
+                        </div>
+                        <div class="col-12">
+                            <p:password placeholder="Password" feedback="false" value="#{authController.password}" required="true" requiredMessage="Campo obbligatorio" />
+                        </div>
+                        <ui:fragment rendered="#{not empty authController.message}">
+                            <div class="col-12 chkbox-container red bold">
+                                #{authController.message}
+                            </div>
+                        </ui:fragment>
+                        <div class="col-12 button-container">
+                            <p:commandButton action="#{authController.doLogin}" value="Accedi" icon="pi pi-user" styleClass="ui-button-success rounded-button ui-button-raised" process="loginForm" update="loginForm" />
+                        </div>
+                    </div>
+                </div>
+            </h:form> 
+            <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="verona-layout" />
+        </h:body>
+    </f:view>
+</html>

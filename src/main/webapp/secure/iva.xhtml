@@ -1,0 +1,304 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Ordinativi IVA</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{ivaController.init()}" />            
+        </f:metadata>        
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+            <h:panelGroup id="page" layout="block" styleClass="grid">
+                <div class="col-12 md:col-12 lg:col-12">
+                    <p:panel header="IVA" style="min-height: 400px">
+                        <div class="grid formgrid">
+                            <div class="field col-6 md:col-6">
+                                <p:outputLabel for="periodo" value="Periodo di riferimento IVA:&#160;&#160;&#160;"/>
+                                <p:datePicker id="periodo" widgetVar="periodoPicker" selectionMode="range" view="month" value="#{ivaController.periodo}" readonlyInput="true" onselect="PF('periodoPicker').hide();" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showOnFocus="false">
+                                    <p:ajax event="dateSelect" listener="#{ivaController.onPeriodoSelezionato}" update="@this table"/>
+                                </p:datePicker>&#160;&#160;
+                                <p:commandButton id="anno" action="#{ivaController.impostaAnno()}" process="@this" update="table periodo" value="Mostra tutto l'anno" styleClass="ui-button-secondary" />&#160;&#160;
+                                <p:commandButton id="ultimoMese" action="#{ivaController.impostaUltimoMese()}" process="@this" update="table periodo" value="Mostra mese in lavorazione" styleClass="ui-button-success" />
+                            </div>                               
+                            <div class="field col-6" style="text-align: right;">
+                                <p:outputLabel for="pagati" value="Mostra:&#160;&#160;" />
+                                <p:selectOneMenu id="pagati" value="#{ivaController.mostra}">
+                                    <p:ajax event="change" listener="#{ivaController.aggiornaOrdinativiIva()}" update=":form:table" />
+                                    <f:selectItem itemValue="0" itemLabel="Tutti" />
+                                    <f:selectItem itemValue="1" itemLabel="Pagati" />
+                                    <f:selectItem itemValue="2" itemLabel="Da pagare" />
+                                    <f:selectItem itemValue="-1" itemLabel="In attesa di OPI" />
+                                </p:selectOneMenu>
+                            </div>
+                        </div>
+                        <h:panelGroup id="table" layout="block" styleClass="grid">
+                            <div class="col-12">
+                                <p:dataTable id="ordinativi" value="#{ivaController.ordinativiIva}" var="oi" selectionMode="multiple" selection="#{ivaController.ordinativiIvaSelezionati}" rowKey="#{oi.id}"
+                                             paginator="true" rows="100" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" filteredValue="#{ivaController.ordinativiIvaFiltrati}" globalFilterFunction="#{ivaController.filtroGlobale}"
+                                             rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" widgetVar="ordinativiIvaTable" selectionPageOnly="false" filterBy="#{ivaController.filterBy}" size="small" rowStyleClass="#{ivaController.rowColor(oi)}"
+                                             selectionDisabled="#{not empty oi.ordinativoIva}">
+                                    <p:ajax event="rowSelect" listener="#{ivaController.aggiornaParzialeSelezione()}" update="parzialeSelezione imponibileSelezione" process="ordinativi" />
+                                    <p:ajax event="rowUnselect" listener="#{ivaController.aggiornaParzialeSelezione()}" update="parzialeSelezione imponibileSelezione" process="ordinativi" />
+                                    <p:ajax event="toggleSelect" listener="#{ivaController.aggiornaParzialeSelezione()}" update="parzialeSelezione imponibileSelezione" process="ordinativi" />
+                                    <p:ajax event="rowSelectCheckbox" listener="#{ivaController.aggiornaParzialeSelezione()}" update="parzialeSelezione imponibileSelezione" process="ordinativi" />
+                                    <p:ajax event="rowUnselectCheckbox" listener="#{ivaController.aggiornaParzialeSelezione()}" update="parzialeSelezione imponibileSelezione" process="ordinativi" />
+
+                                    <f:facet name="header"> 
+                                        <div class="flex">      
+                                            <div class="flex" style="width: 250px">
+                                                Totale IVA Periodo:&#160;&#160;
+                                                <h:outputText value="#{ivaController.totaleIVA}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </div>
+                                            <div class="flex justify-content-end" style="width: 100%">
+                                                <p:commandButton process="@this" value="Excel" icon="pi pi-file-excel" styleClass="mr-2 mb-2 ui-button-outlined ui-button-success" title="Esporta elenco tabella in Excel">
+                                                    <p:dataExporter type="xlsxstream" target="ordinativi" fileName="ordinativi_iva" />
+                                                </p:commandButton>
+                                                <p:inputText id="globalFilter" onkeyup="PF('ordinativiIvaTable').filter()" style="width:300px" placeholder="Ricerca globale">                                                    
+                                                    <p:ajax event="keyup" listener="#{ivaController.aggiornaParziale()}" process="@this" update="parzialeIVA parzialeImponibile" />
+                                                </p:inputText>&#160;
+                                                <p:commandButton value="Pulisci filtri" icon="pi pi-filter" onclick="PF('ordinativiIvaTable').clearFilters()" process="@none" update="@none" styleClass="ui-button-help" />
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column selectionBox="true" style="width: 16px;text-align: center"/>
+
+                                    <p:column headerText="COMP./CAP." style="width: 5%;" styleClass="ellipsis" exportFunction="#{tableExporterController.decodeCompetenza(oi.idCompetenza)}">
+                                        <i jsf:id="infoCapComp" class="pi pi-info-circle" /><p:tooltip for="infoCapComp" escape="false" value="Capitolo #{ivaController.decodeCapitoloCompetenza(oi.idCompetenza).descrizione}&lt;br/&gt;Competenza #{ivaController.decodeCapitoloCompetenza(oi.idCompetenza).anno}" position="top" />
+                                        #{ivaController.decodeCapitoloCompetenza(oi.idCompetenza).anno} | #{ivaController.decodeCapitoloCompetenza(oi.idCompetenza).descrizione}
+                                    </p:column>
+                                    <p:column headerText="CONTO" style="width: 4%;" exportFunction="#{tableExporterController.decodeConto(oi.idCodice)}">
+                                        <i jsf:id="infoCodice" class="pi pi-info-circle"></i>#{formatter.codiceComposto(ivaController.decodeCodice(oi.idCodice))}<p:tooltip for="infoCodice" value="#{ivaController.decodeCodice(oi.idCodice).descrizione}" position="bottom" />
+                                    </p:column>
+                                    <p:column headerText="RTS" style="width: 2%;" exportFunction="#{tableExporterController.decodeRts(oi.idTipoRts)}">
+                                        <i jsf:id="infoRts" class="pi pi-info-circle"></i>
+                                        #{ivaController.decodeTipoRts(oi.idTipoRts).codice}    
+                                        <p:tooltip for="infoRts" value="#{ivaController.decodeTipoRts(oi.idTipoRts).descrizione}" position="bottom" />
+                                    </p:column>
+                                    <p:column headerText="DOC." style="width: 4%;" exportFunction="#{tableExporterController.decodeDocumento(oi.idTipoDocumento)}">
+                                        #{ivaController.decodeTipoDocumento(oi.idTipoDocumento).descrizione}    
+                                    </p:column>
+                                    <p:column headerText="N." style="width: 2%;" exportValue="#{oi.numeroDocumento}">
+                                        #{oi.numeroDocumento}    
+                                    </p:column>
+                                    <p:column headerText="DEL" style="width: 4%;" exportFunction="#{tableExporterController.decodeDate(oi.dataDocumento)}">
+                                        <h:outputText value="#{oi.dataDocumento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="RICEV." style="width: 4%;" exportFunction="#{tableExporterController.decodeDate(oi.dataRicevimento)}">
+                                        <h:outputText value="#{oi.dataRicevimento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="N. PAG." style="width: 5%;" exportValue="#{oi.numeroPagamento}">
+                                        #{oi.numeroPagamento}
+                                    </p:column>
+                                    <p:column headerText="DEL" style="width: 4%;" exportFunction="#{tableExporterController.decodeDate(oi.dataPagamento)}">
+                                        <h:outputText value="#{oi.dataPagamento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="BENEFICIARIO" exportValue="#{oi.beneficiario}">
+                                        #{oi.beneficiario}    
+                                    </p:column>
+                                    <p:column headerText="DESCRIZIONE" exportValue="#{empty oi.descrizioneRts ? '' : oi.descrizioneRts}">
+                                        #{oi.descrizioneRts}    
+                                    </p:column>
+                                    <p:column headerText="IMPORTO" style="width: 3%; text-align: right;" exportFunction="#{tableExporterController.decodeImpoto(oi.importo)}">
+                                        <h:outputText value="#{oi.importo}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="FATTURA" style="width: 5%;">
+                                        <h:outputText value="#{oi.fatturaNumero}" />                                            
+                                    </p:column>
+                                    <p:column headerText="DEL" style="width: 4%;" exportFunction="#{tableExporterController.decodeDate(oi.fatturaData)}">
+                                        <h:outputText value="#{oi.fatturaData}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="IVA" style="width: 4%; text-align: right;" exportFunction="#{tableExporterController.decodeImpoto(oi.importoIva)}">
+                                        <h:outputText value="#{oi.importoIva}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>                 
+                                    <p:column field="ordinativoIva" style="width: 3%; text-align: center;" filterFunction="#{ivaController.filtroOrdinativoIva}" sortable="false" exportFunction="#{tableExporterController.decodePagato(oi.ordinativoIva!=null)}">
+                                        <f:facet name="header">PAGATA</f:facet>
+                                        <f:facet name="filter">
+                                            <p:selectOneMenu onchange="PF('ordinativiIvaTable').filter()" styleClass="custom-filter">
+                                                <f:selectItem itemLabel="--" itemValue="2" />
+                                                <f:selectItem itemLabel="SI" itemValue="1" />
+                                                <f:selectItem itemLabel="NO" itemValue="0" />
+                                            </p:selectOneMenu>
+                                        </f:facet>
+                                        <ui:fragment rendered="#{not empty oi.ordinativoIva}">
+                                            <i class="pi pi-thumbs-up" />
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column style="width: 4%" exportHeaderValue="NOTE" exportValue="#{empty oi.note ? '' : oi.note}">
+                                        <p:commandButton id="note" icon="pi pi-book" title="Note" type="button" styleClass="ui-button-help" disabled="#{empty oi.note}"/>
+                                        <p:overlayPanel for="note" style="width:350px" showCloseIcon="true" >
+                                            <h5>Note</h5> 
+                                            <p>#{oi.note}</p>
+                                        </p:overlayPanel>&#160;
+                                        <p:commandButton id="ordinativoiva" icon="pi pi-link" title="Ordinativo IVA" styleClass="ui-button-secondary" process="@this" action="#{ivaController.agganciaSingolo(oi)}" update=":form:msg :form:ordinativotarget-content" />
+                                    </p:column>
+                                    <p:column style="width: 2%" exportable="false">
+                                        <p:commandButton id="ordinativoivaupload" icon="pi pi-upload" title="Carica F24 IVA" styleClass="ui-button-danger" process="@this" update="form:caricaF24Dialog" oncomplete="PF('caricaF24Dialog').show();" rendered="#{empty oi.ordinativoIva}">
+                                            <f:setPropertyActionListener value="#{oi}" target="#{ivaController.ordinativoSelezionato}" />
+                                        </p:commandButton>
+                                        <!--
+                                        &#160;
+                                        <p:commandButton id="ordinativoivaattesa" icon="pi pi-clock" title="Segna IVA pagata in attesa di documentazione" styleClass="ui-button-success" update="ordinativi" process="@this" action="#{ivaController.ivaPagata()}" rendered="#{not ivaController.isBitSet(oi.flag, 1) and empty oi.ordinativoIva}">
+                                            <f:setPropertyActionListener value="#{oi}" target="#{ivaController.ordinativoSelezionato}" />
+                                            <p:confirm type="popup" header="Conferma" message="Segnare l'ordinativo come IVA pagata e in attesa di documentazione?" icon="pi pi-exclamation-triangle"/>
+                                        </p:commandButton>                                        
+                                         -->
+                                    </p:column>
+
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column colspan="12" style="text-align: right" footerText="Imponibile parziale:"/>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{ivaController.parzialeImponibile}" id="parzialeImponibile">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column colspan="2" style="text-align: right" footerText="IVA parziale:"/>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{ivaController.parzialeIVA}" id="parzialeIVA">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                        <p:row>
+                                            <p:column colspan="12" style="text-align: right" footerText="Imponibile selezione:"/>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">                                                    
+                                                    <h:outputText value="#{ivaController.imponibileSelezione}" id="imponibileSelezione">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column colspan="2" style="text-align: right" footerText="IVA selezione:"/>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">                                                    
+                                                    <h:outputText value="#{ivaController.parzialeSelezione}" id="parzialeSelezione">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                            </div>
+                            <div class="col-2">
+                                <p:commandButton id="aggancia" value="Aggancia ordinativo liquidazione IVA" icon="pi pi-plus-circle" styleClass="ui-button-primary" title="Aggancia un ordinativo esistente come liquidazone IVA"
+                                                 action="#{ivaController.aggancia()}" process="@this ordinativi" update="msg :form:ordinativotarget-content" />                                
+                            </div>
+                            <div class="col-2">
+                                <p:commandButton id="caricaf24" value="Carica F24 liquidazione IVA" icon="pi pi-plus-circle" styleClass="ui-button-help" title="Carica e aggancia un F24 da documento PDF"
+                                                 process="@this ordinativi" oncomplete="PF('caricaF24Dialog').show();" />
+                            </div>
+                            <div class="col-2">
+                                <p:commandButton id="carica" value="Carica Or.Te.S. IVA conclusivo" icon="pi pi-lock" styleClass="ui-button-secondary" title="Carica e aggiorna l'ordinativo F24 con i dati Or.Te.S."
+                                                 process="@this ordinativi" oncomplete="PF('caricaDialog').show();" />
+                            </div>
+                            <div class="col-5">&#160;</div>
+                            <div class="col-1" style="text-align: right;">
+                                <p:commandButton id="aggiornaOrdinativi" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{ivaController.aggiornaOrdinativiIva()}" process="@this" update="ordinativi"/>
+                            </div>                            
+                        </h:panelGroup>
+                    </p:panel>                                                                                
+                </div>
+            </h:panelGroup>
+
+            <p:dialog header="ORDINATIVO LIQUIDAZIONE IVA" showEffect="fade" modal="true" widgetVar="ordinativoTargetDialog" responsive="true" width="40%">
+                <p:outputPanel id="ordinativotarget-content" class="ui-fluid grid formgrid">
+                    <div class="field col-12">
+                        <p:selectOneMenu id="ordinativopagamentoiva" value="#{ivaController.ordinativoAggancioSelezionato}" var="oa" converter="ordinativoConverter" hideNoSelectionOption="#{not empty ivaController.ordinativoAggancioSelezionato}" 
+                                         style="min-width: 600px" panelStyle="width:600px" filter="true" filterMatchMode="contains" filterNormalize="true" required="true" requiredMessage="Ordinativo obbligatorio">
+                            <f:selectItem itemValue="#{null}" itemLabel="Selezionare un ordinativo..." noSelectionOption="true" />
+                            <f:selectItems value="#{ivaController.ordinativiAggancio}" var="o" itemValue="#{o}" itemLabel="N. #{o.numeroPagamento} del #{formatter.formattaData(oi.dataPagamento)} - #{o.beneficiario} - #{formatter.formattaDecimale(oi.importo)}" />
+
+                            <p:column style="width: 5%">
+                                <f:facet name="header">
+                                    <h:outputText value="N. Pagamento" />
+                                </f:facet>
+                                <h:outputText value="#{oa.numeroPagamento}" />
+                            </p:column>
+                            <p:column style="width: 17%">
+                                <f:facet name="header">
+                                    <h:outputText value="Del" />
+                                </f:facet>
+                                <h:outputText value="#{oa.dataPagamento}">
+                                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column>
+                                <f:facet name="header">
+                                    <h:outputText value="Beneficiario" />
+                                </f:facet>
+                                <h:outputText value="#{oa.beneficiario}" />
+                            </p:column>                            
+                            <p:column style="width: 5%; text-align: right">
+                                <f:facet name="header">
+                                    <h:outputText value="Importo" />
+                                </f:facet>
+                                <h:outputText value="#{oa.importo}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                        </p:selectOneMenu>
+                    </div>
+                </p:outputPanel>
+                <f:facet name="footer">
+                    <p:commandButton value="Salva" icon="pi pi-check" action="#{ivaController.salvaAgganciati()}" update="ordinativi ordinativotarget-content msg" process="ordinativotarget-content @this">
+                        <p:confirm type="popup" header="Conferma" message="Sicuri di voler agganciare l'ordinativo selezionato?" icon="pi pi-exclamation-triangle"/>
+                    </p:commandButton>
+                    <p:commandButton value="Annulla" icon="pi pi-times" update="page" immediate="true" onclick="PF('ordinativoTargetDialog').hide()" class="ui-button-secondary" />
+                </f:facet>
+            </p:dialog>
+
+            <p:dialog id="caricaF24Dialog" header="Carica F24 di pagamento dell'IVA" showEffect="fade" modal="true" widgetVar="caricaF24Dialog" responsive="true" width="40%">
+                <p:fileUpload id="uploadedf24Document" multiple="false" mode="simple" value="#{ivaController.ordinativoCaricato}"  dragDropSupport="true" 
+                              cancelLabel="Annulla" uploadLabel="Carica" label="Seleziona documento" widgetVar="uploadBtn" required="true" requiredMessage="Il documento è obbligatorio.">
+                    <p:validateFile sizeLimit="67108864" allowTypes="/(\.|\/)(pdf)$/" />
+                </p:fileUpload>
+                <p:commandButton id="uploadf24" value="Processa" action="#{ivaController.processaF24Caricato()}" process="caricaF24Dialog" update="msg page" validateClient="true" styleClass="mt-3 ui-button-outlined block" />
+            </p:dialog>
+
+            <p:dialog id="caricaDialog" header="Carica ordinativo Or.Te.S. di chiusura" showEffect="fade" modal="true" widgetVar="caricaDialog" responsive="true" width="40%">
+                <p:fileUpload id="uploadedDocument" multiple="false" mode="simple" value="#{ivaController.ordinativoCaricato}"  dragDropSupport="true" 
+                              cancelLabel="Annulla" uploadLabel="Carica" label="Seleziona documento" widgetVar="uploadBtn" required="true" requiredMessage="Il documento è obbligatorio.">
+                    <p:validateFile sizeLimit="67108864" allowTypes="/(\.|\/)(pdf)$/" />
+                </p:fileUpload>
+                <p:commandButton id="upload" value="Processa" action="#{ivaController.processaOrdinativoCaricato()}" process="caricaDialog" update="msg page" validateClient="true" styleClass="mt-3 ui-button-outlined block" />
+            </p:dialog>
+            
+            <p:confirmPopup global="true">
+                <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no ui-button-flat"/>
+                <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes" />
+            </p:confirmPopup>
+            
+            <p:growl id="msg" showDetail="true" escape="false"/>
+        </h:form>       
+    </ui:define>
+
+</ui:composition>

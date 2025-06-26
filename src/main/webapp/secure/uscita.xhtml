@@ -1,0 +1,25 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Uscita</ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">
+                        <h4>Uscita</h4>
+                        <p>Cliccando il pulsante di seguito verrà chiusa la sessione e sarà necessario nuovamente autenticarsi.</p>
+                        <p:commandButton value="Esci" style="display:inline-block;margin-top:5px" icon="pi pi-sign-out" action="#{authController.doLogout()}" ajax="false" />
+                    </div>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

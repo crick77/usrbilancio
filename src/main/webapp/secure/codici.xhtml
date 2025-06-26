@@ -1,0 +1,181 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Gestione Conti</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{codiciController.init()}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">
+                        <h4>Gestione Conti</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">                          
+                        <div class="grid" jsf:id="codiciPanel">
+                            <div class="col-12">
+                                <p:dataTable id="codici" value="#{codiciController.codici}" var="c" rowKey="#{c.id}" selectionMode="single" selection="#{codiciController.codice}" paginator="true" rows="100"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" stripedRows="true"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" widgetVar="codiciTable" size="small">
+                                    <p:column headerText="CODICE" style="width: 15%" filterBy="#{formatter.formattaCodiceRecord(c)}" filterMatchMode="contains" sortable="true" sortBy="#{formatter.formattaCodiceRecord(c)}" sortOrder="asc">
+                                        #{formatter.formattaCodiceRecord(c)}
+                                    </p:column>
+                                    <p:column headerText="ORDINANZA" field="ordinanza" filterMatchMode="contains">
+                                        #{c.ordinanza}
+                                    </p:column>
+                                    <p:column headerText="DESCRIZIONE" field="descrizione" filterMatchMode="contains">
+                                        #{c.descrizione}
+                                    </p:column>                        
+                                    <p:column headerText="ENTE/DIOCESI" field="enteDiocesi" filterMatchMode="contains">
+                                        #{c.enteDiocesi}
+                                    </p:column>                                                                
+                                    <p:column headerText="PROV." field="provincia" filterMatchMode="contains">
+                                        #{c.provincia}
+                                    </p:column>                                                                
+                                    <p:column headerText="ID" field="idIntervento" filterMatchMode="contains">
+                                        #{c.idIntervento}
+                                    </p:column>                                                                
+                                    <p:column headerText="NOTE" field="note" filterMatchMode="contains">
+                                        #{c.note}
+                                    </p:column>                             
+                                    <p:column field="concluso" style="width: 4%; text-align: center;" filterFunction="#{codiciController.filtroConclusi}" sortable="false">
+                                        <f:facet name="header">CONCLUSO</f:facet>
+                                        <f:facet name="filter">
+                                            <p:selectOneMenu onchange="PF('codiciTable').filter()" styleClass="custom-filter">
+                                                <f:selectItem itemLabel="--" itemValue="nullo" />
+                                                <f:selectItem itemLabel="SI" itemValue="true" />
+                                                <f:selectItem itemLabel="NO" itemValue="false" />
+                                            </p:selectOneMenu>
+                                        </f:facet>
+                                        <ui:fragment rendered="#{c.concluso}">
+                                            <i class="pi pi-thumbs-up" />
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{not c.concluso and c.concluso!=null}">
+                                            <i class="pi pi-thumbs-down" />
+                                        </ui:fragment>
+                                    </p:column>                           
+                                    <p:column style="width: 2%; text-align: center;">
+                                        <p:commandButton icon="pi pi-pencil" action="#{codiciController.modifica()}" process="@this" update="form:codiceDialog" styleClass="ui-button-help" oncomplete="PF('codiceDialogWV').show();">
+                                            <f:setPropertyActionListener value="#{c}" target="#{codiciController.codice}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                    <p:column style="width: 2%; text-align: center;">
+                                        <p:commandButton icon="pi pi-trash" action="#{codiciController.elimina()}" process="@this" update="@form" styleClass="ui-button-danger">
+                                            <f:setPropertyActionListener value="#{c}" target="#{codiciController.codice}" />
+                                            <p:confirm type="popup" header="Conferma" message="Eliminare il codice selezionato? Attenzione! L'azione è irreversibile!" icon="pi pi-info-circle" escape="false" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                            <div class="col-1">
+                                <p:commandButton id="nuovo" value="Nuovo" icon="pi pi-plus-circle" styleClass="ui-button-primary" action="#{codiciController.nuovo()}" process="@this" update="form:codiceDialog" oncomplete="PF('codiceDialogWV').show();"/>
+                            </div>                                                   
+                            <div class="col-1" />
+                            <div class="col-1">
+                                <p:commandButton id="aggiorna" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{codiciController.init()}" process="@this" update="@form"/>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> 
+
+                <p:dialog id="codiceDialog" widgetVar="codiceDialogWV" visible="#{not empty codiciController.codice}" modal="true" header="#{codiciController.azione} Conto" width="80%">
+                    <div class="ui-fluid grid formgrid">
+                        <div class="field col-10">
+                            <p:outputLabel for="codiceinizio">Codice (usare la forma C.1.2.3.4.5)</p:outputLabel>
+                            <p:inputText id="codiceinizio" value="#{codiciController.codiceComposto}" maxlength="109" required="true" />                                    
+                        </div>
+
+                        <div class="field col-2">    
+                            <p:outputLabel for="calcolaultimo">&#160;</p:outputLabel>
+                            <p:commandButton id="calcolaultimo" value="Carica ultimo" action="#{codiciController.caricaUltimo()}" process="codiceDialog" update="codiceinizio form:msg" />                                    
+                        </div>
+                        
+                        <div class="field col-4">
+                            <p:outputLabel for="ordinanza">Ordinanza</p:outputLabel>
+                            <p:inputText id="ordinanza" value="#{codiciController.codice.ordinanza}" maxlength="100" />
+                        </div>
+                        <div class="field col-4">
+                            <p:outputLabel for="provincia">Provincia</p:outputLabel>
+                            <p:inputText id="provincia" value="#{codiciController.codice.provincia}" maxlength="64" />
+                        </div>
+                        <div class="field col-4">
+                            <p:outputLabel for="idintervento">ID</p:outputLabel>
+                            <p:inputText id="idintervento" value="#{codiciController.codice.idIntervento}" maxlength="255" />
+                        </div>                        
+
+                        <div class="field col-12">
+                            <p:outputLabel for="entediocesi">Ente/Diocesi</p:outputLabel>
+                            <p:inputText id="entediocesi" value="#{codiciController.codice.enteDiocesi}" maxlength="255" />
+                        </div>
+
+                        <div class="field col-12">
+                            <p:outputLabel for="categoria">Categoria</p:outputLabel>
+                            <p:inputText id="categoria" value="#{codiciController.codice.categoria}" maxlength="255" />
+                        </div>
+
+                        <div class="field col-6">
+                            <p:outputLabel for="impcomm">Importo Finaziamento Comm.</p:outputLabel>
+                            <p:inputNumber id="impcomm" value="#{codiciController.codice.importoFinComm}" decimalPlaces="2" decimalSeparator="," decimalSeparatorAlternative="." thousandSeparator="." />
+                        </div>
+                        <div class="field col-6">
+                            <p:outputLabel for="impdef">Importo Definitivo</p:outputLabel>
+                            <p:inputNumber id="impdef" value="#{codiciController.codice.importoDefinitivo}" decimalPlaces="2" decimalSeparator="," decimalSeparatorAlternative="." thousandSeparator="." />
+                        </div>
+
+                        <div class="field col-6">
+                            <p:outputLabel for="impconfin">Importo Confinanziamento</p:outputLabel>
+                            <p:inputNumber id="impconfin" value="#{codiciController.codice.importoCofinanziamento}" decimalPlaces="2" decimalSeparator="," decimalSeparatorAlternative="." thousandSeparator="." />
+                        </div>
+                        <div class="field col-6">
+                            <p:outputLabel for="impcontoterm">Importo Conto Termico</p:outputLabel>
+                            <p:inputNumber id="impcontoterm" value="#{codiciController.codice.importoContotermico}" decimalPlaces="2" decimalSeparator="," decimalSeparatorAlternative="."  thousandSeparator="." />
+                        </div>
+
+                        <div class="field col-12">
+                            <p:outputLabel for="descrizione">Descrizione</p:outputLabel>
+                            <p:inputText id="descrizione" value="#{codiciController.codice.descrizione}" maxlength="255" />
+                        </div>
+
+                        <div class="field col-10">
+                            <p:outputLabel for="note">Note</p:outputLabel>
+                            <p:inputText id="note" value="#{codiciController.codice.note}" maxlength="255" />
+                        </div>
+                        <div class="field col-2">
+                            <p:outputLabel for="concluso" style="width: 100%">Concluso</p:outputLabel>
+                            <p:toggleSwitch id="concluso" value="#{codiciController.codice.concluso}" onIcon="pi pi-check" offIcon="pi pi-times" />
+                        </div>
+
+                        <div class="field col-2">
+                            <p:commandButton id="salva" value="Salva" icon="pi pi-save" process="form:codiceDialog" update="@form" action="#{codiciController.salva()}" styleClass="ui-button-success" />
+                        </div>
+                        <div class="field col-8" />
+                        <div class="field col-2">
+                            <p:commandButton id="annulla" value="Annulla" icon="pi pi-times" process="@this" update="@form" immediate="true" action="#{codiciController.annulla()}" styleClass="ui-button-secondary" />
+                        </div>
+                    </div>
+                    </p:dialog>
+            </div>
+
+            <p:growl id="msg" showDetail="true" escape="false"/>
+
+            <p:confirmPopup global="true">
+                <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no"/>
+                <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes ui-button-flat" />
+            </p:confirmPopup>
+        </h:form>
+    </ui:define>
+</ui:composition>

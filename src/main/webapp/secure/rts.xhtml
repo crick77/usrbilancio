@@ -1,0 +1,100 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Gestione Codici RTS</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{rtsController.init()}" />
+        </f:metadata>
+    </ui:define>
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">
+                        <h4>Gestione Codici RTS</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="col-6">
+                    <div class="card">                          
+                            <div class="grid" jsf:id="codiciPanel">
+                                <div class="col-12">
+                                    <p:dataTable id="codici" value="#{rtsController.codiciRts}" var="c" rowKey="#{c.id}" selectionMode="single" selection="#{rtsController.codiceRts}" paginator="true" rows="100"
+                                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" stripedRows="true"
+                                                 currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" widgetVar="codiciTable" size="small">
+                                        <p:column headerText="CODICE" style="width: 15%" field="codice" filterBy="codice" filterMatchMode="contains" sortable="true" sortBy="codice" sortOrder="asc">
+                                            #{c.codice}
+                                        </p:column>
+                                        <p:column headerText="DESCRIZIONE" field="descrizione" filterMatchMode="contains">
+                                            #{c.descrizione}
+                                        </p:column>                                                                
+                                        <p:column style="width: 3%; text-align: center;">
+                                            <p:commandButton icon="pi pi-pencil" action="#{rtsController.modifica()}" process="@this" update="@form" styleClass="ui-button-help" oncomplete="PF('buiBasic').show()">
+                                                <f:setPropertyActionListener value="#{c}" target="#{rtsController.codiceRts}" />
+                                            </p:commandButton>
+                                        </p:column>
+                                        <p:column style="width: 3%; text-align: center;">
+                                            <p:commandButton icon="pi pi-trash" action="#{rtsController.elimina()}" process="@this" update="@form" styleClass="ui-button-danger">
+                                                <f:setPropertyActionListener value="#{c}" target="#{rtsController.codiceRts}" />
+                                                <p:confirm type="popup" header="Conferma" message="Eliminare il codice selezionato? Attenzione! L'azione è irreversibile!" icon="pi pi-info-circle" escape="false" />
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                                <div class="col-1">
+                                    <p:commandButton id="nuovo" value="Nuovo" icon="pi pi-plus-circle" styleClass="ui-button-primary" action="#{rtsController.nuovo()}" process="@this" update="@form" oncomplete="PF('buiBasic').show()"/>
+                                </div>                                                   
+                                <div class="col-1" />
+                                <div class="col-1">
+                                    <p:commandButton id="aggiorna" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{rtsController.init()}" process="@this" update="@form"/>
+                                </div>
+                            </div>
+
+                    </div>
+                </div> 
+                    <ui:fragment id="codice" rendered="#{not empty rtsController.codiceRts}">
+                    <div class="col-6">
+                        <div class="card">
+                            <h4>#{rtsController.azione} Codice</h4>
+                            <p:outputPanel class="ui-fluid grid formgrid">
+                                <div class="field col-12">
+                                    <p:outputLabel for="codiceinizio">Codice</p:outputLabel>
+                                    <p:inputText id="codiceinizio" value="#{rtsController.codiceRts.codice}" maxlength="4" required="true" requiredMessage="Codice obbligatorio"/>
+                                </div>
+                                <div class="field col-12">
+                                    <p:outputLabel for="descrizione">Descrizione</p:outputLabel>
+                                    <p:inputText id="descrizione" value="#{rtsController.codiceRts.descrizione}" maxlength="32" required="true" requiredMessage="Descrizione obbligatoria" />
+                                </div>                                
+                                <div class="field col-2">
+                                    <p:commandButton id="salva" value="Salva" icon="pi pi-save" process="codice" update="@form" action="#{rtsController.salva()}" styleClass="ui-button-success" />
+                                </div>
+                                <div class="field col-8" />
+                                <div class="field col-2">
+                                    <p:commandButton id="annulla" value="Annulla" icon="pi pi-times" process="@this" update="@form" immediate="true" action="#{rtsController.annulla()}" styleClass="ui-button-secondary" />
+                                </div>
+                            </p:outputPanel>
+                        </div>
+                    </div>
+                </ui:fragment>
+            </div>
+
+            <p:blockUI id="block" block="codiciPanel" widgetVar="buiBasic"/>
+
+            <p:growl id="msg" showDetail="true" escape="false"/>
+
+            <p:confirmPopup global="true">
+                <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no"/>
+                <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes ui-button-flat" />
+            </p:confirmPopup>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

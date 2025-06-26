@@ -1,0 +1,210 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:jsf="jakarta.faces"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:fn="jakarta.tags.functions"
+                xmlns:p="primefaces"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Capitoli</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{capitoliController.init()}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <h:panelGroup id="page" layout="block" styleClass="grid">
+                <div class="col-8 md:col-8 lg:col-8">
+                    <p:panel header="CAPITOLI" style="min-height: 400px">
+                        <div class="grid">
+                            <div class="col-12">
+                                <p:dataTable id="capitoli" value="#{capitoliController.capitoli}" var="c" lazy="false" stripedRows="true" selectionMode="single" selection="#{capitoliController.capitoloSelezonato}" rowKey="#{c.id}"
+                                             rows="#{fn:length(capitoliController.capitoli)}" paginator="true" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} elementi" rowsPerPageTemplate="5,10,100,{ShowAll|'Tutti'}" size="small">
+                                    <p:ajax event="rowSelect" process="@this" update="@form" />                                    
+                                    <p:column id="descr" headerText="DESCRIZIONE" field="descrizione" filterMatchMode="contains" styleClass="word-wrap">
+                                        #{c.descrizione}
+                                    </p:column>                        
+                                    <p:column id="stanziamento" headerText="STANZIAMENTO" field="stanziamento" filterMatchMode="contains" style="width: 15%;">
+                                        <h:outputText value="#{c.stanziamento}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>                        
+                                    <p:column id="nuovoanno" headerText="NUOVO ANNO" style="width: 6%; text-align: center;">
+                                        <ui:fragment rendered="#{c.nuovoanno==1}">
+                                            <i class="pi pi-check-square" />
+                                        </ui:fragment>
+                                    </p:column>                        
+                                    <p:column id="consoldir" headerText="DA CONSOLID." style="width: 7%; text-align: center;">
+                                        <ui:fragment rendered="#{c.daconsolidare==1}">
+                                            <i class="pi pi-check-square" />
+                                        </ui:fragment>
+                                    </p:column>                        
+                                    <p:column id="mostrasituazione" headerText="MOSTRA IN SITUAZIONE" style="width: 7%; text-align: center;">
+                                        <ui:fragment rendered="#{c.mostrasituazione eq 1}">
+                                            <i class="pi pi-check-square" />
+                                        </ui:fragment>
+                                    </p:column>                        
+                                    <p:column width="8%">
+                                        <p:commandButton id="modifica" icon="pi pi-pencil" styleClass="ui-button-success" process="@this" update=":form:capitolo-content" oncomplete="PF('capitoloDialog').show()">
+                                            <f:setPropertyActionListener value="#{c}" target="#{capitoliController.capitolo}" />
+                                        </p:commandButton>&#160;
+                                        <p:commandButton id="rimuovi" icon="pi pi-trash" styleClass="ui-button-danger" process="@this" oncomplete="PF('deleteCapitoloDialog').show()" update="capitoli">
+                                            <f:setPropertyActionListener value="#{c}" target="#{capitoliController.capitolo}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div class="col-2">
+                                <p:commandButton id="nuovo" value="Nuovo capitolo" icon="pi pi-plus-circle" styleClass="ui-button-primary" action="#{capitoliController.nuovo()}" process="@this" update=":form:capitolo-content" oncomplete="PF('capitoloDialog').show()"/>
+                            </div>
+                            <div class="col-8">
+                                <p:commandButton id="genera" value="Genera competenze" icon="pi pi-list" styleClass="ui-button-help" action="#{capitoliController.generaCompetenze()}" process="@this" update="msg capitoli competenze" >
+                                    <p:confirm type="popup" header="Conferma" escape="false" message="Sicuri di vole procedere?&lt;br/&gt;L'operazione potrebbe generare diversi record difficili da eliminare singolarmente!" icon="pi pi-info-circle"/>
+                                </p:commandButton>
+                            </div>
+                            <div class="col-2 toright">
+                                <p:commandButton id="aggiorna" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{capitoliController.init()}" update="@form"/>
+                            </div>
+                        </div>
+                    </p:panel>
+                </div>
+
+                <div class="col-4 md:col-4 lg:col-4">
+                    <p:panel id="competenze-panel" header="COMPETENZE" style="min-height: 400px" rendered="#{not empty capitoliController.capitoloSelezonato}">
+                        <div class="grid">
+                            <div class="col-12">
+                                <p:dataTable id="competenze" value="#{capitoliController.competenze}" var="c" lazy="false" stripedRows="true" emptyMessage="Nessuna competenza per il capitolo selezionato." 
+                                             rows="100" paginator="true" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} elementi" rowsPerPageTemplate="5,10,{ShowAll|'Tutti'}" size="small">
+                                    <p:column headerText="ANNO" width="20%">
+                                        #{c.anno}
+                                    </p:column>
+                                    <p:column headerText="CHIUSO">
+                                        <ui:fragment rendered="#{c.chiuso != 0}">
+                                            <i jsf:id="statochiuso" class="pi #{c.chiuso == 1 ? 'pi-check-circle' : 'pi-clock'}" /><p:tooltip for="statochiuso" value="#{c.chiuso == 1 ? 'CHIUSO' : 'IN ATTESA'}" />
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column headerText="STANZIAMENTO" width="20%">
+                                        <h:outputText value="#{c.stanziamento}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="NOTE">
+                                        <p:commandButton id="compnote" icon="pi pi-book" title="Note" type="button" styleClass="ui-button-help" disabled="#{empty c.note}"/>&#160;
+                                        <p:overlayPanel for="compnote" style="width:350px" showCloseIcon="true" >
+                                            <h5>Note</h5>
+                                            <p>#{c.note}</p>
+                                        </p:overlayPanel> 
+                                    </p:column>  
+                                    <p:column width="20%">
+                                        <p:commandButton id="modificaComp" icon="pi pi-pencil" styleClass="ui-button-success" process="competenze" update=":form:competenza-content" oncomplete="PF('competenzaDialog').show()">
+                                            <f:setPropertyActionListener value="#{c}" target="#{capitoliController.competenza}" />
+                                        </p:commandButton>&#160;
+                                        <p:commandButton id="rimuoviComp" icon="pi pi-trash" styleClass="ui-button-danger" process="competenze" oncomplete="PF('deleteCompetenzaDialog').show()">
+                                            <f:setPropertyActionListener value="#{c}" target="#{capitoliController.competenza}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div class="col-9">
+                                <p:commandButton id="nuovaComp" value="Nuova competenza" icon="pi pi-plus-circle" styleClass="ui-button-primary" action="#{capitoliController.nuovaCompetenza()}" process="@this" update=":form:competenza-content" oncomplete="PF('competenzaDialog').show()"/>
+                            </div>                       
+                            <div class="col-2 toright">
+                                <p:commandButton id="aggiornaComp" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{capitoliController.aggiornaCompetenze()}" update="competenze"/>
+                            </div>
+                        </div>
+                    </p:panel>
+
+                    <p:dialog header="Capitolo" showEffect="fade" modal="true" widgetVar="capitoloDialog" responsive="true" width="30%">
+                        <p:outputPanel id="capitolo-content" class="ui-fluid">                                                                                                             
+                            <div class="field">
+                                <p:outputLabel for="descrizione">Descrizione</p:outputLabel>
+                                <p:inputText id="descrizione" value="#{capitoliController.capitolo.descrizione}" maxlength="255" required="true" requiredMessage="Descrizione obbligatoria"/>                                
+                            </div> 
+                            <div class="field">
+                                <p:outputLabel for="stanziam">Stanziamento</p:outputLabel>
+                                <p:inputNumber id="stanziam" value="#{capitoliController.capitolo.stanziamento}" 
+                                               decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />                                    
+                            </div> 
+                            <div class="field">
+                                <p:outputLabel for="nuovoanno">Includi nel rinnovo annuale&#160;&#160;&#160;</p:outputLabel>
+                                <p:toggleSwitch id="nuovoanno" value="#{capitoliController.capitolo.nuovoanno}" onIcon="pi pi-check" offIcon="pi pi-times" converter="booleanByteConverter" /> 
+                            </div> 
+                            <div class="field">
+                                <p:outputLabel for="daconsolidare">Abilita solo "da consolidare" negli importati &#160;&#160;&#160;</p:outputLabel>
+                                <p:toggleSwitch id="daconsolidare" value="#{capitoliController.capitolo.daconsolidare}" onIcon="pi pi-check" offIcon="pi pi-times" converter="booleanByteConverter" /> 
+                            </div> 
+                            <div class="field">
+                                <p:outputLabel for="@next">Mostra nella pagina Situazione &#160;&#160;&#160;</p:outputLabel>
+                                <p:toggleSwitch id="mostrasit" value="#{capitoliController.capitolo.mostrasituazione}" onIcon="pi pi-check" offIcon="pi pi-times" converter="booleanByteConverter" /> 
+                            </div> 
+                        </p:outputPanel>
+
+                        <f:facet name="footer">
+                            <p:commandButton value="Salva" icon="pi pi-check" action="#{capitoliController.salva()}" update="@form" process="capitolo-content @this" />
+                            <p:commandButton value="Annulla" icon="pi pi-times" action="#{capitoliController.annulla()}" process="@this" immediate="true" onclick="PF('capitoloDialog').hide()" class="ui-button-secondary" />
+                        </f:facet>
+                    </p:dialog> 
+
+                    <p:dialog header="Competenza" showEffect="fade" modal="true" widgetVar="competenzaDialog" responsive="true" width="30%">
+                        <p:outputPanel id="competenza-content" class="ui-fluid">
+                            <p:outputPanel rendered="#{not empty capitoliController.competenza}">                                                                                            
+                                <div class="field">
+                                    <p:outputLabel for="anno">Anno</p:outputLabel>
+                                    <p:inputNumber id="anno" value="#{capitoliController.competenza.anno}" minValue="2016" decimalPlaces="0" thousandSeparator="" required="true" requiredMessage="Anno obbligatorio"/>                                
+                                </div>
+                                 <div class="field">
+                                    <p:outputLabel for="@next">Stanziamento</p:outputLabel>
+                                    <p:inputNumber id="stanziamento" value="#{capitoliController.competenza.stanziamento}" decimalPlaces="2" thousandSeparator="." decimalSeparator="," decimalSeparatorAlternative="." />                                
+                                </div>
+                                <div class="field">
+                                    <p:outputLabel for="chiuso">Chiuso</p:outputLabel>
+                                    <p:selectOneMenu id="chiuso" value="#{capitoliController.competenza.chiuso}">
+                                        <f:selectItem itemLabel="APERTO" itemValue="0" />
+                                        <f:selectItem itemLabel="CHIUSO" itemValue="1" />
+                                        <f:selectItem itemLabel="IN ATTESA" itemValue="2" />
+                                    </p:selectOneMenu>                                    
+                                </div>
+                                <div class="field">
+                                    <p:outputLabel for="note">Note</p:outputLabel>
+                                    <p:inputText id="note" value="#{capitoliController.competenza.note}" maxlength="255" />
+                                </div>                                
+                            </p:outputPanel>
+                        </p:outputPanel>
+
+                        <f:facet name="footer">
+                            <p:commandButton value="Salva" icon="pi pi-check" action="#{capitoliController.salvaCompetenza()}" update="competenze-panel msg" process="competenza-content @this" />
+                            <p:commandButton value="Annulla" icon="pi pi-times" immediate="true" onclick="PF('competenzaDialog').hide()" class="ui-button-secondary" />
+                        </f:facet>
+                    </p:dialog> 
+
+                    <p:confirmDialog widgetVar="deleteCapitoloDialog" showEffect="fade" width="300" message="Eliminare il capitolo?" header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{capitoliController.elimina()}" process="@this" update="capitoli competenze-panel competenze msg" oncomplete="PF('deleteCapitoloDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteCapitoloDialog').hide()" />
+                    </p:confirmDialog>
+
+                    <p:confirmDialog widgetVar="deleteCompetenzaDialog" showEffect="fade" width="300" message="Eliminare la competenza?" header="Conferma" severity="warn">
+                        <p:commandButton value="si" icon="pi pi-check" actionListener="#{capitoliController.eliminaCompetenza()}" process="@this" update="competenze-panel competenze msg" oncomplete="PF('deleteCompetenzaDialog').hide()"/>
+                        <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteCompetenzaDialog').hide()" />
+                    </p:confirmDialog>
+
+                    <p:growl id="msg" showDetail="true" escape="false"/>
+
+                    <p:confirmPopup global="true">
+                        <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no ui-button-flat"/>
+                        <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes" />
+                    </p:confirmPopup>
+                </div>
+            </h:panelGroup>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

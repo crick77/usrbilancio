@@ -1,0 +1,88 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces">
+
+    <a tabindex="0" id="layout-config-button" class="layout-config-button">
+        <i class="pi pi-cog"/>
+    </a>
+
+    <div class="layout-config">
+        <h:form id="config-form">
+            <h5>Menu Type</h5>
+            <p:selectOneRadio value="#{guestPreferences.menuMode}" layout="pageDirection" onchange="PrimeFaces.VeronaConfigurator.changeMenuMode(event.target.value)">
+                <f:selectItem itemLabel="Static" itemValue="static"/>
+                <f:selectItem itemLabel="Overlay" itemValue="overlay"/>
+                <f:selectItem itemLabel="Popup" itemValue="popup"/>
+                <f:selectItem itemLabel="Horizontal" itemValue="horizontal"/>
+                <p:ajax update="config-form" />
+            </p:selectOneRadio>
+
+            <hr/>
+
+            <h5>Input Style</h5>
+            <p:selectOneRadio value="#{guestPreferences.inputStyle}" layout="pageDirection"
+                              onchange="PrimeFaces.VeronaConfigurator.updateInputStyle(event.target.value)">
+                <f:selectItem itemLabel="Outlined" itemValue="outlined"/>
+                <f:selectItem itemLabel="Filled" itemValue="filled"/>
+                <p:ajax/>
+            </p:selectOneRadio>
+
+            <hr/>
+
+            <h5>Flat Layout Colors</h5>
+            <div class="layout-themes">
+                <ui:repeat value="#{guestPreferences.flatLayouts}" var="layout">
+                    <div>
+                        <p:commandLink actionListener="#{guestPreferences.setLayout(layout.file)}" update="config-form"
+                                       style="background-color: #{layout.color}" title="#{layout.name}" process="@this"
+                                       onstart="PrimeFaces.VeronaConfigurator.beforeResourceChange()"
+                                       oncomplete="PrimeFaces.VeronaConfigurator.changeLayout('#{layout.file}')">
+                            <ui:fragment rendered="#{layout.file eq guestPreferences.layout}">
+                                <i class="pi pi-check"/>
+                            </ui:fragment>
+                        </p:commandLink>
+                    </div>
+                </ui:repeat>
+            </div>
+
+            <hr/>
+
+            <h5>Special Layout Colors</h5>
+            <div class="layout-themes">
+                <ui:repeat value="#{guestPreferences.specialLayouts}" var="layout">
+                    <div>
+                        <p:commandLink actionListener="#{guestPreferences.setLayout(layout.file)}"
+                                       style="background-image: linear-gradient(to right,#{layout.color1},#{layout.color2})"
+                                       title="#{layout.name}" process="@this" update="config-form"
+                                       onstart="PrimeFaces.VeronaConfigurator.beforeResourceChange()"
+                                       oncomplete="PrimeFaces.VeronaConfigurator.changeLayout('#{layout.file}')">
+                            <ui:fragment rendered="#{layout.file eq guestPreferences.layout}">
+                                <i class="pi pi-check"/>
+                            </ui:fragment>
+                        </p:commandLink>
+                    </div>
+                </ui:repeat>
+            </div>
+
+            <hr/>
+
+            <h5>Themes</h5>
+            <div class="layout-themes">
+                <ui:repeat value="#{guestPreferences.themes}" var="theme">
+                    <div>
+                        <p:commandLink actionListener="#{guestPreferences.setTheme(theme.file)}" update="config-form"
+                                       style="background-color: #{theme.color}" title="#{theme.name}" process="@this"
+                                       onstart="PrimeFaces.VeronaConfigurator.beforeResourceChange()"
+                                       oncomplete="PrimeFaces.VeronaConfigurator.changeScheme('#{theme.file}')">
+                            <ui:fragment rendered="#{theme.file eq guestPreferences.theme}">
+                                <i class="pi pi-check"/>
+                            </ui:fragment>
+                        </p:commandLink>
+                    </div>
+                </ui:repeat>
+            </div>
+        </h:form>
+    </div>
+</ui:composition>

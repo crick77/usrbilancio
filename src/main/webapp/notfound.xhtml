@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="primefaces">
+
+    <h:head>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+        </f:facet>
+        <title>USRBILANCIO - Pagina non trovata</title>
+    </h:head>
+
+    <h:body styleClass="exception-body">
+        <div class="exception-panel">
+            <p:graphicImage name="images/icon-404.png" library="verona-layout" />
+
+            <h1>Pagina non trovata</h1>
+            <p>Hai richiesto una pagina che non esiste.</p>
+            <p:button value="TORNA ALLA DASHBOARD" styleClass="ui-button-secondary" outcome="/secure/index" />
+        </div>
+
+        <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="verona-layout" />
+    </h:body>
+
+</html>

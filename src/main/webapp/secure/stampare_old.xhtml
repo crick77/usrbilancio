@@ -1,0 +1,156 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                xmlns:pe="primefaces.extensions"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Da Stampare</ui:define>
+
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{ordinativiStampareController.init()}" />
+        </f:metadata>                
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+            <h:panelGroup id="page" layout="block" styleClass="grid"> 
+                <div class="col-12 md:col-12 lg:col-12">
+                    <p:panel header="ORDINATIVI DA STAMPARE" style="min-height: 400px">                        
+                        <h:panelGroup id="table" layout="block" styleClass="grid">
+                            <div class="col-12">
+                                <p:dataTable id="ordinativi" value="#{ordinativiStampareController.ordinativi}" var="o" selectionMode="single" selection="#{ordinativiStampareController.ordinativo}" rowKey="#{o.id}" stripedRows="true"
+                                             paginator="true" rows="100" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" filteredValue="#{ordinativiStampareController.ordinativiFiltrati}" globalFilterFunction="#{ordinativiStampareController.filtroGlobale}"
+                                             rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" widgetVar="ordinativiTable" size="small" rowStyleClass="group-#{ordinativiStampareController.rowColor(o)}" editable="true" editMode="cell" editInitEvent="dblclick">
+                                    <p:ajax event="rowSelect" listener="#{ordinativiStampareController.aggiornaAllegati}" update=":form:allegati-panel" />
+                                    <p:ajax event="filter" listener="#{ordinativiStampareController.pulisciSelezione()}" update=":form:allegati-panel" />
+                                    <p:ajax event="cellEdit" listener="#{ordinativiStampareController.onCellEdit}" update="form:msg"/>
+                                    
+                                    <f:facet name="header">
+                                        <div class="flex">                                                                                        
+                                            <div class="flex justify-content-end" style="width: 100%">
+                                                <p:inputText id="globalFilter" onkeyup="PF('ordinativiTable').filter()" style="width:300px" placeholder="Ricerca globale" />
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column headerText="COMPETENZA" style="width: 10%">
+                                        #{ordinativiStampareController.decodeCapComp(o.idCompetenza).anno} | #{ordinativiStampareController.decodeCapComp(o.idCompetenza).descrizione}
+                                    </p:column>
+                                    <p:column headerText="CONTO" style="width: 6%;">
+                                        <i jsf:id="infoCodice" class="pi pi-info-circle">&#160;</i>
+                                        #{formatter.codiceComposto(ordinativiStampareController.decodeCodice(o.idCodice))}
+                                        <p:tooltip for="infoCodice" value="#{ordinativiStampareController.decodeCodice(o.idCodice).descrizione}" position="bottom" />
+                                    </p:column>                                    
+                                    <p:column headerText="DOC." style="width: 4%;">
+                                        #{ordinativiStampareController.decodeTipoDocumento(o.idTipoDocumento).descrizione}    
+                                    </p:column>
+                                    <p:column headerText="N." style="width: 2%;">
+                                        #{o.numeroDocumento}    
+                                    </p:column>
+                                    <p:column headerText="DEL" style="width: 4%;">
+                                        <h:outputText value="#{o.dataDocumento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>                                    
+                                    <p:column headerText="N. PAG." style="width: 3%;">
+                                        #{o.numeroPagamento}
+                                    </p:column>
+                                    <p:column headerText="DEL" style="width: 4%;">
+                                        <h:outputText value="#{o.dataPagamento}">
+                                            <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="BENEFICIARIO">
+                                        #{o.beneficiario}    
+                                    </p:column>
+                                    <p:column headerText="NOTE" title="Doppio click per modificare">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{o.note}"/>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText id="note" value="#{o.note}" style="width:100%" maxlength="255"/>
+                                            </f:facet>
+                                        </p:cellEditor>                                          
+                                    </p:column>
+                                    <p:column headerText="IMPORTO" style="width: 4%; text-align: right;">
+                                        <h:outputText value="#{o.importo}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>                                    
+                                    <p:column style="width: 2%;">
+                                        <p:commandButton id="stampa" icon="pi pi-print" title="Segna come stampato" styleClass="ui-button-success" process="@this" oncomplete="PF('stampatoDialog').show()">
+                                            <f:setPropertyActionListener value="#{o}" target="#{ordinativiStampareController.ordinativo}" />
+                                        </p:commandButton>
+                                    </p:column>                                    
+                                </p:dataTable>
+                            </div>
+                            <div class="col-1">
+                                <p:commandButton id="aggiornaOrdinativi" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{ordinativiStampareController.aggiornaOrdinativi()}" process="@this" update="ordinativi allegati-panel"/>
+                            </div>
+                        </h:panelGroup>
+                    </p:panel>
+
+                    <h:panelGroup id="allegati-panel" layout="block">
+                        <p:panel header="ALLEGATI" style="min-height: 400px" rendered="#{not empty ordinativiStampareController.ordinativo}">
+                            <div class="grid">
+                                <div class="col-12 md:col-6">
+                                    <p:dataTable id="allegati" value="#{ordinativiStampareController.allegati}" var="a" paginator="true" rows="5" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                                 currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} allegati"  rowsPerPageTemplate="5,10,{ShowAll|'Tutti'}" stripedRows="true" size="small">
+                                        <p:column headerText="DOCUMENTO">
+                                            #{a.nomefile}
+                                        </p:column>
+                                        <p:column headerText="DESCRIZIONE">
+                                            #{a.descrizione}
+                                        </p:column>
+                                        <p:column style="width: 3%">
+                                            <p:commandButton id="allegato" icon="pi pi-eye" title="Mostra allegato" process="@this" update=":form:docviewer :form:msg" oncomplete="PF('documentoDialog').show()">
+                                                <f:setPropertyActionListener value="#{a}" target="#{ordinativiStampareController.allegato}" />
+                                            </p:commandButton>                                            
+                                        </p:column>
+                                        <p:column style="width: 3%">
+                                            <p:linkButton id="download" icon="pi pi-download" title="Scarica allegato" styleClass="ui-button-help" href="#{request.contextPath}/download?scope=O&#38;id=#{a.id}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </div> 
+                            </div>
+                            <div class="grid">                                                     
+                                <div class="col-1">
+                                    <p:commandButton id="aggiornaAllegati" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{ordinativiStampareController.aggiornaAllegati()}" process="@this" update="allegati"/>
+                                </div>
+                            </div>
+                        </p:panel>
+
+                        <p:dialog header="Documento" showEffect="fade" modal="true" widgetVar="documentoDialog" responsive="true" width="60%">
+                            <p:outputPanel id="documento-content" class="ui-fluid" > 
+                                <pe:documentViewer id="docviewer" value="#{docController.stream}" width="100%" height="500">
+                                    <f:param name="x" value="#{ordinativiStampareController.timeStamp}" />
+                                    <f:param name="scope" value="O" />
+                                    <f:param name="id" value="#{ordinativiStampareController.allegato.id}" />
+                                </pe:documentViewer>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="Chiudi" icon="pi pi-times" update="page" immediate="true" action="#{ordinativiStampareController.pulisciAllegato()}" oncomplete="PF('documentoDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog>
+                        
+                        <p:growl id="msg" showDetail="true" escape="false"/>
+                    </h:panelGroup>
+                </div>
+            </h:panelGroup>
+            
+            <p:confirmDialog widgetVar="stampatoDialog" showEffect="fade" width="300" message="Segnare l'ordinativo come STAMPATO? Attenzione! L'operazione è irreversibile." header="Conferma" severity="warn">
+                <p:commandButton value="Si" icon="pi pi-check" actionListener="#{ordinativiStampareController.stampa()}" process="@this" update="ordinativi :form:allegati-panel msg" oncomplete="PF('stampatoDialog').hide()"/>
+                <p:commandButton value="No" styleClass="ui-button-secondary" process="@none" icon="pi pi-times" actionListener="#{ordinativiStampareController.pulisciOrdinativo()}" oncomplete="PF('stampatoDialog').hide()" />
+            </p:confirmDialog>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

@@ -1,0 +1,454 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                xmlns:fn="jakarta.tags.functions"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Dashboard</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{indexController.init()}" />
+        </f:metadata>        
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+
+            <h:panelGroup id="page" layout="block" styleClass="grid dashboard">                
+                <div class="col-3 md:col-6 lg:col-3">
+                    <div class="grid card grid-nogutter overview-box overview-box-1">
+                        <div class="col-3 overview-box-icon">
+                            <p:graphicImage name="images/balance.svg" library="verona-layout"/>
+                        </div>
+                        <div class="col-9">
+                            <span class="overview-box-count card-header">
+                                <h:outputText id="saldo" value="#{indexController.saldo}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </span>
+                            <span class="overview-box-name">SALDO GEOCOS</span>
+                            <span>
+                                al 
+                                <p:commandButton icon="pi pi-calendar" styleClass="rounded-button ui-button-success ui-button-flat" title="Cambia data"
+                                                 process="@this" onclick="PF('wvDataSaldoDialog').show();">
+                                    <h:outputText id="dataSaldo" value="#{indexController.dataSaldo}">
+                                        <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                                    </h:outputText>
+                                </p:commandButton>
+                                <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna saldo"
+                                                 process="@this" action="#{indexController.aggiornaSaldo()}" update="saldo" />
+                            </span>
+                        </div>
+                    </div>                   
+                </div>
+                <div class="col-3 md:col-6 lg:col-3">
+                    <div class="grid card grid-nogutter overview-box overview-box-1">
+                        <div class="col-3 overview-box-icon">
+                            <p:graphicImage name="images/piggy-bank.svg" library="verona-layout"/>
+                        </div>
+                        <div class="col-9">
+                            <span class="overview-box-count card-header">
+                                <h:outputText id="saldolr8" value="#{indexController.saldoLR8}" styleClass="#{indexController.saldoLR8ChiusiDifferente ? 'red' : 'green'}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </span>
+                            <span class="overview-box-name">SALDO LR8</span>
+                            <span>
+                                <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna saldo"
+                                                 process="@this" action="#{indexController.aggiornaSaldoLR8()}" update="saldolr8" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3 md:col-6 lg:col-3">
+                    <div class="grid card grid-nogutter overview-box overview-box-1">
+                        <div class="col-3 overview-box-icon">
+                            <p:graphicImage name="images/document1.svg" library="verona-layout"/>
+                        </div>
+                        <div class="col-9">
+                            <span class="overview-box-count card-header">
+                                <h:outputText id="nordmc" value="#{indexController.numeroOrdinativiMeseCorr}" /> / <h:outputText id="nordmp" value="#{indexController.numeroOrdinativiMesePrec}" />
+                                <p:tooltip for="nordmc" value="MESE CORRENTE" escape="false" />
+                                <p:tooltip for="nordmp" value="MESE PRECEDENTE" escape="false" />
+                            </span>
+                            <span class="overview-box-name">
+                                ORDINATIVI MESE CORR./PREC.                               
+                            </span>
+                            <span>
+                                <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna conteggio"
+                                                 process="@this" action="#{indexController.aggiornaOrdinativiMesePrecedente()}" update="nordmp nordmc" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-3 md:col-6 lg:col-3">
+                    <div class="grid card grid-nogutter overview-box overview-box-1">
+                        <div class="col-3 overview-box-icon">
+                            <p:graphicImage name="images/infinity.svg" library="verona-layout"/>
+                        </div>
+                        <div class="col-9">
+                            <span class="overview-box-count card-header" style="font-size: 25px !important;">
+                                <h:outputText id="totqui" value="#{indexController.totaleQuietanze}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText> / 
+                                <h:outputText id="totord" value="#{indexController.totaleOrdinativi}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </span>
+                            <span class="overview-box-name">TOTALE QUIETANZE/ORDINATIVI</span>
+                            <span>
+                                al 
+                                <p:commandButton icon="pi pi-calendar" styleClass="rounded-button ui-button-success ui-button-flat" title="Cambia data"
+                                                 process="@this" onclick="PF('wvdataTotOrdQuiDialog').show();">
+                                    <h:outputText id="dataOrdQui" value="#{indexController.dataOrdQui}">
+                                        <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                                    </h:outputText>
+                                </p:commandButton>
+                                
+                                <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna valore"
+                                                 process="@this" action="#{indexController.aggiornaTotaliQuietanzeOrdintivi()}" update="totqui totord" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-3 md:col-6 lg:col-3">
+                    <div class="grid card grid-nogutter overview-box overview-box-1">
+                        <div class="col-3 overview-box-icon">
+                            <p:graphicImage name="images/building.svg" library="verona-layout"/>
+                        </div>
+                        <div class="col-9">
+                            <span class="overview-box-count card-header">
+                                <h:outputText id="ivaanagrafica" value="#{indexController.ivaAnagrafica}">                                
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>                                
+                            </span>
+                            <span class="overview-box-name">
+                                IVA ANAGRAFICA A.C.
+                            </span>
+                            <span>
+                                <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna importi"
+                                                 process="@this" action="#{indexController.aggiornaIVA()}" update="ivapagata ivadapagare ivaanagrafica" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-3 md:col-6 lg:col-3">
+                    <div class="grid card grid-nogutter overview-box overview-box-1">
+                        <div class="col-3 overview-box-icon">
+                            <p:graphicImage name="images/iva_pagata.svg" library="verona-layout"/>
+                        </div>
+                        <div class="col-9">
+                            <span class="overview-box-count card-header">
+                                <h:outputText id="ivapagata" value="#{indexController.ivaPagata}">                                
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>                                
+                            </span>
+                            <span class="overview-box-name">
+                                IVA PAGATA NELL'ANNO
+                            </span>
+                            <span>
+                                <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna importi"
+                                                 process="@this" action="#{indexController.aggiornaIVA()}" update="ivapagata ivadapagare ivaanagrafica" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-3 md:col-6 lg:col-3">
+                    <div class="grid card grid-nogutter overview-box overview-box-1">
+                        <div class="col-3 overview-box-icon">
+                            <p:graphicImage name="images/creditcard.svg" library="verona-layout"/>
+                        </div>
+                        <div class="col-9">
+                            <span class="overview-box-count card-header">
+                                <h:outputText id="ivadapagare" value="#{indexController.ivaDaPagare}" styleClass="#{indexController.IVAOk}">                                
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </span>
+                            <span class="overview-box-name">IVA DA PAGARE</span>
+                            <span>
+                                <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna importi"
+                                                 process="@this" action="#{indexController.aggiornaIVA()}" update="ivapagata ivadapagare ivaanagrafica" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <p:tabView id="statocomplessivo" dynamic="true" cache="false">
+                    <p:ajax event="tabChange" listener="#{indexController.onChange}" update="statoac stato" />
+
+                    <p:tab id="annocorrente" title="APERTI">
+                        <div class="grid">
+                            <div class="col-12">
+                                <p:dataTable id="statoac" value="#{indexController.statoCapitoliAnnoCorrente}" var="sc" rowKey="#{sc.id}" stripedRows="true" selectionMode="single" selection="#{indexController.capitoloAnnoCorrenteSelezionato}"
+                                             rowStyleClass="#{sc.chiuso eq 2 ? 'lightgreen' : ''}">
+                                    <f:facet name="header">
+                                        <div class="flex">      
+                                            <div class="flex" style="width: 250px">
+                                                SITUAZIONE CAPITOLI APERTI
+                                            </div>                                        
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column headerText="CAPITOLO">
+                                        #{sc.anno} | #{sc.descrizione}
+                                    </p:column>
+                                    <p:column headerText="QUIETANZE" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.importoQuietanze}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="ORDINATIVI" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.importoOrdinativi gt 0 ? -sc.importoOrdinativi : 0}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="SALDO" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.saldo}" styleClass="#{indexController.getFormat(sc.saldo)}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="VIRTUALI" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.importoVirtuale}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>                                    
+                                    <p:column headerText="SALDO VIRTUALE" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.saldoVirtuale}" styleClass="#{indexController.getFormat(sc.saldoVirtuale)}" style="font-weight: bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:columnGroup type="footer" id="totali">
+                                        <p:row>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    Trovati #{fn:length(indexController.statoCapitoliAnnoCorrente)} capitoli/competenze. 
+                                                </f:facet>
+                                            </p:column>                                            
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{indexController.totaliAnnoCorrente['Q']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{-indexController.totaliAnnoCorrente['O']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{indexController.totaliAnnoCorrente['S']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{indexController.totaliAnnoCorrente['V']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{indexController.totaliAnnoCorrente['SV']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>                                                                        
+                                </p:dataTable>
+                            </div>
+                            <div class="col-2 lightgreen">
+                                Capitoli in attesa di rimborso dal Comissario.
+                            </div>
+                            <div class="col-9"></div>
+                            <div class="col-1" style="text-align: right;">
+                                <p:commandButton id="aggiornaOrdinativiAC" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{indexController.aggiornaAnnoCorrente()}" process="@this" update="statoac"/>
+                            </div>  
+                        </div>
+                    </p:tab>
+                    <p:tab id="tuttiglianni" title="COMPLESSIVO">
+                        <div class="grid">
+                            <div class="col-12">
+                                <p:dataTable id="stato" value="#{indexController.statoCapitoli}" var="sc" rowKey="#{sc.id}" stripedRows="true" selectionMode="single" selection="#{indexController.capitoloSelezionato}"
+                                             filteredValue="#{indexController.statoCapitoliFiltrato}" filterBy="#{indexController.filterBy}" widgetVar="statoTable"                                 
+                                             paginator="true" rows="100" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" selectionPageOnly="false">
+                                    <p:ajax event="filter" oncomplete="refreshTotali();"/>
+                                    <f:facet name="header">
+                                        <div class="flex">      
+                                            <div class="flex" style="width: 250px">
+                                                SITUAZIONE CAPITOLI                                    
+                                            </div>
+                                            <div class="flex justify-content-end" style="width: 100%">
+                                                <p:commandButton action="#{indexController.clearFilters(true)}" process="@this" update="@form" value="Pulisci filtri" />
+                                            </div>
+                                        </div>
+                                    </f:facet>
+
+                                    <p:column field="descrizione" headerText="CAPITOLO" filterBy="descrizione" filterFunction="#{indexController.filterFunctionCapitoli}">
+                                        <f:facet name="filter">
+                                            <p:selectCheckboxMenu widgetVar="capcompcbm" label="Nessuna selezione" updateLabel="true" selectedLabel="Selezione effettuata. Cliccare per mostrare l'elenco" onchange="PF('statoTable').filter()" styleClass="custom-filter" style="min-width: 100% !important" filter="true" filterMatchMode="contains" value="#{indexController.selectedCapitoli}">
+                                                <f:selectItems value="#{indexController.capitoli}" />                                                                                                   
+                                            </p:selectCheckboxMenu>
+                                        </f:facet>
+                                        #{sc.anno} | #{sc.descrizione}
+                                    </p:column>
+                                    <p:column field="anno" headerText="ANNO" width="4%" filterBy="anno" filterFunction="#{indexController.filterFunctionAnni}" style="text-align: center;">
+                                        <f:facet name="filter">
+                                            <!--
+                                            <p:selectOneMenu onchange="PF('statoTable').filter()" styleClass="custom-filter" style="width: 100% !important;">
+                                                <f:selectItem itemLabel="TUTTI" itemValue="#{null}" noSelectionOption="true" />
+                                                <f:selectItems value="#{indexController.anni}" />
+                                            </p:selectOneMenu>
+                                            -->
+                                            <p:selectCheckboxMenu widgetVar="annicbm" label="--" updateLabel="true" selectedLabel="..." onchange="PF('statoTable').filter()" styleClass="custom-filter" style="min-width: 100% !important" filter="true" filterMatchMode="contains" value="#{indexController.selectedAnni}">
+                                                <f:selectItems value="#{indexController.anni}" />                                                                                                   
+                                            </p:selectCheckboxMenu>
+                                        </f:facet>
+                                        #{sc.anno}
+                                    </p:column>
+                                    <p:column field="chiuso" headerText="STATO" width="5%" filterMatchMode="exact" style="text-align: center;">
+                                        <f:facet name="filter">
+                                            <p:selectOneMenu onchange="PF('statoTable').filter()" styleClass="custom-filter">
+                                                <f:selectItem itemLabel="TUTTI" itemValue="#{null}" noSelectionOption="true" />
+                                                <f:selectItem itemLabel="CHIUSO" itemValue="1" />
+                                                <f:selectItem itemLabel="APERTO" itemValue="0" />
+                                                <f:selectItem itemLabel="IN ATTESA" itemValue="2" />
+                                            </p:selectOneMenu>
+                                        </f:facet>
+                                        <ui:fragment rendered="#{sc.chiuso==1}">
+                                            <i class="pi pi-check-circle" />
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{sc.chiuso==2}">
+                                            <i class="pi pi-clock" />
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column headerText="QUIETANZE" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.importoQuietanze}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="ORDINATIVI" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.importoOrdinativi}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="SALDO" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.saldo}" styleClass="#{indexController.getFormat(sc.saldo)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="VIRTUALI" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.importoVirtuale}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>                                    
+                                    <p:column headerText="SALDO VIRTUALE" width="6%" style="text-align: right;">
+                                        <h:outputText value="#{sc.saldoVirtuale}" styleClass="#{indexController.getFormat(sc.saldoVirtuale)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:columnGroup type="footer" >
+                                        <p:row>
+                                            <p:column>
+                                                <f:facet name="footer">
+                                                    Trovati <h:outputText id="totalecapitoli" value="#{fn:length(indexController.statoCapitoliFiltrato)}" /> capitoli/competenze. 
+                                                </f:facet>
+                                            </p:column>                         
+                                            <p:column colspan="2" />
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText id="totalequietanze" value="#{indexController.totaliComplessivo['Q']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText id="totaleordinativi" value="#{indexController.totaliComplessivo['O']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText id="totalesaldo" value="#{indexController.totaliComplessivo['S']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText id="totalevirtuale" value="#{indexController.totaliComplessivo['V']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText id="totalesaldovirtuale" value="#{indexController.totaliComplessivo['SV']}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
+                                </p:dataTable>
+                                <p:remoteCommand name="refreshTotali" actionListener="#{indexController.aggiornaTotaliComplessivi()}" update="stato:totalecapitoli stato:totalequietanze stato:totaleordinativi stato:totalesaldo stato:totalevirtuale stato:totalesaldovirtuale" />
+                            </div>                            
+                            <div class="col-11"></div>
+                            <div class="col-1" style="text-align: right;">
+                                <p:commandButton id="aggiornaOrdinativi" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{indexController.aggiornaStatoCapitoli()}" process="@this" update="stato"/>
+                            </div> 
+                        </div>
+                    </p:tab>
+                </p:tabView>
+
+                <p:dialog id="dataSaldoDialog" widgetVar="wvDataSaldoDialog" modal="true" width="20%" header="Data Saldo">
+                    <div class="grid formgrid">                        
+                        <div class="field col-12">
+                            <p:outputLabel for="dataSaldoGeocos" value="Data Saldo:" />
+                            <p:datePicker id="dataSaldoGeocos" value="#{indexController.dataSaldo}" showIcon="true" showOnFocus="false" monthNavigator="true" showButtonBar="true" required="true"
+                                          yearNavigator="true" pattern="dd-MM-yyyy" mask="true" maxdate="#{indexController.today}"/>
+                        </div>
+                        <div class="field col-12">
+                            <p:commandButton id="confirmDate" value="Ok" action="#{indexController.aggiornaSaldo()}" update=":form:saldo :form:dataSaldo" oncomplete="PF('wvDataSaldoDialog').hide()" />
+                        </div>
+                    </div>
+                </p:dialog>
+                
+                <p:dialog id="dataTotOrdQuiDialog" widgetVar="wvdataTotOrdQuiDialog" modal="true" width="20%" header="Data Quietanze/Ordinativi">
+                    <div class="grid formgrid">                        
+                        <div class="field col-12">
+                            <p:outputLabel for="dataOrdQuiCheck" value="Data Saldo:" />
+                            <p:datePicker id="dataOrdQuiCheck" value="#{indexController.dataOrdQui}" showIcon="true" showOnFocus="false" monthNavigator="true" showButtonBar="true" required="true"
+                                          yearNavigator="true" pattern="dd-MM-yyyy" mask="true" maxdate="#{indexController.today}"/>
+                        </div>
+                        <div class="field col-12">
+                            <p:commandButton id="confirmDateOrdQui" value="Ok" action="#{indexController.aggiornaTotaliQuietanzeOrdintivi()}" update=":form:totqui :form:totord :form:dataOrdQui" oncomplete="PF('wvdataTotOrdQuiDialog').hide()" />
+                        </div>
+                    </div>
+                </p:dialog>
+            </h:panelGroup>
+
+            <p:growl id="msg" showDetail="true" escape="false"/>
+        </h:form>       
+    </ui:define>
+
+</ui:composition>

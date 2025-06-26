@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
+	 viewBox="0 0 460 460" xml:space="preserve">
+<g id="XMLID_894_">
+	<polygon id="XMLID_895_" style="fill:#FFB739;" points="210,133.956 79.782,133.956 79.782,103.956 200,80 	"/>
+	<polygon id="XMLID_896_" style="fill:#FFD488;" points="240,70 240,410 200,410 200,80 	"/>
+	<polygon id="XMLID_897_" style="fill:#FFB739;" points="93.43,123.966 159.56,257.246 132.69,270.586 79.78,163.956 79.78,123.966 
+			"/>
+	<polygon id="XMLID_898_" style="fill:#FFD488;" points="79.78,123.966 79.78,163.956 26.87,270.586 0,257.246 66.13,123.966 	"/>
+	<circle id="XMLID_899_" style="fill:#FB992D;" cx="79.782" cy="133.956" r="30"/>
+	<path id="XMLID_900_" style="fill:#FFB739;" d="M79.78,257.25l10,39.89l-10,39.89C35.79,337.03,0,301.24,0,257.25H79.78z"/>
+	<path id="XMLID_901_" style="fill:#FB992D;" d="M79.78,257.25h79.78c0,43.99-35.79,79.78-79.78,79.78V257.25z"/>
+	<polygon id="XMLID_902_" style="fill:#FB992D;" points="393.87,123.966 460,257.246 433.13,270.586 380.22,163.956 380.22,123.966 
+			"/>
+	<polygon id="XMLID_903_" style="fill:#FFB739;" points="380.22,123.966 380.22,163.956 327.31,270.586 300.44,257.246 
+		366.57,123.966 	"/>
+	<polygon id="XMLID_904_" style="fill:#FB992D;" points="250,133.956 380.218,133.956 380.218,103.956 260,80 	"/>
+	<circle id="XMLID_905_" style="fill:#F67A21;" cx="380.218" cy="133.956" r="30"/>
+	<path id="XMLID_906_" style="fill:#FB992D;" d="M380.22,257.25l10,39.89l-10,39.89c-43.99,0-79.78-35.79-79.78-79.78L380.22,257.25
+		L380.22,257.25z"/>
+	<polygon id="XMLID_907_" style="fill:#FFB739;" points="230,400 240,440 150,430 170,400 	"/>
+	<polygon id="XMLID_908_" style="fill:#FFD488;" points="230,430 240,445 230,460 120,460 120,430 	"/>
+	<path id="XMLID_909_" style="fill:#F67A21;" d="M380.22,257.25H460c0,43.99-35.79,79.78-79.78,79.78V257.25z"/>
+	<polygon id="XMLID_910_" style="fill:#FFB739;" points="240,20 240,80 200,80 200,30 	"/>
+	<polygon id="XMLID_911_" style="fill:#FFB739;" points="260,80 260,410 230,410 230,80 245,70 	"/>
+	<rect id="XMLID_912_" x="230" y="430" style="fill:#FFB739;" width="110" height="30"/>
+	<polygon id="XMLID_913_" style="fill:#FB992D;" points="290,400 310,430 230,430 230,400 	"/>
+	<polygon id="XMLID_914_" style="fill:#FB992D;" points="260,30 260,80 230,80 230,20 	"/>
+	<path id="XMLID_915_" style="fill:#F67A21;" d="M230,0c-16.569,0-30,13.431-30,30h60C260,13.431,246.569,0,230,0z"/>
+</g>
+</svg>

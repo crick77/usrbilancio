@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<configuration debug="true">
+    <if condition='isNull("LOG_OUTPUT_DIR")'>
+        <then>
+            <property name="LOG_OUTPUT_DIR" value="c:/Dev" />
+        </then>
+    </if>
+    <if condition='isNull("LOG_OUTPUT_FILENAME")'>
+        <then>
+            <property name="LOG_OUTPUT_FILENAME" value="debug" />
+        </then>
+    </if>
+
+    <appender name="FILE-AUDIT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_OUTPUT_DIR}/${LOG_OUTPUT_FILENAME}.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS}|%5level|[%logger{5}.%M] - %msg%n%ex{5}</Pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>${LOG_OUTPUT_DIR}/${LOG_OUTPUT_FILENAME}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>            
+            <maxFileSize>10MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>            
+        </rollingPolicy>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-4relative [%thread] %-5level %logger{35} -%kvp- %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="it.usr" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE-AUDIT" />
+    </logger>
+
+    <logger name="org.jooq.tools.LoggerListener" level="debug">
+        <AppenderRef ref="STDOUT"/>
+    </logger>
+
+    <root level="ERROR">
+        <appender-ref ref="FILE-AUDIT" />
+    </root>
+</configuration>

@@ -1,0 +1,232 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                template="/WEB-INF/template.xhtml"
+                xmlns:pe="primefaces.extensions">
+
+    <ui:define name="title">Situazione</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{situazioneController.init()}" />
+        </f:metadata>
+        <style>
+            .ui-treetable thead th {
+                white-space: normal;
+                word-wrap: break-word;
+            }
+        </style>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <p:tooltip />
+            <p:growl id="msg" showDetail="true" escape="false" class="top-most"/>
+
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">                        
+                        <div class="grid">
+                            <div class="col-2">
+                                <p:outputLabel for="@next" value="Mostra solo #{situazioneController.annoAttuale} e #{situazioneController.annoAttuale-1}" />&#160;
+                                <p:toggleSwitch id="annocorrente" value="#{situazioneController.annoCorrente}" onIcon="pi pi-check" offIcon="pi pi-times">
+                                    <p:ajax event="change" listener="#{situazioneController.aggiornaSituazione()}" update="situazione" />
+                                </p:toggleSwitch>
+                            </div>                            
+                        </div>
+                        <div class="grid">                          
+                            <div class="col-12">
+                                <p:treeTable id="situazione" value="#{situazioneController.situazioneTree}" var="s" nodeVar="n" emptyMessage="Nessuna situazione da mostrare. Abilitare i capitoli desiderati o popolare i relativi stanziamenti." stickyHeader="true">
+                                    <f:facet name="header">                                        
+                                        <div class="flex align-items-center justify-content-between">                                            
+                                            <span>&#160;</span>
+                                            <p:commandButton id="refreshsit" icon='pi pi-refresh' styleClass="rounded-button ui-button-secondary" action="#{situazioneController.aggiornaSituazione()}" process="@this" update="situazione" title="Aggiorna elenco" />
+                                        </div>
+                                    </f:facet>
+                                    <p:column headerText="COMPETENZA/CAPITOLO" style="width: 30%">
+                                        #{s.titolo}
+                                    </p:column>
+                                    <p:column headerText="STATO" style="width: 4%">
+                                        <ui:fragment rendered="#{s.chiuso eq 1}">
+                                            <i jsf:id="chiuso" class="pi pi-check-circle" /><p:tooltip for="chiuso" position="top" value="Capitolo chiuso" />
+                                        </ui:fragment>
+                                        <ui:fragment rendered="#{s.chiuso eq 2}">
+                                            <i jsf:id="inattesa" class="pi pi-clock" /><p:tooltip for="inattesa" position="top" value="Capitolo in attesa di chiusura" />
+                                        </ui:fragment>
+                                    </p:column>
+                                    <p:column headerText="STANZIATO" styleClass="right">
+                                        <h:outputText value="#{s.stanziamento}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="TRASFERITO" styleClass="right">
+                                        <h:outputText value="#{s.finanziato}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="STANZIATO-TRASF." styleClass="right">
+                                        <h:outputText styleClass="#{situazioneController.getFormat(situazioneController.sub(s.stanziamento, s.finanziato))} bold" value="#{situazioneController.sub(s.stanziamento, s.finanziato)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="SPESO" styleClass="right">
+                                        <h:outputText value="#{s.speso}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="SALDO" styleClass="right">
+                                        <h:outputText styleClass="#{situazioneController.getFormat(situazioneController.sub(s.finanziato, s.speso))} bold" value="#{situazioneController.sub(s.finanziato, s.speso)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="PREVENTIVATO / IMPEGNATO" styleClass="right">
+                                        <h:outputText value="#{s.preventivato}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="SALDO IMPEGNATO" styleClass="right">
+                                        <h:outputText styleClass="#{situazioneController.getFormat(situazioneController.sum(situazioneController.sub(s.finanziato, s.speso), s.preventivato))} bold" value="#{situazioneController.sum(situazioneController.sub(s.finanziato, s.speso), s.preventivato)}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </p:column>
+                                    <p:column headerText="RICHIESTO" styleClass="right">
+                                        <h:outputText styleClass="#{situazioneController.getFormat(s.richiesto)}" value="#{s.richiesto}" rendered="#{s.richiesto!=null}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                        <h:outputText value="--" rendered="#{s.richiesto==null and s.anno!=null}" />
+                                    </p:column>
+                                    <p:column style="width: 2%">
+                                        <ui:fragment rendered="#{n.childCount==0}">
+                                            <p:commandButton id="req" icon="pi pi-send" oncomplete="PF('richiesteDialog').show()" process="@this" update="form:richiesteDialog" styleClass="ui-button-info rounded-button ui-button-outlined">
+                                                <f:setPropertyActionListener value="#{s}" target="#{situazioneController.selezione}" />
+                                                <f:setPropertyActionListener value="#{n}" target="#{situazioneController.nodoSelezionato}" />
+                                            </p:commandButton>
+                                        </ui:fragment>
+                                    </p:column>
+                                </p:treeTable>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <p:dialog id="richiesteDialog" widgetVar="richiesteDialog" width="80%" header="DOCUMENTI CAPITOLO [#{situazioneController.nodoSelezionato.parent.data.capitolo}] COMPETENZA [#{situazioneController.selezione.anno}]" modal="true" height="70vh" closeOnEscape="false" closable="false">
+                <div class="grid">       
+                    <div class="col-12">
+                        <p:dataTable id="richieste" value="#{situazioneController.richieste}" var="r" rows="5" paginator="true" paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} documenti"
+                                     rowsPerPageTemplate="5,10,{ShowAll|'Tutti'}" emptyMessage="Nessun documento regisrgtato per la competenza selezionata.">
+                            <f:facet name="header">                                
+                                <div class="flex align-items-center justify-content-between">
+                                    <span>Elenco documenti</span>
+                                    <p:commandButton id="refreshric" icon='pi pi-refresh' styleClass="rounded-button ui-button-secondary" action="#{situazioneController.aggiornaRichieste()}" process="@this" update="richieste" title="Aggiorna elenco" />
+                                </div>
+                            </f:facet>
+                            <p:column headerText="PROTOCOLLO/DECRETO" width="10%">
+                                #{r.numeroProtocollo}
+                            </p:column>
+                            <p:column headerText="DEL" width="6%">
+                                <h:outputText value="#{r.dataProtocollo}">
+                                    <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="ING./USC." width="6%">
+                                <ui:fragment rendered="#{r.ingresso!=0}">
+                                    <i class="pi pi-sign-in green" />
+                                </ui:fragment>
+                                <ui:fragment rendered="#{r.ingresso==0}">
+                                    <i class="pi pi-sign-out red" />
+                                </ui:fragment>
+                            </p:column>
+                            <p:column headerText="IMPORTO" width="6%" styleClass="right">
+                                <h:outputText value="#{r.importo}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="NOTE">
+                                #{r.note}
+                            </p:column>
+                            <p:column width="2%">
+                                <p:commandButton id="mostradocumento" icon="pi pi-eye" process="@this" update="form:docviewer" oncomplete="PF('documentoDialog').show()" styleClass="ui-button-help">
+                                    <f:setPropertyActionListener value="#{r}" target="#{situazioneController.richiesta}" />
+                                </p:commandButton>
+                            </p:column>
+                            <p:column width="2%">
+                                <p:commandButton id="elimina" icon="pi pi-trash" process="@this" actionListener="#{situazioneController.eliminaRichiesta(r)}" update="richieste" styleClass="ui-button-danger">
+                                    <p:confirm type="popup" header="Conferma" message="Eliminare la richiesta col relativo documento? ATTENZIONE: L'operazione è irreversibile!" icon="pi pi-exclamation-triangle"/>
+                                </p:commandButton>
+                            </p:column>
+                        </p:dataTable>
+                    </div>
+                </div>
+                <f:facet name="footer">
+                    <p:commandButton id='nuova' icon="pi pi-plus" value="Nuovo documento" action="#{situazioneController.nuovaRichiesta()}" update="richiestaDialog" oncomplete="PF('richiestaDialog').show()" styleClass="ui-button-warning" />
+                    <p:commandButton id="chiudi" value="Chiudi" icon="pi pi-times" update="situazione" process="@this" action="#{situazioneController.aggiornaSituazione()}" class="ui-button-danger" oncomplete="PF('richiesteDialog').hide()" />                                        
+                </f:facet>
+            </p:dialog>
+
+            <p:dialog id="documentoDialog" widgetVar="documentoDialog" header="DOCUMENTO ALLEGATO" width="80%" modal="true" styleClass="dialog-fix">
+                <div class="grid">
+                    <div class="col-12">
+                        <pe:documentViewer id="docviewer" value="#{docController.stream}" width="100%" height="500">
+                            <f:param name="x" value="#{situazioneController.timeStamp}" />
+                            <f:param name="scope" value="R" />
+                            <f:param name="id" value="#{situazioneController.richiesta.id}" />
+                            <f:param name="empty" value="#{empty situazioneController.richiesta.id}" />
+                        </pe:documentViewer>
+                    </div>
+                </div>
+            </p:dialog>
+
+            <p:dialog id="richiestaDialog" widgetVar="richiestaDialog" header="NUOVO DOCUMENTO" width="30%" modal="true" styleClass="dialog-fix">
+                <p:outputPanel id='panel' class="ui-fluid formgrid">
+                    <div class="field">
+                        <p:outputLabel for="@next">Protocollo</p:outputLabel>
+                        <p:inputText id="protocollo" value="#{situazioneController.richiesta.numeroProtocollo}" maxlength="16" required="true" requiredMessage="Protocollo obbligatorio"/>                                
+                    </div>
+                    <div class="field">
+                        <p:outputLabel for="@next">Data Protocollo</p:outputLabel>
+                        <p:datePicker id="dataprotocollo" value="#{situazioneController.richiesta.dataProtocollo}" pattern="dd-MM-yyyy" required="true" requiredMessage="Data protocollo obbligatoria" panelStyleClass="top-most"/>
+                    </div>
+                    <div class="field">
+                        <p:outputLabel for="@next">Tipologia</p:outputLabel>
+                        <p:selectOneMenu id="tipologia" value="#{situazioneController.richiesta.ingresso}" panelStyleClass="top-most">
+                            <f:selectItem itemValue="1" itemLabel="INGRESSO" />
+                            <f:selectItem itemValue="0" itemLabel="USCITA" />
+                        </p:selectOneMenu>
+                    </div>
+                    <div class="field">
+                        <p:outputLabel for="@next">Importo</p:outputLabel>
+                        <p:inputNumber id="importo" value="#{situazioneController.richiesta.importo}" decimalPlaces="2" decimalSeparator="," decimalSeparatorAlternative="." thousandSeparator="." required="true" requiredMessage="Importo obbligatorio"/>
+                    </div>
+                    <div class="field">
+                        <p:outputLabel for="@next">Note</p:outputLabel>
+                        <p:inputTextarea id="note" value="#{situazioneController.richiesta.note}" maxlength="255" rows="2" />
+                    </div>
+                    <div class="field">
+                        <p:outputLabel for="@next">Documento</p:outputLabel>
+                        <p:fileUpload id="documento" value="#{situazioneController.documento}" mode="simple" dragDropSupport="true" update="msg" 
+                                      label="Seleziona documento" style="width:100%" multiple="false" required="true" requiredMessage="Il documento è obbligatorio">
+                            <p:validateFile sizeLimit="67108864" />
+                        </p:fileUpload>
+                    </div>
+                </p:outputPanel>
+
+                <f:facet name="footer">
+                    <p:commandButton value="Salva" icon="pi pi-save" update="richieste msg" process="richiestaDialog" action="#{situazioneController.salvaRichiesta()}" class="ui-button-primary" />                    
+                    <p:commandButton value="Annulla" icon="pi pi-times" immediate="true" oncomplete="PF('richiestaDialog').hide()" class="ui-button-secondary" />
+                </f:facet>
+            </p:dialog>
+
+            <p:confirmPopup global="true">
+                <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no ui-button-flat"/>
+                <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes" />
+            </p:confirmPopup>            
+        </h:form>
+    </ui:define>
+
+</ui:composition>

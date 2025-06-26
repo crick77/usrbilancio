@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:p="primefaces">
+
+    <h:head>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+        </f:facet>
+        <title>PrimeFaces Verona</title>
+        <script type="text/javascript">
+            $(function () {
+                $('#menu-button').on('click', function (e) {
+                    $('#header').toggleClass('menu-active');
+                    e.preventDefault();
+                });
+            });
+        </script>
+    </h:head>
+
+    <h:body styleClass="landing-body">
+        <div class="landing-wrapper">
+            <div id="header">
+                <div class="header-top">
+                    <p:graphicImage name="images/logo-main.png" library="verona-layout" styleClass="logo"/>
+
+                    <a id="menu-button" href="#">
+                        <p:graphicImage name="images/icon-menu.svg" library="verona-layout" />
+                    </a>
+
+                    <ul class="animated fadeInDown">
+                        <li>
+                            <a href="#home">HOME</a>
+                        </li>
+                        <li>
+                            <a href="#features">FEATURES</a>
+                        </li>
+                        <li>
+                            <a href="#statistics">STATISTICS</a>
+                        </li>
+                        <li>
+                            <a href="#pricing">PRICING</a>
+                        </li>
+                        <li>
+                            <a href="#video">VIDEO</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="header-content">
+                    <h1>PrimeFaces Presents Verona</h1>
+                    <h2>Minimal layout inspired by a beautiful city</h2>
+                    <div>
+                        <a href="#">
+                            LEARN MORE
+                        </a>
+                    </div>
+                    <div class="introduction-image">
+                        <p:graphicImage name="images/landing/verona.png" library="verona-layout" />
+                    </div>
+                </div>
+            </div>
+
+            <div id="features">
+                <h1>FEATURES</h1>
+                <div>
+                    <div class="grid">
+                        <div class="col-12 md:col-4">
+                            <p:graphicImage name="images/landing/feature-responsive.png" library="verona-layout" />
+                            <h3>RESPONSIVE LAYOUT</h3>
+                            <p>Don’t forget to change this dummy text with your favorite IDE for this icon box.</p>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <p:graphicImage name="images/landing/feature-design.png" library="verona-layout" />
+                            <h3>MODERN DESIGN</h3>
+                            <p>Don’t forget to change this dummy text with your favorite IDE for this icon box.</p>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <p:graphicImage name="images/landing/feature-cleancode.png" library="verona-layout" />
+                            <h3>CLEAN CODE</h3>
+                            <p>Don’t forget to change this dummy text with your favorite IDE for this icon box. </p>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <p:graphicImage name="images/landing/feature-doc.png" library="verona-layout" />
+                            <h3>WELL DOCUMENTED</h3>
+                            <p>Don’t forget to change this dummy text with your favorite IDE for this icon box. </p>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <p:graphicImage name="images/landing/feature-grid.png" library="verona-layout" />
+                            <h3>POWERFUL GRID</h3>
+                            <p>Don’t forget to change this dummy text with your favorite IDE for this icon box.</p>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <p:graphicImage name="images/landing/feature-support.png" library="verona-layout" />
+                            <h3>PREMIUM SUPPORT</h3>
+                            <p>Don’t forget to change this dummy text with your favorite IDE for this icon box. </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="statistics">
+                <div>
+                    <div class="grid">
+                        <div class="col-12 md:col-3">
+                            <h3>100+</h3>
+                            <p>UI COMPONENTS</p>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <h3>425</h3>
+                            <p>HOURS OF DEVELOPMENT</p>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <h3>119</h3>
+                            <p>CUPS OF COFFEE CONSUMED</p>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <h3>500K+</h3>
+                            <p>DOWNLOADS</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="pricing">
+                <div>
+                    <h1>PRICING</h1>
+                    <div class="grid">
+                        <div class="col-12 md:col-4">
+                            <div class="price-type">
+                                <h3>BEGINNER</h3>
+                                <span class="price-for">For starters and side projects</span>
+                                <ul>
+                                    <li>Responsive</li>
+                                    <li>Push Messages</li>
+                                </ul>
+                                <span class="currency">$</span>
+                                <span class="price">5</span>
+                                <span class="term">/mo</span>
+                                <p:button value="CHOOSE" styleClass="ui-button-success ui-button-raised rounded-button" />
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <div class="price-type price-type-popular">
+                                <span class="popular-title">MOST POPULAR</span>
+                                <h3>PROFESSIONAL</h3>
+                                <span class="price-for">For professionals</span>
+                                <ul>
+                                    <li>Responsive</li>
+                                    <li>Push Messages</li>
+                                    <li>7/24 Support</li>
+                                    <li>Free Shipping</li>
+                                </ul>
+                                <span class="currency">$</span>
+                                <span class="price">10</span>
+                                <span class="term">/mo</span>
+                                <p:button  value="CHOOSE" styleClass="ui-button-success ui-button-raised rounded-button" />
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <div class="price-type">
+                                <h3>ENTERPRISE</h3>
+                                <span class="price-for">For enterprise</span>
+                                <ul>
+                                    <li>Responsive</li>
+                                    <li>Push Messages</li>
+                                    <li>7/24 Support</li>
+                                    <li>Free Shipping</li>
+                                    <li>Unlimited Bandwidth</li>
+                                    <li>Unlimited Storage</li>
+                                </ul>
+                                <span class="currency">$</span>
+                                <span class="price">20</span>
+                                <span class="term">/mo</span>
+                                <p:button value="CHOOSE" styleClass="ui-button-success ui-button-raised rounded-button" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="video">
+                <div>
+                    <h1>Video</h1>
+                    <div class="video-container">
+                        <iframe width="560" height="315" src="https://www.youtube.com/embed/-YHA84oG-eQ" frameborder="0" allow="fullscreen"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <div id="footer">
+                <div>
+                    <p:graphicImage name="images/logo-colored.png" library="verona-layout" />
+                    <span class="appname">VERONA</span>
+                    <div class="social">
+                        <a href="#"><i class="pi pi-facebook-square"></i></a>
+                        <a href="#"><i class="pi pi-twitter-square"></i></a>
+                        <a href="#"><i class="pi pi-github-square"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h:outputStylesheet name="css/primeicons.css" library="verona-layout"/>
+        <h:outputStylesheet name="css/primeflex.min.css" library="verona-layout"/>
+        <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="verona-layout" />
+    </h:body>
+
+</html>
