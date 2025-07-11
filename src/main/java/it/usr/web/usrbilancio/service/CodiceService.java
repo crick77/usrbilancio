@@ -10,6 +10,7 @@ import it.usr.web.usrbilancio.domain.tables.records.MimeTypeRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
 import it.usr.web.usrbilancio.interceptor.LogDatabaseOperation;
+import it.usr.web.usrbilancio.model.Intervento;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,7 @@ import org.jooq.impl.SQLDataType;
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class CodiceService {   
+public class CodiceService {       
     public enum GruppoRts {
         RTS_QUIETANZA, RTS_ORDINATIVO, RTS_TUTTI;
     }
@@ -236,6 +237,10 @@ public class CodiceService {
 
             throw dae;
         }
+    }
+    
+    public List<Intervento> getInterventiPubblica() {
+        return null;
     }
     
     public CodiceRecord cercaUltimo(CodiceRecord cod) {

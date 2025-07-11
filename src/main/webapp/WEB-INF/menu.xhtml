@@ -47,6 +47,9 @@
                         <p:menuitem id="m_rts" value="Gestione tipi RTS" icon="pi pi-fw pi-database" outcome="/secure/rts"/>
                         <p:menuitem id="m_log" value="Registro operazioni" icon="pi pi-fw pi-book" outcome="/secure/logop" rendered="#{activeUser.currentUser.attributes.admin eq 1}"/>
                     </p:submenu>
+                    <p:submenu id="m_pubblica" label="Pubblica" icon="pi pi-fw pi-building-columns">
+                        <p:menuitem id="m_interventi" value="Interventi" icon="pi pi-fw pi-hammer" outcome="/secure/interventi"/>
+                    </p:submenu>
                     <p:menuitem id="m_uscita" value="Uscita" icon="pi pi-fw pi-sign-out" outcome="/secure/uscita"/>
                 </pv:menu>
             </h:form>

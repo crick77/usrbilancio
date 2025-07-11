@@ -227,7 +227,7 @@
                         </h:panelGroup>
                     </p:panel>                                                                                
                 </div>
-            </h:panelGroup>
+            </h:panelGroup> 
 
             <p:dialog header="ORDINATIVO LIQUIDAZIONE IVA" showEffect="fade" modal="true" widgetVar="ordinativoTargetDialog" responsive="true" width="40%">
                 <p:outputPanel id="ordinativotarget-content" class="ui-fluid grid formgrid">
@@ -235,7 +235,7 @@
                         <p:selectOneMenu id="ordinativopagamentoiva" value="#{ivaController.ordinativoAggancioSelezionato}" var="oa" converter="ordinativoConverter" hideNoSelectionOption="#{not empty ivaController.ordinativoAggancioSelezionato}" 
                                          style="min-width: 600px" panelStyle="width:600px" filter="true" filterMatchMode="contains" filterNormalize="true" required="true" requiredMessage="Ordinativo obbligatorio">
                             <f:selectItem itemValue="#{null}" itemLabel="Selezionare un ordinativo..." noSelectionOption="true" />
-                            <f:selectItems value="#{ivaController.ordinativiAggancio}" var="o" itemValue="#{o}" itemLabel="N. #{o.numeroPagamento} del #{formatter.formattaData(oi.dataPagamento)} - #{o.beneficiario} - #{formatter.formattaDecimale(oi.importo)}" />
+                            <f:selectItems value="#{ivaController.ordinativiAggancio}" var="o" itemValue="#{o}" itemLabel="N. #{o.numeroPagamento} del #{formatter.formattaData(o.dataPagamento)} - #{o.beneficiario} - € #{formatter.formattaDecimale(o.importo)}" />
 
                             <p:column style="width: 5%">
                                 <f:facet name="header">

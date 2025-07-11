@@ -174,15 +174,17 @@ public class OrdinativiController extends BaseController {
     }
 
     public boolean isOrdinativoFlag() {
-        return ordinativo!=null ? ((ordinativo.getFlag() & 1) == 1) : false;
+        return ordinativo!=null ? (ordinativo.getFlag()!=null ? (ordinativo.getFlag() & 1) == 1 : false) : false;
     } 
  
     public void setOrdinativoFlag(boolean ordinativoFlag) {
-        int currentFlag = ordinativo.getFlag();
-        currentFlag = ordinativoFlag ? (currentFlag | 1) : (currentFlag & ~1);
-        ordinativo.setFlag(currentFlag);
+        if(ordinativo!=null && ordinativo.getFlag()!=null) {
+            int currentFlag = ordinativo.getFlag();
+            currentFlag = ordinativoFlag ? (currentFlag | 1) : (currentFlag & ~1);
+            ordinativo.setFlag(currentFlag);
+        }
     }
-    
+     
     public CapitoloCompetenza getOrdinativoCapComp() {
         return ordinativoCapComp;
     }

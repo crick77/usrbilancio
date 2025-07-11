@@ -442,7 +442,7 @@
                         </p:outputPanel>
 
                         <f:facet name="footer">                            
-                            <p:commandButton value="Salva" icon="pi pi-save" process="ordinativo-content" update="form:ordinativi form:msg" class="ui-button-secondary" action="#{elencoOrdinativiController.salva()}" rendered="#{elencoOrdinativiController.ordinativoCapComp.chiuso == 0}"/>
+                            <p:commandButton value="Salva" icon="pi pi-save" process="ordinativo-content" update="form:ordinativi form:msg" class="ui-button-secondary" action="#{elencoOrdinativiController.salva()}" />
                             <p:commandButton value="Chiudi" icon="pi pi-times" immediate="true" onclick="PF('ordinativoDialog').hide()" class="ui-button-secondary" />
                         </f:facet>
                     </p:dialog>

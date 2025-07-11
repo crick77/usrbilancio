@@ -240,7 +240,7 @@
                         <p:selectOneMenu id="ordinativopagamentoritenuta" value="#{ritenutaController.ordinativoAggancioSelezionato}" var="oa" converter="ordinativoConverter" hideNoSelectionOption="#{not empty ritenutaController.ordinativoAggancioSelezionato}" 
                                          style="min-width: 600px" panelStyle="width:600px" filter="true" filterMatchMode="contains" filterNormalize="true" required="true" requiredMessage="Ordinativo obbligatorio">
                             <f:selectItem itemValue="#{null}" itemLabel="Selezionare un ordinativo..." noSelectionOption="true" />
-                            <f:selectItems value="#{ritenutaController.ordinativiAggancio}" var="o" itemValue="#{o}" itemLabel="N. #{o.numeroPagamento} del #{formatter.formattaData(o.dataPagamento)} - #{o.beneficiario} - #{formatter.formattaDecimale(o.importo)}" />
+                            <f:selectItems value="#{ritenutaController.ordinativiAggancio}" var="o" itemValue="#{o}" itemLabel="N. #{o.numeroPagamento} del #{formatter.formattaData(o.dataPagamento)} - #{o.beneficiario} - € #{formatter.formattaDecimale(o.importo)}" />
 
                             <p:column style="width: 5%">
                                 <f:facet name="header"> 
