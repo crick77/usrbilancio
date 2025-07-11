@@ -44,5 +44,9 @@ public class InterventiPubblicaController extends BaseController {
 
     public void setIntervento(Intervento intervento) {
         this.intervento = intervento;
-    }        
-}
+    }    
+
+    public void errorTest() {
+        throw new RuntimeException("Test errore da "+getClass().getName());
+    }
+} 

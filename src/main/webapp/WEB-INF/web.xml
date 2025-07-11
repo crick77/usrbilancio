@@ -100,7 +100,7 @@
             <param-name>urls</param-name>
             <param-value>/secure/</param-value>
         </init-param>
-    </filter>
+    </filter> 
     <filter-mapping>
         <filter-name>authFilter</filter-name>
         <servlet-name>facesServlet</servlet-name>  
@@ -112,7 +112,8 @@
     </filter>        
     <filter-mapping>
         <filter-name>logFilter</filter-name>
-        <servlet-name>facesServlet</servlet-name>       
+        <!-- <servlet-name>facesServlet</servlet-name> -->
+        <url-pattern>/*</url-pattern>
     </filter-mapping>                
                            
     <filter>
@@ -144,9 +145,9 @@
     <error-page>
         <error-code>404</error-code>
         <location>/notfound.xhtml</location>
-    </error-page>
+    </error-page>    
     <error-page>
         <error-code>500</error-code>
         <location>/error.xhtml</location>
-    </error-page>
+    </error-page>       
 </web-app>

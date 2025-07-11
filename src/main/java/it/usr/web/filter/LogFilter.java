@@ -61,7 +61,5 @@ public class LogFilter extends FacesExceptionFilter  {
     public void init() throws ServletException {
         super.init(); //To change body of generated methods, choose Tools | Templates.
         System.out.println(getClass().getName()+": initialized (logger: "+logger+").");
-    }
-    
-    
+    }        
 }

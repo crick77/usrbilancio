@@ -12,7 +12,11 @@
             <div class="grid">
                 <div class="col-12">
                     <div class="card">
-                        <h4>Interventi pubblica - lato EF</h4>                        
+                        <h4>Interventi pubblica - lato EF</h4>
+                        <p:commandButton action="#{interventiPubblicaController.errorTest()}" value="Test errore (non ajax)" ajax="false"/>
+                        <br/>
+                        <br/>
+                        <p:commandButton action="#{interventiPubblicaController.errorTest()}" value="Test errore (ajax)"/>
                     </div>
                 </div>
             </div>

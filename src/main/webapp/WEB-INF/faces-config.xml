@@ -24,6 +24,9 @@
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd">
     <factory>
+     <!--
         <exception-handler-factory>org.omnifaces.exceptionhandler.FullAjaxExceptionHandlerFactory</exception-handler-factory>
+     -->
+            <exception-handler-factory>it.usr.web.handler.AjaxExceptionHandler$Factory</exception-handler-factory>
     </factory>
 </faces-config>
