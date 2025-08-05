@@ -210,7 +210,7 @@
                                     <p:commandButton id="txSelezionatiLibrocassaCompl" value="Trasf. in Libro Cassa Completati" styleClass="ui-button-primary" icon="pi pi-file-check" process="@this" oncomplete="PF('trasferisciOrdinativiCompletiDialog').show()" disabled="#{not importatiController.canTransferMulti or importatiController.multiDaConsolidare}"/>
                                 </div>
                                 <div class="col-2 center">
-                                    <p:commandButton id="txSelezionatiLibrocassaConsol" value="Trasf. in Libro Cassa Da Consol." styleClass="ui-button-secondary" icon="pi pi-objects-column" process="@this" oncomplete="PF('trasferisciOrdinativiConsolidaDialog').show()" disabled="#{not importatiController.canTransferMulti}"/>
+                                    <p:commandButton id="txSelezionatiLibrocassaConsol" value="Trasf. in Libro Cassa Da Consol." styleClass="ui-button-secondary" icon="pi pi-objects-column" process="@this" oncomplete="PF('trasferisciOrdinativiConsolidaDialog').show()" disabled="#{not importatiController.canTransferMulti or not importatiController.multiDaConsolidare}"/>
                                 </div>
                             </ui:fragment>
                         </h:panelGroup>
