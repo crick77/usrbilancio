@@ -444,6 +444,7 @@ public class WebServices {
     private List<OperaPubblica> getTotaliOOPP(String tipo, LocalDate from, LocalDate to, LocalDate toAp) {
         //int codice2 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("2")).fetchSingleInto(Integer.class);
         //int codice7 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("7")).fetchSingleInto(Integer.class);
+        int codice2 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("2")).fetchSingleInto(Integer.class);
         int codice99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
         
        /* String sql = """
@@ -465,14 +466,16 @@ public class WebServices {
                             ifnull(c.ente_diocesi, '') as ente, 
                             ifnull(c.provincia, '') as provincia, 
                             ifnull(c.descrizione, '') as intervento,
-                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.data_pagamento between {0} and {1}), 0) as trasferito,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts = {5} and q.data_pagamento between {0} and {1}), 0) as trasferito,
                             ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {1}), 0) as liquidato,
-                            ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {2}), 0) as liquidato_ap
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts <> {5} and q.data_pagamento between {0} and {1}), 0) as stornato,
+                            ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {2}), 0) as liquidato_ap,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts <> {5} and q.data_pagamento between {0} and {2}), 0) as stornato_ap
                      FROM usrbilancio.codice c where c.codice = {3} and c03 is not null
                      """;
        
         //return ctx.fetch(sql, from, to, toAp, tipo, codice2, codice7).into(OperaPubblica.class);
-        return ctx.fetch(sql, from, to, toAp, tipo, codice99).into(OperaPubblica.class);
+        return ctx.fetch(sql, from, to, toAp, tipo, codice99, codice2).into(OperaPubblica.class);
     }
     
     @GET

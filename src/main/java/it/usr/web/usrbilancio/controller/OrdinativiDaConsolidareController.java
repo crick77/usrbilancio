@@ -312,13 +312,13 @@ public class OrdinativiDaConsolidareController extends BaseController {
             os.modifica(ordinativo);  
             ordinativo = null;
             
-            BigDecimal bdOld = new BigDecimal(oldValue);
+            /*BigDecimal bdOld = new BigDecimal(oldValue);
             BigDecimal bdNew = new BigDecimal(newValue);
             BigDecimal diff = bdOld.subtract(bdNew);
             totaleImportoCons = totaleImportoCons.add(diff);
             importoDifferenza = importoDifferenza.add(diff); 
              
-            PrimeFaces.current().ajax().update("form:ordinativi");
+            PrimeFaces.current().ajax().update("form:ordinativi");*/
             
             addMessage(Message.info("Informazioni aggiornate."));             
         } 

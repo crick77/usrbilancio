@@ -87,12 +87,12 @@
                                             </f:facet>
                                         </p:cellEditor>                                          
                                     </p:column>                                    
-                                    <p:column headerText="IMPORTO OPI" style="width: 4%; text-align: right;" exportFunction="#{tableExporterController.decodeImpoto(o.importo)}">
+                                    <p:column headerText="IMPORTO OPI" style="width: 5%; text-align: right;" exportFunction="#{tableExporterController.decodeImpoto(o.importo)}">
                                         <h:outputText value="#{o.importo}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </p:column>  
-                                    <p:column headerText="IMPORTO CONS." style="width: 4%; text-align: right;" exportFunction="#{tableExporterController.decodeImpoto(o.importoCoons)}">                                        
+                                    <p:column headerText="IMPORTO CONS." style="width: 5%; text-align: right;" exportFunction="#{tableExporterController.decodeImpoto(o.importoCoons)}">                                        
                                         <p:cellEditor>
                                             <f:facet name="output">
                                                 <h:outputText value="#{o.importoCons}">

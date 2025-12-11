@@ -19,8 +19,13 @@ public class OperaPubblica {
     private BigDecimal trasferito;
     private BigDecimal liquidato;
     private BigDecimal liquidatoAp;
+    private BigDecimal stornato;
+    private BigDecimal stornatoAp;
 
-    public OperaPubblica(String codice, String ordinanza, String provincia, String ente, String intervento, BigDecimal trasferito, BigDecimal liquidato, BigDecimal liquidatoAp) {
+    public OperaPubblica() {
+    }
+
+    public OperaPubblica(String codice, String ordinanza, String provincia, String ente, String intervento, BigDecimal trasferito, BigDecimal liquidato, BigDecimal liquidatoAp, BigDecimal stornato, BigDecimal stornatoAp) {
         this.codice = codice;
         this.ordinanza = ordinanza;
         this.provincia = provincia;
@@ -29,8 +34,10 @@ public class OperaPubblica {
         this.trasferito = trasferito;
         this.liquidato = liquidato;
         this.liquidatoAp = liquidatoAp;
+        this.stornato = stornato;
+        this.stornatoAp = stornatoAp;
     }
-    
+        
     public String getCodice() {
         return codice;
     }
@@ -93,5 +100,21 @@ public class OperaPubblica {
 
     public void setLiquidatoAp(BigDecimal liquidatoAp) {
         this.liquidatoAp = liquidatoAp;
-    }      
+    }     
+
+    public BigDecimal getStornato() {
+        return stornato;
+    }
+
+    public void setStornato(BigDecimal stornato) {
+        this.stornato = stornato;
+    }
+
+    public BigDecimal getStornatoAp() {
+        return stornatoAp;
+    }
+
+    public void setStornatoAp(BigDecimal stornatoAp) {
+        this.stornatoAp = stornatoAp;
+    }    
 }
