@@ -12,13 +12,17 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.service.AuthService;
-import it.usr.web.usrbilancio.domain.Tables;
+import static it.usr.web.usrbilancio.domain.Tables.*;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ModelliRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.model.AccessInfo;
 import it.usr.web.usrbilancio.model.Download;
+import it.usr.web.usrbilancio.model.OperaPubblica;
+import it.usr.web.usrbilancio.model.RiepilogoRGS;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
 import it.usr.web.usrbilancio.producer.DocumentFolder;
+import it.usr.web.usrbilancio.service.CompetenzaService;
 import it.usr.web.usrbilancio.ws.security.JWTVerify;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -34,6 +38,7 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -42,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import org.jooq.DSLContext;
+import org.jooq.exception.DataAccessException;
+import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 
 /**
@@ -61,6 +68,8 @@ public class WebServices {
     AuthService as;
     @Inject
     SessionStorage ss;
+    @Inject
+    CompetenzaService cs;
     @Inject
     @DSLBilancio
     DSLContext ctx;
@@ -128,9 +137,18 @@ public class WebServices {
             if(ss.invalidate(token)) {            
                 return Response.noContent().build();
             }
-        }
+        } 
         
         return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+    
+    @GET
+    @Path("tipirts")
+    @Produces(MediaType.APPLICATION_JSON)
+    //@JWTVerify
+    public Response getTipiRts() {
+        String sTipiRts = ctx.selectFrom(TIPO_RTS).fetch().formatJSON();        
+        return Response.ok(sTipiRts).build();         
     }
     
     @GET
@@ -142,14 +160,19 @@ public class WebServices {
             LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
         
-            String sOrd = ctx.selectFrom(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).orderBy(Tables.ORDINATIVO.DATA_PAGAMENTO).fetch().formatJSON();        
+            int id99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
+            String sOrd = ctx.selectFrom(ORDINATIVO)
+                            .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%").and(ORDINATIVO.ID_TIPO_RTS.ne(id99))))
+                            .orderBy(ORDINATIVO.DATA_PAGAMENTO, ORDINATIVO.NUMERO_PAGAMENTO)
+                            .fetch()
+                            .formatJSON();        
             
             return Response.ok(sOrd).build(); 
         }
         catch(DateTimeParseException dtpe) {
             log.error("Formato data non corretto {}", dtpe);
             
-            return Response.serverError().entity("Formato data non coreetto.").build();
+            return Response.serverError().entity("Formato data non corretto.").build();
         }
     }
     
@@ -162,14 +185,19 @@ public class WebServices {
             LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
         
-            String sQui = ctx.selectFrom(Tables.QUIETANZA).where(Tables.QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).orderBy(Tables.QUIETANZA.DATA_PAGAMENTO).fetch().formatJSON();        
+            int id99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
+            String sQui = ctx.selectFrom(QUIETANZA)
+                            .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%").and(QUIETANZA.ID_TIPO_RTS.ne(id99))))
+                            .orderBy(QUIETANZA.DATA_PAGAMENTO, QUIETANZA.NUMERO_PAGAMENTO)
+                            .fetch()
+                            .formatJSON();        
             
             return Response.ok(sQui).build(); 
         }
         catch(DateTimeParseException dtpe) {
             log.error("Formato data non corretto {}", dtpe);
             
-            return Response.serverError().entity("Formato data non coreetto.").build();
+            return Response.serverError().entity("Formato data non corretto.").build();
         }
     }
     
@@ -179,7 +207,7 @@ public class WebServices {
     //@JWTVerify
     public Response getDownloadQuietanza(@PathParam("id") int id) {
         try {                    
-            QuietanzaRecord q = ctx.selectFrom(Tables.QUIETANZA).where(Tables.QUIETANZA.ID.eq(id)).fetchSingle();        
+            QuietanzaRecord q = ctx.selectFrom(QUIETANZA).where(QUIETANZA.ID.eq(id)).fetchSingle();        
             
             if("__blank.pdf".equalsIgnoreCase(q.getNomefileLocale())) return Response.noContent().build();
             
@@ -196,14 +224,38 @@ public class WebServices {
     }
     
     @GET
-    @Path("ordinativo/download/{id: \\d+}")
+    @Path("ordinativo/{from}/{to}/countfiles")
     @Produces(MediaType.APPLICATION_JSON)
-    @JWTVerify
+    //@JWTVerify
+    public Response getConteggioFileOrdinativi(@PathParam("from") String from, @PathParam("to") String to) {
+        try {             
+            LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            
+            int id99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
+            int count = ctx.select(DSL.count(ALLEGATO.ID))
+                    .from(ALLEGATO.join(ORDINATIVO).on(ALLEGATO.ID_ORDINATIVO.eq(ORDINATIVO.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%").and(ORDINATIVO.ID_TIPO_RTS.ne(id99))))
+                    .fetchOneInto(Integer.class);
+                                    
+            return Response.ok(count).build(); 
+        }
+        catch(DateTimeParseException dtpe) {
+            log.error("Formato data non corretto {}", dtpe);
+            
+            return Response.serverError().entity("Formato data non corretto.").build();
+        }
+    } 
+    
+    @GET
+    @Path("ordinativo/download/{id: \\d+}") 
+    @Produces(MediaType.APPLICATION_JSON) 
+    //@JWTVerify
     public Response getDownloadOrdinativo(@PathParam("id") int id) {
         Integer idAllegato = null;
         
         try {                    
-            List<AllegatoRecord> allegati = ctx.selectFrom(Tables.ALLEGATO).where(Tables.ALLEGATO.ID_ORDINATIVO.eq(id)).fetch();        
+            List<AllegatoRecord> allegati = ctx.selectFrom(ALLEGATO).where(ALLEGATO.ID_ORDINATIVO.eq(id)).fetch();        
             
             if(allegati.isEmpty()) return Response.noContent().build();
             
@@ -222,4 +274,288 @@ public class WebServices {
             return Response.serverError().entity("Impossibile accedere al file.").build();
         }
     }
-}
+    
+    @GET
+    @Path("modello/{tipo}") 
+    @Produces(MediaType.APPLICATION_JSON) 
+    //@JWTVerify
+    public Response getModello(@PathParam("tipo") String tipo) {        
+        try {                    
+            List<ModelliRecord> modelli = ctx.selectFrom(MODELLI).where(MODELLI.TIPO.eq(tipo)).orderBy(MODELLI.DATA_PUBBLICAZIONE.desc()).fetch();
+            
+            if(modelli.isEmpty()) return Response.noContent().build();
+            
+            ModelliRecord modello = modelli.get(0);
+            byte[] data = Files.readAllBytes(java.nio.file.Path.of(documentFolder+"/"+modello.getNomefileLocale()));
+            Download d = new Download(modello.getNomefile(), data);
+                        
+            return Response.ok(d).build(); 
+        }
+        catch(IOException ioe) {
+            log.error("Impossibile accedere al modello TIPO={}: {}", tipo, ioe);
+            
+            return Response.serverError().entity("Impossibile accedere al file.").build();
+        }
+    }
+    
+    @GET
+    @Path("riepilogo/{from}/{to}")
+    @Produces(MediaType.APPLICATION_JSON)
+    //@JWTVerify
+    public Response getRiepilogo(@PathParam("from") String from, @PathParam("to") String to) {
+        try {
+            LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
+        
+            int anno = ldFrom.getYear();
+            int numero = anno-2017+1;
+            
+            RiepilogoRGS r = new RiepilogoRGS(anno, numero, ldFrom, ldTo);
+                        
+            // Compilazione ENTRATE
+            
+            BigDecimal i = cs.getSaldoGeocos(ldFrom);                        
+            r.getEntrate().setGiacenzaCassaInizioAnno(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
+                    .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("1")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);
+            r.getEntrate().setFondiComunitari(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
+                    .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("2")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);
+            r.getEntrate().setFondiStatali(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
+                    .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("3")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);
+            r.getEntrate().setFondiRegionali(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
+                    .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("4")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class); 
+            r.getEntrate().setFondiEntiLocali(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
+                    .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("5")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);
+            r.getEntrate().setTariffeServizi(i!=null ? i : BigDecimal.ZERO);
+                        
+            i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
+                    .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("6")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);
+            r.getEntrate().setAccensionePrestiti(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
+                    .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("7")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);
+            r.getEntrate().setAltro(i!=null ? i : BigDecimal.ZERO);
+            
+            // Compilazione USCITE
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("A")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setRedditiDaLD(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("B")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setConsumiItermedi(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("C")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setInteressiPassivi(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("D")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setTrasferimentiARegioni(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("E")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setTrasferimentiaEL(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("F")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setInvestimentiDiretti(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("G")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setTrasferimentiContoCapitale(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("H")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setRimborsiPrestiti(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("I")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setVersamentiErariali(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("L")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setVersamentiPrevidenziali(i!=null ? i : BigDecimal.ZERO);
+            
+            i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
+                    .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
+                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("M")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .fetchOneInto(BigDecimal.class);                        
+            r.getUscite().setAltro(i!=null ? i : BigDecimal.ZERO);
+                        
+            return Response.ok(r).build();   
+        }
+        catch(DateTimeParseException dtpe) {
+            log.error("Formato data non corretto {}", dtpe);
+            
+            return Response.serverError().entity("Formato data non corretto.").build();
+        }
+        catch(DataAccessException e) {
+            log.error("Errore durante la generazione del riepilogo da=[{}], a=[{}] - Ex: {}", from, to, e);
+            
+            return Response.serverError().entity("Errore durante la generazione del riepilogo.").build();
+        }
+    } 
+    
+    private List<OperaPubblica> getTotaliOOPP(String tipo, LocalDate from, LocalDate to, LocalDate toAp) {
+        //int codice2 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("2")).fetchSingleInto(Integer.class);
+        //int codice7 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("7")).fetchSingleInto(Integer.class);
+        int codice99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
+        
+       /* String sql = """
+                     SELECT ifnull(c.ordinanza, '') as ordinanza, 
+                            ifnull(c.ente_diocesi, '') as ente, 
+                            ifnull(c.provincia, '') as provincia, 
+                            ifnull(c.descrizione, '') as intervento,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts = {4} and q.data_pagamento between {0} and {1}), 0) as trasferito,
+                            ((ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.data_pagamento between {0} and {1}), 0) - (ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts = {5} and q.data_pagamento between {0} and {1}), 0)))) as liquidato,
+                            ((ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.data_pagamento between {0} and {2}), 0) - (ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts = {5} and q.data_pagamento between {0} and {2}), 0)))) as liquidato_ap
+                     FROM usrbilancio.codice c where c.codice = {3} and c03 is not null
+                     """;
+       */
+       
+        String sql = """
+                     SELECT 
+                            concat(c.codice, '.', c.c01, '.', c.c02, '.', c.c03) as codice,
+                            ifnull(c.ordinanza, '') as ordinanza, 
+                            ifnull(c.ente_diocesi, '') as ente, 
+                            ifnull(c.provincia, '') as provincia, 
+                            ifnull(c.descrizione, '') as intervento,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.data_pagamento between {0} and {1}), 0) as trasferito,
+                            ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {1}), 0) as liquidato,
+                            ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {2}), 0) as liquidato_ap
+                     FROM usrbilancio.codice c where c.codice = {3} and c03 is not null
+                     """;
+       
+        //return ctx.fetch(sql, from, to, toAp, tipo, codice2, codice7).into(OperaPubblica.class);
+        return ctx.fetch(sql, from, to, toAp, tipo, codice99).into(OperaPubblica.class);
+    }
+    
+    @GET
+    @Path("oopp/{from}/{to}")
+    @Produces(MediaType.APPLICATION_JSON)
+    //@JWTVerify
+    public Response getOperePubbliche(@PathParam("from") String from, @PathParam("to") String to) {    
+        LocalDate ldToAp = null;
+        try {
+            LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            ldToAp = ldTo.minusYears(1);
+            if(ldToAp.isBefore(ldFrom)) ldToAp = ldTo;
+            
+            List<OperaPubblica> lOp = getTotaliOOPP("POP", ldFrom, ldTo, ldToAp);
+            
+            return Response.ok(lOp).build();
+        }
+        catch(DateTimeParseException dtpe) {
+            log.error("Formato data non corretto {}", dtpe);
+            
+            return Response.serverError().entity("Formato data non coreetto.").build();
+        }
+        catch(DataAccessException e) {
+            log.error("Errore durante la generazione delle opere pubbliche da=[{}], a=[{}] ap=[{}] - Ex: {}", from, to, ldToAp);
+            
+            return Response.serverError().entity("Errore durante la generazione dell'elenco delle opere pubbliche.").build();
+        }
+    }
+    
+    @GET
+    @Path("chiese/{from}/{to}")
+    @Produces(MediaType.APPLICATION_JSON)
+    //@JWTVerify
+    public Response getChiese(@PathParam("from") String from, @PathParam("to") String to) {    
+        LocalDate ldToAp = null;
+        try {
+            LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            ldToAp = ldTo.minusYears(1);
+            if(ldToAp.isBefore(ldFrom)) ldToAp = ldTo;
+            
+            List<OperaPubblica> lOp = getTotaliOOPP("PCH", ldFrom, ldTo, ldToAp);
+            
+            return Response.ok(lOp).build();
+        }
+        catch(DateTimeParseException dtpe) {
+            log.error("Formato data non corretto {}", dtpe);
+            
+            return Response.serverError().entity("Formato data non coreetto.").build();
+        }
+        catch(DataAccessException e) {
+            log.error("Errore durante la generazione delle chiese da=[{}], a=[{}] ap=[{}] - Ex: {}", from, to, ldToAp);
+            
+            return Response.serverError().entity("Errore durante la generazione dell'elenco delle chiese.").build();
+        }
+    }
+    
+    @GET
+    @Path("ping/{msg}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response ping(@PathParam("msg") String msg) {
+        try {
+            String outMsg;          
+            if(msg!=null && !msg.isEmpty()) {
+                outMsg = ctx.fetchSingle("SELECT '%s';".formatted(msg)).into(String.class);
+            }
+            else {
+                outMsg = ctx.fetchSingle("SELECT VERSION();").into(String.class);
+            }
+            
+            return Response.ok(outMsg).build(); 
+        } 
+        catch(DataAccessException e) {
+            return Response.serverError().entity("Errore PING: "+e.toString()).build();
+        }
+    }
+    
+    @GET
+    @Path("ping")
+    @Produces(MediaType.TEXT_PLAIN) 
+    public Response ping() {
+        return ping(null);
+    }
+} 
+  

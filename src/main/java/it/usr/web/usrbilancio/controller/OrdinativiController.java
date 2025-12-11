@@ -528,6 +528,11 @@ public class OrdinativiController extends BaseController {
         if(ordinativoTipoDocumento!=null) ordinativo.setIdTipoDocumento(ordinativoTipoDocumento.getId());
         
         try {
+            // se in consolidaento, copia l'importo nel valore da consolidare
+            if(ordinativo.getConsolidamento()==1) {
+                if(ordinativo.getImportoCons()==null) ordinativo.setImportoCons(ordinativo.getImporto());
+            }
+            
             if(ordinativo.getId()==null) {
                 os.inserisci(ordinativo, lDoc);            
             }
@@ -645,6 +650,7 @@ public class OrdinativiController extends BaseController {
     
     public void consolida() {
         ordinativo.setConsolidamento((byte)1);
+        if(ordinativo.getImportoCons()==null) ordinativo.setImportoCons(ordinativo.getImporto());
         os.modifica(ordinativo);
         
         aggiornaOrdinativi();        

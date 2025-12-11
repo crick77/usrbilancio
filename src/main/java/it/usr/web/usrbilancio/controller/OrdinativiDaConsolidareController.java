@@ -26,6 +26,7 @@ import java.util.Map;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import org.primefaces.PrimeFaces;
 import org.primefaces.event.CellEditEvent;
@@ -64,6 +65,9 @@ public class OrdinativiDaConsolidareController extends BaseController {
     OrdinativoRecord ordinativo;
     AllegatoRecord allegato;
     UploadedFiles documentFiles;
+    BigDecimal totaleImporto;
+    BigDecimal totaleImportoCons;
+    BigDecimal importoDifferenza;
     
     public void init() {
         codici = codServ.getCodiciAsMap();
@@ -157,6 +161,18 @@ public class OrdinativiDaConsolidareController extends BaseController {
     public void setDocumentFiles(UploadedFiles documentFiles) {
         this.documentFiles = documentFiles;
     }
+
+    public BigDecimal getTotaleImporto() {
+        return totaleImporto;
+    }
+
+    public BigDecimal getTotaleImportoCons() {
+        return totaleImportoCons;
+    }
+
+    public BigDecimal getImportoDifferenza() {
+        return importoDifferenza;
+    }
                  
     public void aggiornaOrdinativi() {
         ordinativi = os.getOrdinativiDaConsolidare();    
@@ -165,8 +181,25 @@ public class OrdinativiDaConsolidareController extends BaseController {
         allegati = null;
         allegato = null;
         documentFiles = null;
+        totaleImporto = null;
+        totaleImportoCons = null;
+        importoDifferenza = null;
+        
+        aggiornaTotali();
         
         PrimeFaces.current().executeScript("PF('ordinativiTable').clearFilters();");
+    }
+     
+    public void aggiornaTotali() {
+        totaleImporto = BigDecimal.ZERO;
+        totaleImportoCons = BigDecimal.ZERO;
+        List<OrdinativoRecord> lO = (ordinativiFiltrati!=null) ? ordinativiFiltrati : ordinativi;
+        lO.forEach(o -> {
+            totaleImporto = totaleImporto.add(o.getImporto());
+            if(o.getImportoCons()!=null) totaleImportoCons = totaleImportoCons.add(o.getImportoCons());
+        });
+        
+        importoDifferenza = totaleImporto.subtract(totaleImportoCons);
     }
     
     public void aggiornaAllegati() {
@@ -183,7 +216,7 @@ public class OrdinativiDaConsolidareController extends BaseController {
         boolean match = contains(rec.getBeneficiario(), filterText)
             || contains(rec.getDescrizioneRts(), filterText) || contains(rec.getNumeroPagamento(), filterText) ;
         if(isDate(filterText)) {
-            LocalDate d = toDate(filterText);
+            LocalDate d = toDate(filterText); 
             match = match || d.equals(rec.getDataDocumento())
                           || d.equals(rec.getDataPagamento())
                           || d.equals(rec.getDataRicevimento());
@@ -265,22 +298,37 @@ public class OrdinativiDaConsolidareController extends BaseController {
     public CapitoloCompetenza decodeCapComp(int idCapComp) {
         return mCampComp.get(idCapComp);
     }
-    
+          
     public void onCellEdit(CellEditEvent event) {
         String oldValue = event.getOldValue()!=null ? String.valueOf(event.getOldValue()) : null;
         String newValue = event.getNewValue()!=null ? String.valueOf(event.getNewValue()) : null;
 
         if (!stringEquals(newValue, oldValue)) {
-            os.modifica(ordinativo);            
-            addMessage(Message.info("Note aggiornate."));            
+            if(ordinativo==null) {
+                addMessage(Message.warn("Selezionare l'ordinativo prima di modificare la riga!"));            
+                return;
+            }
+             
+            os.modifica(ordinativo);  
+            ordinativo = null;
+            
+            BigDecimal bdOld = new BigDecimal(oldValue);
+            BigDecimal bdNew = new BigDecimal(newValue);
+            BigDecimal diff = bdOld.subtract(bdNew);
+            totaleImportoCons = totaleImportoCons.add(diff);
+            importoDifferenza = importoDifferenza.add(diff); 
+             
+            PrimeFaces.current().ajax().update("form:ordinativi");
+            
+            addMessage(Message.info("Informazioni aggiornate."));             
         } 
     }
     
     public boolean filterByConto(Object value, Object filter, Locale locale) {
         String f = (String)filter;
-        String d = (String)value;
+        String d = (String)value; 
         if(d==null || f==null) return false;
         return (d.toUpperCase().contains(f.toUpperCase()));
-    }
+    } 
 }
- 
+  

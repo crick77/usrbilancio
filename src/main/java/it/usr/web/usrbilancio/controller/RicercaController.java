@@ -5,6 +5,7 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
@@ -12,12 +13,14 @@ import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
 import it.usr.web.usrbilancio.model.CapitoloCompetenza;
+import it.usr.web.usrbilancio.model.DocumentoAllegato;
 import it.usr.web.usrbilancio.model.RisultatoRicerca;
 import it.usr.web.usrbilancio.service.CodiceService;
 import it.usr.web.usrbilancio.service.CompetenzaService;
 import it.usr.web.usrbilancio.service.MovimentiVirtualiService;
 import it.usr.web.usrbilancio.service.OrdinativoService;
 import it.usr.web.usrbilancio.service.QuietanzaService;
+import it.usr.web.usrbilancio.service.SearchCriteria;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -60,13 +63,18 @@ public class RicercaController extends BaseController {
     Map<Integer, TipoRtsRecord> mTipiRts;
     List<CapitoloCompetenza> competenze;
     List<CodiceRecord> codici;
+    List<DocumentoAllegato> allegati;
+    DocumentoAllegato allegato;
     String testo;
-    LocalDate dataDa;
-    LocalDate dataA;
+    LocalDate dataDocDa;
+    LocalDate dataDocA;
+    LocalDate dataPagDa;
+    LocalDate dataPagA;
     BigDecimal importoDa;
     BigDecimal importoA;
     Integer annoCompetenza;
-    boolean dataAnd;
+    boolean dataDocAnd;
+    boolean dataPagAnd;
     boolean importoAnd;
     boolean completato;
     boolean tipiRtsAnd;
@@ -81,8 +89,10 @@ public class RicercaController extends BaseController {
     public void init() {
         risultato = null;
         testo = null;
-        dataDa = null;
-        dataA = null;
+        dataDocDa = null;
+        dataDocA = null;
+        dataPagDa = null;
+        dataPagA = null;
         importoDa = null;
         importoA = null;         
         tipiRtsSelezionati = null;
@@ -93,10 +103,13 @@ public class RicercaController extends BaseController {
         totaleMovimenti = null;
         totaleQuietanze = null;
         totaleOrdinativi = null;
+        allegati = null;
+        allegato = null;
         importoAnd = true;        
         tipiRtsAnd = true;
         codiciAnd = true;
-        dataAnd = true;
+        dataDocAnd = true;
+        dataPagAnd = true;
         annoCompAnd = true;
         competenzeAnd = true;
         
@@ -115,6 +128,18 @@ public class RicercaController extends BaseController {
         completato = false;
     }
 
+    public List<DocumentoAllegato> getAllegati() {
+        return allegati;
+    }
+
+    public DocumentoAllegato getAllegato() {
+        return allegato;
+    }
+
+    public void setAllegato(DocumentoAllegato allegato) {
+        this.allegato = allegato;
+    }
+                
     public List<TipoRtsRecord> getTipiRts() {
         return tipiRts;
     }
@@ -147,20 +172,20 @@ public class RicercaController extends BaseController {
         this.testo = testo;
     }
 
-    public LocalDate getDataDa() {
-        return dataDa;
+    public LocalDate getDataDocDa() {
+        return dataDocDa;
     }
 
-    public void setDataDa(LocalDate dataDa) {
-        this.dataDa = dataDa;
+    public void setDataDocDa(LocalDate dataDocDa) {
+        this.dataDocDa = dataDocDa;
     }
 
-    public LocalDate getDataA() {
-        return dataA;
+    public LocalDate getDataDocA() {
+        return dataDocA;
     }
 
-    public void setDataA(LocalDate dataA) {
-        this.dataA = dataA;
+    public void setDataDocA(LocalDate dataDocA) {
+        this.dataDocA = dataDocA;
     }
 
     public BigDecimal getImportoDa() {
@@ -179,12 +204,12 @@ public class RicercaController extends BaseController {
         this.importoA = importoA;
     }
 
-    public boolean isDataAnd() {
-        return dataAnd;
+    public boolean isDataDocAnd() {
+        return dataDocAnd;
     }
 
-    public void setDataAnd(boolean dataAnd) {
-        this.dataAnd = dataAnd;
+    public void setDataDocAnd(boolean dataDocAnd) {
+        this.dataDocAnd = dataDocAnd;
     }
 
     public boolean isImportoAnd() {
@@ -294,15 +319,48 @@ public class RicercaController extends BaseController {
     public BigDecimal getTotaleMovimenti() {
         return totaleMovimenti;
     }
-            
+
+    public LocalDate getDataPagDa() {
+        return dataPagDa;
+    }
+
+    public void setDataPagDa(LocalDate dataPagDa) {
+        this.dataPagDa = dataPagDa;
+    }
+
+    public LocalDate getDataPagA() {
+        return dataPagA;
+    }
+
+    public void setDataPagA(LocalDate dataPagA) {
+        this.dataPagA = dataPagA;
+    }
+
+    public boolean isDataPagAnd() {
+        return dataPagAnd;
+    }
+
+    public void setDataPagAnd(boolean dataPagAnd) {
+        this.dataPagAnd = dataPagAnd;
+    }
+             
     public void cerca() {
+        allegati = null;
+        allegato = null;
+        
         completato = false;
         List<String> tipSel = Arrays.asList(tipologieSelezionate!=null ? tipologieSelezionate : new String[]{});
         
-        if(dataDa!=null && dataA!=null && dataDa.isAfter(dataA)) {
-            LocalDate d = dataDa;
-            dataDa = dataA;
-            dataA = d;
+        if(dataDocDa!=null && dataDocA!=null && dataDocDa.isAfter(dataDocA)) {
+            LocalDate d = dataDocDa;
+            dataDocDa = dataDocA;
+            dataDocA = d;
+        }
+        
+        if(dataPagDa!=null && dataPagA!=null && dataPagDa.isAfter(dataPagA)) {
+            LocalDate d = dataPagDa;
+            dataPagDa = dataPagA;
+            dataPagA = d;
         }
         
         if(importoDa!=null && importoA!=null && importoDa.compareTo(importoA)>0) {
@@ -311,9 +369,27 @@ public class RicercaController extends BaseController {
             importoA = i;
         }
         
-        List<OrdinativoRecord> ordinativi = tipSel.contains("O") ? os.cerca(testo, dataAnd, dataDa, dataA, importoAnd, importoDa, importoA, tipiRtsAnd, tipiRtsSelezionati, codiciAnd, codiciSelezionati, annoCompAnd, annoCompetenza, competenzeAnd, competenzeSelezionate) : new ArrayList();
-        List<QuietanzaRecord> quietanze = tipSel.contains("Q") ? qs.cerca(testo, dataAnd, dataDa, dataA, importoAnd, importoDa, importoA, tipiRtsAnd, tipiRtsSelezionati, codiciAnd, codiciSelezionati, annoCompAnd, annoCompetenza, competenzeAnd, competenzeSelezionate) : new ArrayList();
-        List<MovimentiVirtualiRecord> movimenti = tipSel.contains("MV") ? mvs.cerca(testo, dataAnd, dataDa, dataA, importoAnd, importoDa, importoA, codiciAnd, codiciSelezionati, annoCompAnd, annoCompetenza, competenzeAnd, competenzeSelezionate) : new ArrayList();
+        SearchCriteria sc = new SearchCriteria();
+        sc.setTesto(testo);
+        sc.setDataDocAnd(dataDocAnd);
+        sc.setDataDocDa(dataDocDa);
+        sc.setDataDocA(dataDocA);
+        sc.setDataPagAnd(dataPagAnd);
+        sc.setDataPagDa(dataPagDa);
+        sc.setDataPagA(dataPagA);
+        sc.setImportoAnd(importoAnd);
+        sc.setImportoDa(importoDa);
+        sc.setImportoA(importoA);
+        sc.setTipiRts(tipiRtsSelezionati);
+        sc.setCodiciAnd(codiciAnd);
+        sc.setCodici(codiciSelezionati);
+        sc.setAnnoCompAnd(annoCompAnd);
+        sc.setAnnoCompetenza(annoCompetenza);
+        sc.setCompetenze(competenzeSelezionate);
+        
+        List<OrdinativoRecord> ordinativi = tipSel.contains("O") ? os.cerca(sc) : new ArrayList();
+        List<QuietanzaRecord> quietanze = tipSel.contains("Q") ? qs.cerca(sc) : new ArrayList();
+        List<MovimentiVirtualiRecord> movimenti = tipSel.contains("MV") ? mvs.cerca(sc) : new ArrayList();
          
         totale = BigDecimal.ZERO;
         totaleQuietanze = BigDecimal.ZERO;
@@ -427,6 +503,29 @@ public class RicercaController extends BaseController {
         return sb.toString();                
     }
     
+    public void aggiornaAllegati(RisultatoRicerca r) {
+        allegati = new ArrayList<>();
+        switch(r.getTipologia()) {
+            case MOVIMENTO_VIRTUALE ->  {
+                MovimentiVirtualiRecord mv = mvs.getMovimentoVirtualeById(r.getId());
+                DocumentoAllegato da = new DocumentoAllegato(r.getId(), "MV", mv.getNomefile(), null, "Documento");
+                allegati.add(da);
+            }
+            case ORDINATIVO ->  {
+                List<AllegatoRecord> al = os.getAllegatiOrdinativo(r.getId());
+                al.forEach(a -> {
+                    DocumentoAllegato da = new DocumentoAllegato(a.getId(), "O", a.getNomefile(), a.getGruppo(), a.getDescrizione());
+                    allegati.add(da);
+                });
+            }
+            case QUIETANZA ->  {
+                QuietanzaRecord qr = qs.getQuietanzaById(r.getId());
+                DocumentoAllegato da = new DocumentoAllegato(r.getId(), "Q", qr.getNomefile(), null, "Documento");
+                allegati.add(da);
+            }
+        }
+    }
+    
     private String formatBigDecimal(BigDecimal bd) {
         return bd==null ? "--" : new DecimalFormat("#,##0.00").format(bd);
     }
@@ -434,11 +533,30 @@ public class RicercaController extends BaseController {
     public String formattaConto(CodiceRecord c) {
         StringBuilder sb = new StringBuilder();
         
-        sb.append(c.getDescrizione());
+        
+        sb.append(truncate(c.getDescrizione(), 80));
+        if(!isEmpty(c.getEnteDiocesi())) {
+            sb.append(" [").append(c.getEnteDiocesi()).append("]");
+        }
+        
+        if(!isEmpty(c.getProvincia())) {
+            sb.append(" (").append(c.getProvincia()).append(")");
+        }
+        
+        if(!isEmpty(c.getIdIntervento())) {
+            sb.append(" [ID: ").append(c.getIdIntervento()).append("]");
+        }
+        
         if(!isEmpty(c.getOrdinanza())) {
             sb.append(" [").append(c.getOrdinanza()).append("]");
         } 
          
         return sb.toString();
+    }
+    
+    public String truncate(String s, int len) {
+        if(s==null) return null;
+        
+        return (s.length()>len) ? s.substring(0, len)+"..." : s;
     }
 } 

@@ -23,46 +23,53 @@
                     <p:panel header="ORDINATIVI DA CONSOLIDARE" style="min-height: 400px">                        
                         <h:panelGroup id="table" layout="block" styleClass="grid">
                             <div class="col-12">
+                                <p:remoteCommand name="handleFilterEvent" actionListener="#{ordinativiDaConsolidareController.aggiornaTotali()}" update="ordinativi:totaleParziale ordinativi:totaleParzialeCons ordinativi:totaleParzialeDiff" process="@this" />
                                 <p:dataTable id="ordinativi" value="#{ordinativiDaConsolidareController.ordinativi}" var="o" selectionMode="single" selection="#{ordinativiDaConsolidareController.ordinativo}" rowKey="#{o.id}" stripedRows="true"
                                              paginator="true" rows="100" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
                                              currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" filteredValue="#{ordinativiDaConsolidareController.ordinativiFiltrati}" globalFilterFunction="#{ordinativiDaConsolidareController.filtroGlobale}"
-                                             rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" widgetVar="ordinativiTable" size="small" editable="true" editMode="cell" editInitEvent="dblclick">
+                                             rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" widgetVar="ordinativiTable" size="small" editable="true" editMode="cell" editInitEvent="dblclick" >
                                     <p:ajax event="rowSelect" listener="#{ordinativiDaConsolidareController.aggiornaAllegati}" update=":form:allegati-panel" />
-                                    <p:ajax event="filter" listener="#{ordinativiDaConsolidareController.pulisciSelezione()}" update=":form:allegati-panel" />
-                                    <p:ajax event="cellEdit" listener="#{ordinativiDaConsolidareController.onCellEdit}" update="form:msg"/>
+                                    <p:ajax event="filter" listener="#{ordinativiDaConsolidareController.pulisciSelezione()}" update=":form:allegati-panel" oncomplete="handleFilterEvent();" />
+                                    <p:ajax event="cellEdit" listener="#{ordinativiDaConsolidareController.onCellEdit}" update="form:msg" process="@this"/>
 
                                     <f:facet name="header">
                                         <div class="flex">                                                                                        
                                             <div class="flex justify-content-end" style="width: 100%">
+                                                <p:commandButton process="@this" value="Excel" icon="pi pi-file-excel" styleClass="mr-2 mb-2 ui-button-outlined ui-button-success" title="Esporta elenco tabella in Excel">
+                                                    <p:dataExporter type="xlsxstream" target="ordinativi" fileName="da_consolidare" />
+                                                </p:commandButton>
+                                                <p:commandButton process="@this" value="PDF" icon="pi pi-file-pdf" styleClass="mr-2 mb-2 ui-button-outlined ui-button-danger" title="Esporta elenco tabella in PDF">
+                                                    <p:dataExporter type="pdf" target="ordinativi" fileName="da_consolidare" />
+                                                </p:commandButton>
                                                 <p:inputText id="globalFilter" onkeyup="PF('ordinativiTable').filter()" style="width:300px" placeholder="Ricerca globale" />
                                             </div>
                                         </div>
                                     </f:facet>
 
-                                    <p:column headerText="COMPETENZA" style="width: 10%">
+                                    <p:column headerText="COMPETENZA" style="width: 10%" exportFunction="#{tableExporterController.decodeCompetenza(o.idCompetenza)}">
                                         #{ordinativiDaConsolidareController.decodeCapComp(o.idCompetenza).anno} | #{ordinativiDaConsolidareController.decodeCapComp(o.idCompetenza).descrizione}
                                     </p:column>
-                                    <p:column headerText="CONTO" style="width: 6%;">                                        
+                                    <p:column headerText="CONTO" style="width: 6%;" exportFunction="#{tableExporterController.decodeConto(o.idCodice)}">                                        
                                         #{formatter.codiceComposto(ordinativiDaConsolidareController.decodeCodice(o.idCodice))}                                        
                                     </p:column>                                    
-                                    <p:column headerText="DESCR. CONTO" style="width: 25%;" filterBy="#{ordinativiDaConsolidareController.decodeCodice(o.idCodice).descrizione}" filterFunction="#{ordinativiDaConsolidareController.filterByConto}">
+                                    <p:column headerText="DESCR. CONTO" style="width: 25%;" filterBy="#{ordinativiDaConsolidareController.decodeCodice(o.idCodice).descrizione}" filterFunction="#{ordinativiDaConsolidareController.filterByConto}" exportValue="#{ordinativiDaConsolidareController.decodeCodice(o.idCodice).descrizione}">
                                         #{ordinativiDaConsolidareController.decodeCodice(o.idCodice).descrizione}
                                     </p:column>
-                                    <p:column headerText="DOCUM." style="width: 4%;">
+                                    <p:column headerText="DOCUM." style="width: 4%;" exportFunction="#{tableExporterController.decodeDocumento(o.idTipoDocumento)}">
                                         #{ordinativiDaConsolidareController.decodeTipoDocumento(o.idTipoDocumento).descrizione}    
                                     </p:column>
-                                    <p:column headerText="N." style="width: 2%;">
+                                    <p:column headerText="N." style="width: 2%;" exportValue="#{o.numeroDocumento!=null ? o.numeroDocumento : ''}">
                                         #{o.numeroDocumento}    
                                     </p:column>
-                                    <p:column headerText="DEL" style="width: 4%;">
+                                    <p:column headerText="DEL" style="width: 4%;" exportFunction="#{tableExporterController.decodeDate(o.dataDocumento)}">
                                         <h:outputText value="#{o.dataDocumento}">
                                             <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                         </h:outputText>
                                     </p:column>                                    
-                                    <p:column headerText="N. PAG." style="width: 5%;" filterMatchMode="contains" field="numeroPagamento">
+                                    <p:column headerText="N. PAG." style="width: 5%;" filterMatchMode="contains" field="numeroPagamento" exportValue="#{o.numeroPagamento}">
                                         #{o.numeroPagamento}
                                     </p:column>
-                                    <p:column headerText="DEL" style="width: 4%;">
+                                    <p:column headerText="DEL" style="width: 4%;" exportFunction="#{tableExporterController.decodeDate(o.dataPagamento)}">
                                         <h:outputText value="#{o.dataPagamento}">
                                             <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                         </h:outputText>
@@ -80,21 +87,60 @@
                                             </f:facet>
                                         </p:cellEditor>                                          
                                     </p:column>                                    
-                                    <p:column headerText="IMPORTO" style="width: 4%; text-align: right;">
+                                    <p:column headerText="IMPORTO OPI" style="width: 4%; text-align: right;" exportFunction="#{tableExporterController.decodeImpoto(o.importo)}">
                                         <h:outputText value="#{o.importo}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                    </p:column>                                    
-                                    <p:column style="width: 2%;">
+                                    </p:column>  
+                                    <p:column headerText="IMPORTO CONS." style="width: 4%; text-align: right;" exportFunction="#{tableExporterController.decodeImpoto(o.importoCoons)}">                                        
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                <h:outputText value="#{o.importoCons}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputNumber value="#{o.importoCons}" style="width:100%" decimalPlaces="2" decimalSeparator="," decimalSeparatorAlternative="." thousandSeparator="." />
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>  
+                                    <p:column style="width: 2%;" exportHeaderValue="ID" exportValue="#{o.id}">
                                         <p:commandButton id="stampa" icon="pi pi-database" title="Segna come completato" styleClass="ui-button-success" process="@this" oncomplete="PF('completatoDialog').show()">
                                             <f:setPropertyActionListener value="#{o}" target="#{ordinativiDaConsolidareController.ordinativo}" />
                                         </p:commandButton>
                                     </p:column>        
-                                    <p:column style="width: 2%;">
-                                    <p:commandButton id="consolidaFile" icon="pi pi-upload" title="Consolida con documenti" styleClass="ui-button-help" process="@this" update="form:caricaDialog" oncomplete="PF('caricaDialog').show();">
+                                    <p:column style="width: 2%;" exportable="false">
+                                        <p:commandButton id="consolidaFile" icon="pi pi-upload" title="Consolida con documenti" styleClass="ui-button-help" process="@this" update="form:caricaDialog" oncomplete="PF('caricaDialog').show();">
                                             <f:setPropertyActionListener value="#{o}" target="#{ordinativiDaConsolidareController.ordinativo}" />
                                         </p:commandButton>
                                     </p:column>
+                                    
+                                    <p:columnGroup type="footer">
+                                        <p:row>
+                                            <p:column colspan="10" style="text-align: right" footerText="Totale parziale:"/>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{ordinativiDaConsolidareController.totaleImporto}" id="totaleParziale">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{ordinativiDaConsolidareController.totaleImportoCons}" id="totaleParzialeCons">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                            <p:column style="text-align: right" colspan="2">
+                                                <f:facet name="footer">
+                                                    <h:outputText value="#{ordinativiDaConsolidareController.importoDifferenza}" id="totaleParzialeDiff" styleClass="#{ordinativiDaConsolidareController.importoDifferenza lt 0 ? 'red' : ''}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputText>
+                                                </f:facet>
+                                            </p:column>
+                                        </p:row>
+                                    </p:columnGroup>
                                 </p:dataTable>
                             </div>
                             <div class="col-1">
@@ -159,7 +205,7 @@
                 <p:commandButton value="Si" icon="pi pi-check" actionListener="#{ordinativiDaConsolidareController.completa()}" process="@this" update="ordinativi :form:allegati-panel msg" oncomplete="PF('completatoDialog').hide()"/>
                 <p:commandButton value="No" styleClass="ui-button-secondary" process="@none" icon="pi pi-times" actionListener="#{ordinativiDaConsolidareController.pulisciOrdinativo()}" oncomplete="PF('completatoDialog').hide()" />
             </p:confirmDialog>
-            
+
             <p:dialog id="caricaDialog" header="Consolida con documento" showEffect="fade" modal="true" widgetVar="caricaDialog" responsive="true" width="40%">
                 <p:fileUpload id="uploadedDocument" mode="simple" value="#{ordinativiDaConsolidareController.documentFiles}"  dragDropSupport="true" 
                               cancelLabel="Annulla" uploadLabel="Carica" label="Seleziona documento" widgetVar="uploadBtn" required="true" requiredMessage="Il documento è obbligatorio." multiple="true">

@@ -6,6 +6,7 @@ package it.usr.web.usrbilancio.domain.tables;
 
 import it.usr.web.usrbilancio.domain.Keys;
 import it.usr.web.usrbilancio.domain.Usrbilancio;
+import it.usr.web.usrbilancio.domain.tables.AllegatoCodice.AllegatoCodicePath;
 import it.usr.web.usrbilancio.domain.tables.MovimentiVirtuali.MovimentiVirtualiPath;
 import it.usr.web.usrbilancio.domain.tables.Ordinativo.OrdinativoPath;
 import it.usr.web.usrbilancio.domain.tables.OrdinativoAppoggio.OrdinativoAppoggioPath;
@@ -236,6 +237,19 @@ public class Codice extends TableImpl<CodiceRecord> {
     @Override
     public List<UniqueKey<CodiceRecord>> getUniqueKeys() {
         return Arrays.asList(Keys.KEY_CODICE_CODICE_CXX_UNQ);
+    }
+
+    private transient AllegatoCodicePath _allegatoCodice;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>usrbilancio.allegato_codice</code> table
+     */
+    public AllegatoCodicePath allegatoCodice() {
+        if (_allegatoCodice == null)
+            _allegatoCodice = new AllegatoCodicePath(this, null, Keys.FK_ALLEGATOCODICE_CODICE.getInverseKey());
+
+        return _allegatoCodice;
     }
 
     private transient OrdinativoPath _ordinativo;

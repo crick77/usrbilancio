@@ -6,10 +6,12 @@ package it.usr.web.usrbilancio.servlet;
 
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoAppoggioRecord;
+import it.usr.web.usrbilancio.domain.tables.records.AllegatoCodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.producer.DocumentFolder;
+import it.usr.web.usrbilancio.service.CodiceService;
 import it.usr.web.usrbilancio.service.MovimentiVirtualiService;
 import it.usr.web.usrbilancio.service.OrdinativoAppoggioService;
 import it.usr.web.usrbilancio.service.OrdinativoService;
@@ -44,7 +46,6 @@ import org.slf4j.Logger;
  */
 @WebServlet(name = "DownloadServlet", urlPatterns = {"/download"})
 public class DownloadServlet extends HttpServlet {
-
     @Inject
     QuietanzaService qs;
     @Inject
@@ -53,6 +54,8 @@ public class DownloadServlet extends HttpServlet {
     OrdinativoAppoggioService oas;
     @Inject
     MovimentiVirtualiService mvs;
+    @Inject
+    CodiceService cs;
     @DocumentFolder
     @Inject
     String documentFolder;
@@ -127,11 +130,29 @@ public class DownloadServlet extends HttpServlet {
                     nomeFileLocale = mv.getNomefileLocale();
                     break;
                 }
+                case "C": {
+                    AllegatoCodiceRecord ac = cs.getAllegatoCodiceById(id);
+                    nomeFile = ac.getNomefile();
+                    nomeFileLocale = ac.getNomefileLocale();
+                    break;
+                }
                 case "OZ": {
+                    List<String> dupCheck = new ArrayList<>();
                     List<AllegatoRecord> all = new ArrayList<>();
                     for(int _id : idMulti) {
                         all.add(os.getAllegatoById(_id));
-                    }                    
+                    }      
+                    
+                    for(AllegatoRecord a : all) {
+                        if(dupCheck.contains(a.getNomefile())) {
+                            logger.error("Nella creazione del file zip il documento con tipologia [{}], id=[{}] e nome=[{}] risulta duplicato.", scope, id, a.getNomefile());
+                            streamData(response, "dupfile.pdf", getDuplicateZipDocument(scope, id, a.getNomefile()));
+                            return;
+                        }
+                        
+                        dupCheck.add(a.getNomefile());
+                    }
+                    
                     try(ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                         try(ZipOutputStream zos = new ZipOutputStream(baos)) {
                             for(AllegatoRecord a : all) {
@@ -144,7 +165,8 @@ public class DownloadServlet extends HttpServlet {
                             }  
                         }
                         streamData(response, "allegati_ordinativo.zip", baos.toByteArray());
-                    }
+                        return;
+                    }                    
                 }
                 default: {
                     logger.error("Non riesco a caricare il documento con tipologia [{}] e id=[{}].", scope, id);
@@ -181,12 +203,12 @@ public class DownloadServlet extends HttpServlet {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PDDocument doc = new PDDocument()) {
             PDPage page = new PDPage();
             doc.addPage(page);
-            try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                cs.beginText();
-                cs.newLineAtOffset(100, 700);
-                cs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
-                cs.showText("Non è stato possibile genereare il documento con codice [" + scope + "|" + id + "]. Contattare il supporto.");
-                cs.endText();
+            try (PDPageContentStream pdfCs = new PDPageContentStream(doc, page)) {
+                pdfCs.beginText();
+                pdfCs.newLineAtOffset(100, 700);
+                pdfCs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
+                pdfCs.showText("Non è stato possibile genereare il documento con codice [" + scope + "|" + id + "]. Contattare il supporto.");
+                pdfCs.endText();
             }
             doc.save(baos);
 
@@ -198,12 +220,12 @@ public class DownloadServlet extends HttpServlet {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PDDocument doc = new PDDocument()) {
             PDPage page = new PDPage();
             doc.addPage(page);
-            try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                cs.beginText();
-                cs.newLineAtOffset(100, 700);
-                cs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
-                cs.showText("Il documento associato al codice [" + scope + "|" + id + "] non esiste su disco. Contattare il supporto.");
-                cs.endText();
+            try (PDPageContentStream pdfCs = new PDPageContentStream(doc, page)) {
+                pdfCs.beginText();
+                pdfCs.newLineAtOffset(100, 700);
+                pdfCs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
+                pdfCs.showText("Il documento associato al codice [" + scope + "|" + id + "] non esiste su disco. Contattare il supporto.");
+                pdfCs.endText();
             }
             doc.save(baos);        
             
@@ -211,6 +233,23 @@ public class DownloadServlet extends HttpServlet {
         }
     }
 
+    private byte[] getDuplicateZipDocument(String scope, int id, String nomeFile) throws IOException {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(); PDDocument doc = new PDDocument()) {
+            PDPage page = new PDPage();
+            doc.addPage(page);
+            try (PDPageContentStream pdfCs = new PDPageContentStream(doc, page)) {
+                pdfCs.beginText();
+                pdfCs.newLineAtOffset(100, 700);
+                pdfCs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
+                pdfCs.showText("L'allegato [" + nomeFile + "] associato al codice [" + scope + "|" + id + "] risulta duplicato. Eliminarne uno e riprovare oppure contattare il supporto.");
+                pdfCs.endText();
+            }
+            doc.save(baos);        
+            
+            return baos.toByteArray();
+        }
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
      * Handles the HTTP <code>GET</code> method.

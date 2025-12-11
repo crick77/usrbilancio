@@ -6,11 +6,14 @@ package it.usr.web.usrbilancio.domain;
 
 import it.usr.web.usrbilancio.domain.tables.Allegato;
 import it.usr.web.usrbilancio.domain.tables.AllegatoAppoggio;
+import it.usr.web.usrbilancio.domain.tables.AllegatoCodice;
+import it.usr.web.usrbilancio.domain.tables.Anagrafica;
 import it.usr.web.usrbilancio.domain.tables.Capitolo;
 import it.usr.web.usrbilancio.domain.tables.Codice;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.LogOperazioni;
 import it.usr.web.usrbilancio.domain.tables.MimeType;
+import it.usr.web.usrbilancio.domain.tables.Modelli;
 import it.usr.web.usrbilancio.domain.tables.MovimentiVirtuali;
 import it.usr.web.usrbilancio.domain.tables.Ordinativo;
 import it.usr.web.usrbilancio.domain.tables.OrdinativoAppoggio;
@@ -40,6 +43,16 @@ public class Tables {
     public static final AllegatoAppoggio ALLEGATO_APPOGGIO = AllegatoAppoggio.ALLEGATO_APPOGGIO;
 
     /**
+     * The table <code>usrbilancio.allegato_codice</code>.
+     */
+    public static final AllegatoCodice ALLEGATO_CODICE = AllegatoCodice.ALLEGATO_CODICE;
+
+    /**
+     * The table <code>usrbilancio.anagrafica</code>.
+     */
+    public static final Anagrafica ANAGRAFICA = Anagrafica.ANAGRAFICA;
+
+    /**
      * The table <code>usrbilancio.capitolo</code>.
      */
     public static final Capitolo CAPITOLO = Capitolo.CAPITOLO;
@@ -63,6 +76,11 @@ public class Tables {
      * The table <code>usrbilancio.mime_type</code>.
      */
     public static final MimeType MIME_TYPE = MimeType.MIME_TYPE;
+
+    /**
+     * The table <code>usrbilancio.modelli</code>.
+     */
+    public static final Modelli MODELLI = Modelli.MODELLI;
 
     /**
      * The table <code>usrbilancio.movimenti_virtuali</code>.

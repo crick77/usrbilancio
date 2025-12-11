@@ -6,11 +6,14 @@ package it.usr.web.usrbilancio.domain;
 
 import it.usr.web.usrbilancio.domain.tables.Allegato;
 import it.usr.web.usrbilancio.domain.tables.AllegatoAppoggio;
+import it.usr.web.usrbilancio.domain.tables.AllegatoCodice;
+import it.usr.web.usrbilancio.domain.tables.Anagrafica;
 import it.usr.web.usrbilancio.domain.tables.Capitolo;
 import it.usr.web.usrbilancio.domain.tables.Codice;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.LogOperazioni;
 import it.usr.web.usrbilancio.domain.tables.MimeType;
+import it.usr.web.usrbilancio.domain.tables.Modelli;
 import it.usr.web.usrbilancio.domain.tables.MovimentiVirtuali;
 import it.usr.web.usrbilancio.domain.tables.Ordinativo;
 import it.usr.web.usrbilancio.domain.tables.OrdinativoAppoggio;
@@ -22,12 +25,15 @@ import it.usr.web.usrbilancio.domain.tables.TipoDocumento;
 import it.usr.web.usrbilancio.domain.tables.TipoRts;
 import it.usr.web.usrbilancio.domain.tables.Utente;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoAppoggioRecord;
+import it.usr.web.usrbilancio.domain.tables.records.AllegatoCodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
+import it.usr.web.usrbilancio.domain.tables.records.AnagraficaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CapitoloRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CompetenzaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.LogOperazioniRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MimeTypeRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ModelliRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
@@ -59,6 +65,8 @@ public class Keys {
 
     public static final UniqueKey<AllegatoRecord> KEY_ALLEGATO_PRIMARY = Internal.createUniqueKey(Allegato.ALLEGATO, DSL.name("KEY_allegato_PRIMARY"), new TableField[] { Allegato.ALLEGATO.ID }, true);
     public static final UniqueKey<AllegatoAppoggioRecord> KEY_ALLEGATO_APPOGGIO_PRIMARY = Internal.createUniqueKey(AllegatoAppoggio.ALLEGATO_APPOGGIO, DSL.name("KEY_allegato_appoggio_PRIMARY"), new TableField[] { AllegatoAppoggio.ALLEGATO_APPOGGIO.ID }, true);
+    public static final UniqueKey<AllegatoCodiceRecord> KEY_ALLEGATO_CODICE_PRIMARY = Internal.createUniqueKey(AllegatoCodice.ALLEGATO_CODICE, DSL.name("KEY_allegato_codice_PRIMARY"), new TableField[] { AllegatoCodice.ALLEGATO_CODICE.ID }, true);
+    public static final UniqueKey<AnagraficaRecord> KEY_ANAGRAFICA_PRIMARY = Internal.createUniqueKey(Anagrafica.ANAGRAFICA, DSL.name("KEY_anagrafica_PRIMARY"), new TableField[] { Anagrafica.ANAGRAFICA.ID }, true);
     public static final UniqueKey<CapitoloRecord> KEY_CAPITOLO_PRIMARY = Internal.createUniqueKey(Capitolo.CAPITOLO, DSL.name("KEY_capitolo_PRIMARY"), new TableField[] { Capitolo.CAPITOLO.ID }, true);
     public static final UniqueKey<CodiceRecord> KEY_CODICE_CODICE_CXX_UNQ = Internal.createUniqueKey(Codice.CODICE, DSL.name("KEY_codice_codice_cxx_unq"), new TableField[] { Codice.CODICE.C01, Codice.CODICE.C02, Codice.CODICE.C04, Codice.CODICE.C03, Codice.CODICE.C05, Codice.CODICE.CODICE_ }, true);
     public static final UniqueKey<CodiceRecord> KEY_CODICE_PRIMARY = Internal.createUniqueKey(Codice.CODICE, DSL.name("KEY_codice_PRIMARY"), new TableField[] { Codice.CODICE.ID }, true);
@@ -66,6 +74,7 @@ public class Keys {
     public static final UniqueKey<CompetenzaRecord> KEY_COMPETENZA_UQ_ANNOCAPITOLO = Internal.createUniqueKey(Competenza.COMPETENZA, DSL.name("KEY_competenza_uq_annocapitolo"), new TableField[] { Competenza.COMPETENZA.ID_CAPITOLO, Competenza.COMPETENZA.ANNO }, true);
     public static final UniqueKey<LogOperazioniRecord> KEY_LOG_OPERAZIONI_PRIMARY = Internal.createUniqueKey(LogOperazioni.LOG_OPERAZIONI, DSL.name("KEY_log_operazioni_PRIMARY"), new TableField[] { LogOperazioni.LOG_OPERAZIONI.ID }, true);
     public static final UniqueKey<MimeTypeRecord> KEY_MIME_TYPE_PK_MIME_TYPE = Internal.createUniqueKey(MimeType.MIME_TYPE, DSL.name("KEY_mime_type_pk_mime_type"), new TableField[] { MimeType.MIME_TYPE.EXTENSION, MimeType.MIME_TYPE.MIME }, true);
+    public static final UniqueKey<ModelliRecord> KEY_MODELLI_PRIMARY = Internal.createUniqueKey(Modelli.MODELLI, DSL.name("KEY_modelli_PRIMARY"), new TableField[] { Modelli.MODELLI.ID }, true);
     public static final UniqueKey<MovimentiVirtualiRecord> KEY_MOVIMENTI_VIRTUALI_PRIMARY = Internal.createUniqueKey(MovimentiVirtuali.MOVIMENTI_VIRTUALI, DSL.name("KEY_movimenti_virtuali_PRIMARY"), new TableField[] { MovimentiVirtuali.MOVIMENTI_VIRTUALI.ID }, true);
     public static final UniqueKey<OrdinativoRecord> KEY_ORDINATIVO_PRIMARY = Internal.createUniqueKey(Ordinativo.ORDINATIVO, DSL.name("KEY_ordinativo_PRIMARY"), new TableField[] { Ordinativo.ORDINATIVO.ID }, true);
     public static final UniqueKey<OrdinativoAppoggioRecord> KEY_ORDINATIVO_APPOGGIO_PRIMARY = Internal.createUniqueKey(OrdinativoAppoggio.ORDINATIVO_APPOGGIO, DSL.name("KEY_ordinativo_appoggio_PRIMARY"), new TableField[] { OrdinativoAppoggio.ORDINATIVO_APPOGGIO.ID }, true);
@@ -85,6 +94,7 @@ public class Keys {
 
     public static final ForeignKey<AllegatoRecord, OrdinativoRecord> FK_ALLEGATO_ORDINATIVO = Internal.createForeignKey(Allegato.ALLEGATO, DSL.name("fk_allegato_ordinativo"), new TableField[] { Allegato.ALLEGATO.ID_ORDINATIVO }, Keys.KEY_ORDINATIVO_PRIMARY, new TableField[] { Ordinativo.ORDINATIVO.ID }, true);
     public static final ForeignKey<AllegatoAppoggioRecord, OrdinativoAppoggioRecord> FK_ALLEGATOAPP_ORDINATIVOAPP_IDX = Internal.createForeignKey(AllegatoAppoggio.ALLEGATO_APPOGGIO, DSL.name("fk_allegatoapp_ordinativoapp_idx"), new TableField[] { AllegatoAppoggio.ALLEGATO_APPOGGIO.ID_ORDINATIVO_APPOGGIO }, Keys.KEY_ORDINATIVO_APPOGGIO_PRIMARY, new TableField[] { OrdinativoAppoggio.ORDINATIVO_APPOGGIO.ID }, true);
+    public static final ForeignKey<AllegatoCodiceRecord, CodiceRecord> FK_ALLEGATOCODICE_CODICE = Internal.createForeignKey(AllegatoCodice.ALLEGATO_CODICE, DSL.name("fk_allegatocodice_codice"), new TableField[] { AllegatoCodice.ALLEGATO_CODICE.ID_CODICE }, Keys.KEY_CODICE_PRIMARY, new TableField[] { Codice.CODICE.ID }, true);
     public static final ForeignKey<CompetenzaRecord, CapitoloRecord> FK_ANNUALITA_CAPITOLO = Internal.createForeignKey(Competenza.COMPETENZA, DSL.name("fk_annualita_capitolo"), new TableField[] { Competenza.COMPETENZA.ID_CAPITOLO }, Keys.KEY_CAPITOLO_PRIMARY, new TableField[] { Capitolo.CAPITOLO.ID }, true);
     public static final ForeignKey<MovimentiVirtualiRecord, CodiceRecord> FK_PREVENTRATA_CODICE = Internal.createForeignKey(MovimentiVirtuali.MOVIMENTI_VIRTUALI, DSL.name("fk_preventrata_codice"), new TableField[] { MovimentiVirtuali.MOVIMENTI_VIRTUALI.ID_CODICE }, Keys.KEY_CODICE_PRIMARY, new TableField[] { Codice.CODICE.ID }, true);
     public static final ForeignKey<MovimentiVirtualiRecord, CompetenzaRecord> FK_PREVENTRATA_COMPETENZA = Internal.createForeignKey(MovimentiVirtuali.MOVIMENTI_VIRTUALI, DSL.name("fk_preventrata_competenza"), new TableField[] { MovimentiVirtuali.MOVIMENTI_VIRTUALI.ID_COMPETENZA }, Keys.KEY_COMPETENZA_PRIMARY, new TableField[] { Competenza.COMPETENZA.ID }, true);

@@ -25,6 +25,8 @@ import jakarta.inject.Inject;
 import jakarta.interceptor.AroundInvoke;
 import jakarta.interceptor.Interceptor;
 import jakarta.interceptor.InvocationContext;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 
@@ -37,6 +39,7 @@ import org.jooq.Record;
 @Priority(Interceptor.Priority.APPLICATION)
 public class OpLogInterceptor {
     public final static int TEXT_MAX_LENGTH = 65535;
+    public final static ZoneId ZONE_EUROPE_ROME = ZoneId.of("Europe/Rome");
     @Inject
     ActiveUser user;
     @DSLBilancio
@@ -70,7 +73,7 @@ public class OpLogInterceptor {
                 lro.setOriginale(s);
             }
             lro.setOperatore((user != null) ? user.getCurrentUser().getUsername() : "N/A");
-            lro.setDataOra(LocalDateTime.now());
+            lro.setDataOra(toLocalZone(LocalDateTime.now()));
             ctx.insertInto(Tables.LOG_OPERAZIONI).set(lro).execute();
         }
 
@@ -94,8 +97,7 @@ public class OpLogInterceptor {
         StringJoiner sj = new StringJoiner(", ", cName + "." + m.getName() + "(", ")");
         Type[] p = m.getGenericParameterTypes();
         for (Type _p : p) {
-            if (_p instanceof ParameterizedType) {
-                ParameterizedType pt = (ParameterizedType) _p;
+            if (_p instanceof ParameterizedType pt) {
                 Class c = (Class) pt.getRawType();
                 StringJoiner sj2 = new StringJoiner(",", "<", ">");
                 for (Type t : pt.getActualTypeArguments()) {
@@ -122,16 +124,14 @@ public class OpLogInterceptor {
             return String.valueOf(value);
         }
 
-        if (value instanceof Record) {
-            Record r = (Record) value;
+        if (value instanceof Record r) {
             return useOriginal ? ow.writeValueAsString(r.original().intoMap()) : ow.writeValueAsString(r.intoMap());
         } else {
             if (value instanceof List) {
                 List<?> l = (List<?>) value;
                 StringJoiner sj = new StringJoiner(",", "(L=" + l.size() + ")[", "]");
                 for (Object e : l) {
-                    if (e instanceof Record) {
-                        Record r = (Record) e;
+                    if (e instanceof Record r) {
                         sj.add(useOriginal ? ow.writeValueAsString(r.original().intoMap()) : ow.writeValueAsString(r.intoMap()));
                     } else {
                         sj.add(String.valueOf(e));
@@ -143,5 +143,10 @@ public class OpLogInterceptor {
                 return String.valueOf(value);
             }
         }
+    }
+    
+    public static LocalDateTime toLocalZone(LocalDateTime date) {
+         ZonedDateTime zon = date.atZone(ZONE_EUROPE_ROME).withZoneSameInstant(ZONE_EUROPE_ROME);                
+         return date.plusSeconds(zon.getOffset().getTotalSeconds());
     }
 }

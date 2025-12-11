@@ -194,19 +194,18 @@ public class QuietanzaService {
         }
     }
 
-    public List<QuietanzaRecord> cerca(String testo, boolean dataAnd, LocalDate dataDa, LocalDate dataA, boolean importoAnd, BigDecimal importoDa, BigDecimal importoA, 
-            boolean tipiRtsAnd, TipoRtsRecord[] tipiRts, boolean codiciAnd, CodiceRecord[] codici, boolean annoCompAnd, Integer annoCompetenza, boolean competenzeAnd, CapitoloCompetenza[] competenze) {
+    public List<QuietanzaRecord> cerca(SearchCriteria sc) {
                 Condition cond = DSL.noCondition();
         
-        if(notEmpty(testo)) {
-            testo = "%"+testo+"%";
-            cond = cond.and(Tables.QUIETANZA.ORDINANTE.like(testo).or(Tables.QUIETANZA.DESCRIZIONE_ORDINANZA.like(testo)).or(Tables.QUIETANZA.NOTE.like(testo)));
+        if(notEmpty(sc.testo)) {
+            sc.testo = "%"+sc.testo+"%";
+            cond = cond.and(Tables.QUIETANZA.ORDINANTE.like(sc.testo).or(Tables.QUIETANZA.DESCRIZIONE_ORDINANZA.like(sc.testo)).or(Tables.QUIETANZA.NOTE.like(sc.testo)));
         }
         
-        if(notEmpty(competenze)) {
-            List<Integer> lComp = Arrays.stream(competenze).map(CapitoloCompetenza::getId).collect(Collectors.toList());
+        if(notEmpty(sc.competenze)) {
+            List<Integer> lComp = Arrays.stream(sc.competenze).map(CapitoloCompetenza::getId).collect(Collectors.toList());
             
-            if(competenzeAnd) {
+            if(sc.competenzeAnd) {
                 cond = cond.and(Tables.QUIETANZA.ID_COMPETENZA.in(lComp));
             }
             else {
@@ -214,50 +213,71 @@ public class QuietanzaService {
             }
         }
         
-        if(dataDa!=null || dataA!=null) {
+        if(sc.dataDocDa!=null || sc.dataDocA!=null) {
             Condition condDataDoc = DSL.noCondition();
-            Condition condDataPag = DSL.noCondition();
-            if(dataDa!=null) {
-                condDataDoc = condDataDoc.or(Tables.QUIETANZA.DATA_DOCUMENTO.ge(dataDa));
-                condDataPag = condDataPag.or(Tables.QUIETANZA.DATA_PAGAMENTO.ge(dataDa));
+            
+            if(sc.dataDocDa!=null) {
+                condDataDoc = condDataDoc.or(Tables.QUIETANZA.DATA_DOCUMENTO.ge(sc.dataDocDa));
             }
 
-            if(dataA!=null) {
-                if(dataDa!=null) {
-                    condDataDoc = condDataDoc.and(Tables.QUIETANZA.DATA_DOCUMENTO.le(dataA));
-                    condDataPag = condDataPag.and(Tables.QUIETANZA.DATA_PAGAMENTO.le(dataA));
+            if(sc.dataDocA!=null) {
+                if(sc.dataDocDa!=null) {
+                    condDataDoc = condDataDoc.and(Tables.QUIETANZA.DATA_DOCUMENTO.le(sc.dataDocA));                    
                 }
                 else {
-                    condDataDoc = condDataDoc.or(Tables.QUIETANZA.DATA_DOCUMENTO.le(dataA));
-                    condDataPag = condDataPag.or(Tables.QUIETANZA.DATA_PAGAMENTO.le(dataA));
+                    condDataDoc = condDataDoc.or(Tables.QUIETANZA.DATA_DOCUMENTO.le(sc.dataDocA));
                 }
             }
             
-            if(dataAnd) {                                
-                cond = cond.and(condDataDoc.or(condDataPag));
+            if(sc.dataDocAnd) {                                
+                cond = cond.and(condDataDoc);
             }
             else {
-                cond = cond.or(condDataDoc.or(condDataPag));
+                cond = cond.or(condDataDoc);
             }                 
         }
         
-        if(importoDa!=null || importoA!=null) {
-            Condition condImp = DSL.noCondition();
+        if(sc.dataPagDa!=null || sc.dataPagA!=null) {
+            Condition condDataPag = DSL.noCondition();
             
-            if(importoDa!=null) {
-                condImp = condImp.or(Tables.QUIETANZA.IMPORTO.ge(importoDa));                
+            if(sc.dataPagDa!=null) {
+                condDataPag = condDataPag.or(Tables.QUIETANZA.DATA_PAGAMENTO.ge(sc.dataPagDa));
             }
 
-            if(importoA!=null) {
-                if(importoDa!=null) {
-                    condImp = condImp.and(Tables.QUIETANZA.IMPORTO.le(importoA));                
+            if(sc.dataDocA!=null) {
+                if(sc.dataPagDa!=null) {
+                    condDataPag = condDataPag.and(Tables.QUIETANZA.DATA_PAGAMENTO.le(sc.dataPagA));                    
                 }
                 else {
-                    condImp = condImp.or(Tables.QUIETANZA.IMPORTO.le(importoA));                
+                    condDataPag = condDataPag.or(Tables.QUIETANZA.DATA_PAGAMENTO.le(sc.dataPagA));
+                }
+            }
+            
+            if(sc.dataPagAnd) {                                
+                cond = cond.and(condDataPag);
+            }
+            else {
+                cond = cond.or(condDataPag);
+            }                 
+        }
+        
+        if(sc.importoDa!=null || sc.importoA!=null) {
+            Condition condImp = DSL.noCondition();
+            
+            if(sc.importoDa!=null) {
+                condImp = condImp.or(Tables.QUIETANZA.IMPORTO.ge(sc.importoDa));                
+            }
+
+            if(sc.importoA!=null) {
+                if(sc.importoDa!=null) {
+                    condImp = condImp.and(Tables.QUIETANZA.IMPORTO.le(sc.importoA));                
+                }
+                else {
+                    condImp = condImp.or(Tables.QUIETANZA.IMPORTO.le(sc.importoA));                
                 }                    
             }
             
-            if(importoAnd) {                                
+            if(sc.importoAnd) {                                
                 cond = cond.and(condImp);
             }
             else {
@@ -265,9 +285,9 @@ public class QuietanzaService {
             }                  
         }
                        
-        if(tipiRts!=null && tipiRts.length>0) {
-            List<Integer> lTipiRts = Arrays.stream(tipiRts).map(TipoRtsRecord::getId).collect(Collectors.toList());
-            if(tipiRtsAnd) {
+        if(sc.tipiRts!=null && sc.tipiRts.length>0) {
+            List<Integer> lTipiRts = Arrays.stream(sc.tipiRts).map(TipoRtsRecord::getId).collect(Collectors.toList());
+            if(sc.tipiRtsAnd) {
                 cond = cond.and(Tables.QUIETANZA.ID_TIPO_RTS.in(lTipiRts));
             }
             else {
@@ -275,9 +295,9 @@ public class QuietanzaService {
             }
         }
         
-        if(codici!=null && codici.length>0) {
-            List<Integer> lCodici = Arrays.stream(codici).map(CodiceRecord::getId).collect(Collectors.toList());
-            if(codiciAnd) {
+        if(sc.codici!=null && sc.codici.length>0) {
+            List<Integer> lCodici = Arrays.stream(sc.codici).map(CodiceRecord::getId).collect(Collectors.toList());
+            if(sc.codiciAnd) {
                 cond = cond.and(Tables.QUIETANZA.ID_CODICE.in(lCodici));
             }
             else {
@@ -285,16 +305,16 @@ public class QuietanzaService {
             }
         }
         
-        if(annoCompetenza!=null) {
-            if(annoCompAnd) {
-                cond = cond.and(Tables.COMPETENZA.ANNO.eq(annoCompetenza));
+        if(sc.annoCompetenza!=null) {
+            if(sc.annoCompAnd) {
+                cond = cond.and(Tables.COMPETENZA.ANNO.eq(sc.annoCompetenza));
             }
             else {
-                cond = cond.or(Tables.COMPETENZA.ANNO.eq(annoCompetenza));
+                cond = cond.or(Tables.COMPETENZA.ANNO.eq(sc.annoCompetenza));
             }
         }
         
-        if(annoCompetenza!=null) {
+        if(sc.annoCompetenza!=null) {
             return ctx.select().from(Tables.QUIETANZA).join(Tables.COMPETENZA).on(Tables.QUIETANZA.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.QUIETANZA);
         }
         else {

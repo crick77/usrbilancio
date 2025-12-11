@@ -4,6 +4,7 @@
                 xmlns:ui="jakarta.faces.facelets"
                 xmlns:p="primefaces"
                 xmlns:jsf="jakarta.faces"
+                xmlns:pe="primefaces.extensions"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="title">Gestione Conti</ui:define>
@@ -73,6 +74,11 @@
                                         </p:commandButton>
                                     </p:column>
                                     <p:column style="width: 2%; text-align: center;">
+                                        <p:commandButton icon="pi pi-paperclip" action="#{codiciController.caricaAllegati()}" process="@this" update="form:allegatiDialog" styleClass="ui-button-secondary" oncomplete="PF('allegatiDialogWV').show();">
+                                            <f:setPropertyActionListener value="#{c}" target="#{codiciController.codice}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                    <p:column style="width: 2%; text-align: center;">
                                         <p:commandButton icon="pi pi-trash" action="#{codiciController.elimina()}" process="@this" update="@form" styleClass="ui-button-danger">
                                             <f:setPropertyActionListener value="#{c}" target="#{codiciController.codice}" />
                                             <p:confirm type="popup" header="Conferma" message="Eliminare il codice selezionato? Attenzione! L'azione è irreversibile!" icon="pi pi-info-circle" escape="false" />
@@ -103,7 +109,7 @@
                             <p:outputLabel for="calcolaultimo">&#160;</p:outputLabel>
                             <p:commandButton id="calcolaultimo" value="Carica ultimo" action="#{codiciController.caricaUltimo()}" process="codiceDialog" update="codiceinizio form:msg" />                                    
                         </div>
-                        
+
                         <div class="field col-4">
                             <p:outputLabel for="ordinanza">Ordinanza</p:outputLabel>
                             <p:inputText id="ordinanza" value="#{codiciController.codice.ordinanza}" maxlength="100" />
@@ -167,7 +173,83 @@
                             <p:commandButton id="annulla" value="Annulla" icon="pi pi-times" process="@this" update="@form" immediate="true" action="#{codiciController.annulla()}" styleClass="ui-button-secondary" />
                         </div>
                     </div>
-                    </p:dialog>
+                </p:dialog>
+
+                <p:dialog header="Documenti" showEffect="fade" modal="true" id="allegatiDialog" widgetVar="allegatiDialogWV" responsive="true" width="90%">
+                    <p:panel id="allegati-panel" header="ALLEGATI" style="min-height: 400px">
+                        <div class="grid">
+                            <div class="col-6 md:col-6">
+                                <p:dataTable id="allegati" lazy="true" value="#{codiciController.allegati}" var="a" paginator="true" rows="5" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} allegati"  rowsPerPageTemplate="5,10,{ShowAll|'Tutti'}" stripedRows="true" size="small" rowKey="#{a.id}"
+                                             editable="true" emptyMessage="Nessun allegato per il codice selezionato." scrollable="true" scrollHeight="350">                                                                        
+                                    <p:ajax event="rowEdit" listener="#{codiciController.onAllegatoRowEdit}" update="form:msg"/>
+                                    
+                                    <p:column headerText="DOCUMENTO" sortBy="#{a.nomefile}" styleClass="word-wrap">
+                                        #{a.nomefile}
+                                    </p:column>
+                                    <p:column headerText="GRUPPO" sortBy="#{a.gruppo}" sortOrder="asc" styleClass="word-wrap" width="10%">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                #{a.gruppo}
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText id="gruppo" value="#{a.gruppo}" style="width:100%" maxlength="32"/>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column> 
+                                    <p:column headerText="DESCRIZIONE" styleClass="word-wrap">
+                                        <p:cellEditor>
+                                            <f:facet name="output">
+                                                #{a.descrizione}
+                                            </f:facet>
+                                            <f:facet name="input">
+                                                <p:inputText id="descr" value="#{a.descrizione}" style="width:100%" maxlength="255"/>
+                                            </f:facet>
+                                        </p:cellEditor>
+                                    </p:column>    
+                                    <p:column style="width:6rem">
+                                        <p:rowEditor editTitle="Modifica descrizione" cancelTitle="Annulla modifiche" saveTitle="Salva modifiche"/>
+                                    </p:column>
+                                    <p:column style="width: 4%">
+                                        <p:commandButton id="show" icon="pi pi-eye" title="Mostra allegato" styleClass="ui-button-secondary" process="@this" update="form:docviewer">
+                                            <f:setPropertyActionListener target="#{codiciController.allegato}" value="#{a}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                    <p:column style="width: 4%">
+                                        <p:linkButton id="download" icon="pi pi-download" title="Scarica allegato" styleClass="ui-button-help" href="#{request.contextPath}/download?scope=C&#38;id=#{a.id}" />
+                                    </p:column>
+                                    <p:column style="width: 4%">
+                                        <p:commandButton id="eliminaAllegato" icon="pi pi-trash" process="@this" title="Elimina allegato" styleClass="ui-button-danger" oncomplete="PF('deleteAllegatoDialog').show()">
+                                            <f:setPropertyActionListener value="#{a}" target="#{codiciController.allegato}" />
+                                        </p:commandButton>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                            <div class="col-6 md:col-6">
+                                <pe:documentViewer id="docviewer" value="#{docController.stream}" width="100%" height="500">
+                                    <f:param name="x" value="#{codiciController.timeStamp}" />
+                                    <f:param name="scope" value="C" />
+                                    <f:param name="id" value="#{codiciController.allegato.id}" />
+                                    <f:param name="empty" value="#{empty codiciController.allegato}" />
+                                </pe:documentViewer>
+                            </div>
+                        </div>
+                        <div class="grid">                     
+                            <div class="col-2 md:col-2 lg:col-2">
+                                <p:commandButton id="nuovoAllegato" value="Aggiungi allegati" icon="pi pi-plus-circle" styleClass="ui-button-primary" process="@this" update="allegati" oncomplete="PF('allegatiDialog').show()" />                                
+                            </div>                                                        
+                            <div class="col-9 md:col-9 lg:col-9"></div>
+                            <div class="col-1 md:col-1 lg:col-1">
+                                <p:commandButton id="aggiornaAllegati" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{codiciController.caricaAllegati()}" process="@this" update="allegati-panel"/>
+                            </div>                        
+                        </div>
+                    </p:panel>
+                </p:dialog>    
+
+                <p:confirmDialog widgetVar="deleteAllegatoDialog" showEffect="fade" width="300" message="Eliminare l'allegato? Attenzione! L'operazione è irreversibile." header="Conferma" severity="warn">
+                    <p:commandButton value="Si" icon="pi pi-check" actionListener="#{codiciController.eliminaAllegato()}" process="@this" update="allegati msg docviewer" oncomplete="PF('deleteAllegatoDialog').hide()"/>
+                    <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('deleteAllegatoDialog').hide()" />
+                </p:confirmDialog>
             </div>
 
             <p:growl id="msg" showDetail="true" escape="false"/>
@@ -176,6 +258,24 @@
                 <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no"/>
                 <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes ui-button-flat" />
             </p:confirmPopup>
+        </h:form>
+        
+        <h:form id="uploadForm" enctype="multipart/form-data">
+            <p:dialog header="Allegati" showEffect="fade" modal="true" widgetVar="allegatiDialog" responsive="true" width="30%">
+                <p:outputPanel id="allegati-content" class="ui-fluid" >   
+                    <p:fileUpload id="documento" value="#{codiciController.documentFiles}" mode="simple" dragDropSupport="true"  update="form:msg" 
+                                  label="Seleziona documenti" style="width:100%" multiple="true" required="true" requiredMessage="Aggiungere almeno un documento">
+                        <p:validateFile sizeLimit="67108864" />
+                    </p:fileUpload>
+                    <p:outputLabel value="Gruppo:" for="gruppo" />
+                    <p:inputText value="#{codiciController.gruppo}" id="gruppo" maxlength="32" />
+                </p:outputPanel>
+
+                <f:facet name="footer">
+                    <p:commandButton id="aggiungiAll" value="Aggiungi allegati" action="#{codiciController.aggiungiAllegati()}" update="form:allegati" icon="pi pi-plus" />
+                    <p:commandButton id="annullaAll" value="Annulla" process="@none" immediate="true" update="form:allegati" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('allegatiDialog').hide()"/>
+                </f:facet>
+            </p:dialog>
         </h:form>
     </ui:define>
 </ui:composition>

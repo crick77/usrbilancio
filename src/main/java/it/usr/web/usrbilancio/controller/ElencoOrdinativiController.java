@@ -495,6 +495,7 @@ public class ElencoOrdinativiController extends BaseController {
 
     public void consolida() {
         ordinativo.setConsolidamento((byte) 1);
+        if(ordinativo.getImportoCons()==null) ordinativo.setImportoCons(ordinativo.getImporto());
         os.modifica(ordinativo);
 
         aggiornaOrdinativi();
@@ -563,6 +564,11 @@ public class ElencoOrdinativiController extends BaseController {
         }
         
         try {
+            // se in consolidaento, copia l'importo nel valore da consolidare
+            if(ordinativo.getConsolidamento()==1) {
+                if(ordinativo.getImportoCons()==null) ordinativo.setImportoCons(ordinativo.getImporto());
+            }
+            
             if ("modifica".equalsIgnoreCase(azione)) {
                 os.modifica(ordinativo);
             } else {

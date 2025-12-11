@@ -22,24 +22,46 @@
                 <div class="col-12 md:col-12 lg:col-12">
                     <p:panel header="REGISTRO OPERAZIONI">
                         <div class="col-12">
-                            <p:dataTable id='logop' value="#{logOpController.log}" var='l' paginator="true" rows="10" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
-                                         currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" rowsPerPageTemplate="5,10,{ShowAll|'Tutti'}" widgetVar="logopTable" rowKey="#{l.id}" stripedRows="true" selectionMode="single"
-                                         selection="#{logOpController.logSelezionato}" size="small">
+                            <p:dataTable id='logopTable' value="#{logOpController.log}" var='l' paginator="true" rows="10" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                         currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" rowsPerPageTemplate="5,10,{ShowAll|'Tutti'}" widgetVar="wvLogopTable" rowKey="#{l.id}" stripedRows="true" selectionMode="single"
+                                         selection="#{logOpController.logSelezionato}" size="small" filteredValue="#{logOpController.logFiltrati}">
                                 <p:column style="width:2rem" ariaHeaderText="Row Toggler">
                                     <p:rowToggler/>
                                 </p:column>
-                                <p:column style="width: 15%" headerText="SERVIZIO">
-                                    #{logOpController.getServizio(l.service)}
-                                </p:column>
-                                <p:column headerText="FUNZIONE">
-                                    #{logOpController.getFunzione(l.service)}
-                                </p:column>
-                                <p:column headerText="OPERATORE" style="width: 10%">
+                                <p:column headerText="SERVIZIO/FUNZIONE" filterMatchMode="exact" field="service" sortable="true">
+                                    <f:facet name="filter">
+                                        <p:selectOneMenu value="#{logOpController.servizioFiltro}" panelStyle="width:400px" filter="true" filterMatchMode="contains" var="serv" onchange="PF('wvLogopTable').filter()" style="min-width: 100% !important" styleClass="custom-filter" >
+                                            <f:selectItem itemValue="#{null}" itemLabel="*" noSelectionOption="true" />
+                                            <f:selectItems value="#{logOpController.servizi}" var="s" itemValue="#{s}" itemLabel="#{s}" />
+
+                                            <p:column>
+                                                <h:outputText value="#{serv}" />
+                                            </p:column>                                       
+                                        </p:selectOneMenu>
+                                    </f:facet>
+
+                                    #{l.service}
+                                </p:column>                                
+                                <p:column headerText="OPERATORE" style="width: 10%" filterMatchMode="exact" field="operatore" sortable="true">
+                                    <f:facet name="filter">
+                                        <p:selectOneMenu value="#{logOpController.operatoreFiltro}" panelStyle="width:400px" filter="true" filterMatchMode="contains" var="op" onchange="PF('wvLogopTable').filter()" style="min-width: 100% !important" styleClass="custom-filter" >
+                                            <f:selectItem itemValue="#{null}" itemLabel="*" noSelectionOption="true" />
+                                            <f:selectItems value="#{logOpController.operatori}" var="o" itemValue="#{o}" itemLabel="#{o}" />
+
+                                            <p:column>
+                                                <h:outputText value="#{op}" />
+                                            </p:column>                                       
+                                        </p:selectOneMenu>
+                                    </f:facet>
+                                    
                                     #{l.operatore}
                                 </p:column>
-                                <p:column headerText="DATA/ORA" style="width: 8%">
+                                <p:column headerText="DATA/ORA" style="width: 9%" filterMatchMode="between" field="dataOra" sortable="true" sortBy="#{l.dataOra}" sortOrder="desc">
+                                    <f:facet name="filter">
+                                        <p:datePicker selectionMode="range" converter="localDateTimeConverter" onchange="PF('wvLogopTable').filter()" onblur="PF('wvLogopTable').filter()" monthNavigator="true" yearNavigator="true" mask="true" pattern="dd-MM-yyyy" showOnFocus="false" />
+                                    </f:facet>
                                     <h:outputText value="#{l.dataOra}">
-                                        <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss" type="localDateTime" />
+                                        <f:convertDateTime pattern="dd-MM-yyyy HH:mm:ss" type="localDateTime" timeZone="Europe/Rome" />
                                     </h:outputText>
                                 </p:column>
 
@@ -75,7 +97,7 @@
                             </p:dataTable>
                         </div>
                         <div class="col-1">
-                            <p:commandButton id="aggiornaLogOp" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{logOpController.aggiornaLog()}" process="@this" update="logop"/>
+                            <p:commandButton id="aggiornaLogOp" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{logOpController.aggiornaLog()}" process="@this" update="@form" />
                         </div>
                     </p:panel>
                 </div>

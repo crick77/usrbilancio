@@ -7,11 +7,13 @@ package it.usr.web.usrbilancio.controller;
 import it.usr.web.controller.BaseController;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoAppoggioRecord;
+import it.usr.web.usrbilancio.domain.tables.records.AllegatoCodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.RichiestaRecord;
 import it.usr.web.usrbilancio.producer.DocumentFolder;
+import it.usr.web.usrbilancio.service.CodiceService;
 import it.usr.web.usrbilancio.service.CompetenzaService;
 import it.usr.web.usrbilancio.service.MovimentiVirtualiService;
 import it.usr.web.usrbilancio.service.Mutables;
@@ -27,8 +29,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
@@ -59,6 +59,8 @@ public class DocController extends BaseController {
     MovimentiVirtualiService mvs;
     @Inject
     CompetenzaService cs;
+    @Inject
+    CodiceService codServ;
     @Inject
     @AppLogger
     Logger logger; 
@@ -93,37 +95,37 @@ public class DocController extends BaseController {
                 }
                                                    
                 switch(scope) {
-                    case "Q": {
+                    case "Q" ->  {
                         QuietanzaRecord q = qs.getQuietanzaById(id);
                         nomeFile.s = q.getNomefile();
                         nomeFileLocale.s = q.getNomefileLocale();
-                        break;
                     }
-                    case "O": {
+                    case "O" ->  {
                         AllegatoRecord a = os.getAllegatoById(id);
                         nomeFile.s = a.getNomefile();
                         nomeFileLocale.s = a.getNomefileLocale();
-                        break;
                     }
-                    case "OA": {
+                    case "OA" ->  {
                         AllegatoAppoggioRecord a = oas.getAllegatoAppoggioById(id);
                         nomeFile.s = a.getNomefile();
                         nomeFileLocale.s = a.getNomefileLocale();
-                        break;
                     }
-                    case "MV": {
+                    case "MV" ->  {
                         MovimentiVirtualiRecord mv = mvs.getMovimentoVirtualeById(id);
                         nomeFile.s = mv.getNomefile();
                         nomeFileLocale.s = mv.getNomefileLocale();
-                        break;
                     }
-                    case "R": {
+                    case "R" ->  {
                         RichiestaRecord r = cs.getRichiestaById(id);
                         nomeFile.s = r.getNomefile();
                         nomeFileLocale.s = r.getNomefileLocale();
-                        break;
                     }
-                    default: {
+                    case "C" -> {
+                        AllegatoCodiceRecord ac = codServ.getAllegatoCodiceById(id);
+                        nomeFile.s = ac.getNomefile();
+                        nomeFileLocale.s = ac.getNomefileLocale();
+                    }
+                    default -> {
                         logger.error("Non riesco a generare il documento con tipologia [{}] e id=[{}].", scope, id);
                         return getNotFoundDocument(scope, id!=null ? id : -1);
                     }
@@ -189,12 +191,12 @@ public class DocController extends BaseController {
             try (PDDocument doc = new PDDocument()) {
                 PDPage page = new PDPage();
                 doc.addPage(page);
-                try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                    cs.beginText();
-                    cs.newLineAtOffset(100, 700);
-                    cs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
-                    cs.showText("Non è stato possibile genereare il documento con codice ["+scope+"|"+id+"]. Contattare il supporto.");
-                    cs.endText();
+                try (PDPageContentStream pdfCs = new PDPageContentStream(doc, page)) {
+                    pdfCs.beginText();
+                    pdfCs.newLineAtOffset(100, 700);
+                    pdfCs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
+                    pdfCs.showText("Non è stato possibile genereare il documento con codice ["+scope+"|"+id+"]. Contattare il supporto.");
+                    pdfCs.endText();
                 }                
                 doc.save(baos);                
             }
@@ -218,12 +220,12 @@ public class DocController extends BaseController {
             try (PDDocument doc = new PDDocument()) {
                 PDPage page = new PDPage();
                 doc.addPage(page);
-                try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                    cs.beginText();
-                    cs.newLineAtOffset(100, 700);
-                    cs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
-                    cs.showText("Il documento associato al codice ["+scope+"|"+id+"] non esiste su disco. Contattare il supporto.");
-                    cs.endText();
+                try (PDPageContentStream pdfCs = new PDPageContentStream(doc, page)) {
+                    pdfCs.beginText();
+                    pdfCs.newLineAtOffset(100, 700);
+                    pdfCs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
+                    pdfCs.showText("Il documento associato al codice ["+scope+"|"+id+"] non esiste su disco. Contattare il supporto.");
+                    pdfCs.endText();
                 }                
                 doc.save(baos);                
             }
@@ -247,12 +249,12 @@ public class DocController extends BaseController {
             try (PDDocument doc = new PDDocument()) {
                 PDPage page = new PDPage();
                 doc.addPage(page);
-                try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                    cs.beginText();
-                    cs.newLineAtOffset(100, 700);
-                    cs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
-                    cs.showText("Il documento non è un file PDF visualizzabile. Scaricarlo e aprirlo con il programma adatto.");
-                    cs.endText();
+                try (PDPageContentStream pdfCs = new PDPageContentStream(doc, page)) {
+                    pdfCs.beginText();
+                    pdfCs.newLineAtOffset(100, 700);
+                    pdfCs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
+                    pdfCs.showText("Il documento non è un file PDF visualizzabile. Scaricarlo e aprirlo con il programma adatto.");
+                    pdfCs.endText();
                 }                
                 doc.save(baos);                
             }
@@ -276,12 +278,12 @@ public class DocController extends BaseController {
             try (PDDocument doc = new PDDocument()) {
                 PDPage page = new PDPage();
                 doc.addPage(page);
-                try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                    cs.beginText();
-                    cs.newLineAtOffset(100, 700);
-                    cs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
-                    cs.showText("Nessun documento selezionato.");
-                    cs.endText();
+                try (PDPageContentStream pdfCs = new PDPageContentStream(doc, page)) {
+                    pdfCs.beginText();
+                    pdfCs.newLineAtOffset(100, 700);
+                    pdfCs.setFont(new PDType1Font(Standard14Fonts.FontName.TIMES_ROMAN), 12);
+                    pdfCs.showText("Nessun documento selezionato.");
+                    pdfCs.endText();
                 }                
                 doc.save(baos);                
             }

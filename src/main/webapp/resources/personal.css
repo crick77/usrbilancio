@@ -179,13 +179,14 @@ th.detail {
 }
 
 .word-wrap {
-    word-wrap: break-word;
+    word-wrap: break-word !important;
+    white-space: unset !important;
 }
 
 .right {
     text-align: right;
 }
-
+ 
 .dialog-fix {
     z-index: 9998 !important;
 }

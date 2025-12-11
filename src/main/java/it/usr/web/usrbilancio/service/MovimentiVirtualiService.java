@@ -212,19 +212,18 @@ public class MovimentiVirtualiService {
         }
     }
 
-    public List<MovimentiVirtualiRecord> cerca(String testo, boolean dataAnd, LocalDate dataDa, LocalDate dataA, boolean importoAnd, BigDecimal importoDa, BigDecimal importoA, boolean codiciAnd, CodiceRecord[] codici,
-            boolean annoCompAnd, Integer annoCompetenza, boolean competenzeAnd, CapitoloCompetenza[] competenze) {
+    public List<MovimentiVirtualiRecord> cerca(SearchCriteria sc) {
         Condition cond = DSL.noCondition();
 
-        if (notEmpty(testo)) {
-            testo = "%" + testo + "%";
-            cond = cond.and(Tables.MOVIMENTI_VIRTUALI.DESCRIZIONE_RAGIONERIA.like(testo).or(Tables.MOVIMENTI_VIRTUALI.NOTE.like(testo)).or(Tables.MOVIMENTI_VIRTUALI.NOMINATIVO.like(testo)));
+        if (notEmpty(sc.testo)) {
+            sc.testo = "%" + sc.testo + "%";
+            cond = cond.and(Tables.MOVIMENTI_VIRTUALI.DESCRIZIONE_RAGIONERIA.like(sc.testo).or(Tables.MOVIMENTI_VIRTUALI.NOTE.like(sc.testo)).or(Tables.MOVIMENTI_VIRTUALI.NOMINATIVO.like(sc.testo)));
         }
 
-        if(notEmpty(competenze)) {
-            List<Integer> lComp = Arrays.stream(competenze).map(CapitoloCompetenza::getId).collect(Collectors.toList());
+        if(notEmpty(sc.competenze)) {
+            List<Integer> lComp = Arrays.stream(sc.competenze).map(CapitoloCompetenza::getId).collect(Collectors.toList());
             
-            if(competenzeAnd) {
+            if(sc.competenzeAnd) {
                 cond = cond.and(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.in(lComp));
             }
             else {
@@ -232,71 +231,89 @@ public class MovimentiVirtualiService {
             }
         }
         
-        if (dataDa != null || dataA != null) {
-            Condition condDataDoc = DSL.noCondition();
+        if (sc.dataPagDa != null || sc.dataPagA != null) {            
             Condition condDataPag = DSL.noCondition();
-            if (dataDa != null) {
-                condDataDoc = condDataDoc.or(Tables.MOVIMENTI_VIRTUALI.DATA_DOCUMENTO.ge(dataDa));
-                condDataPag = condDataPag.or(Tables.MOVIMENTI_VIRTUALI.DATA_PAGAMENTO.ge(dataDa));
+            if (sc.dataPagDa != null) {                
+                condDataPag = condDataPag.or(Tables.MOVIMENTI_VIRTUALI.DATA_PAGAMENTO.ge(sc.dataPagDa));
             }
 
-            if (dataA != null) {
-                if (dataDa != null) {
-                    condDataDoc = condDataDoc.and(Tables.MOVIMENTI_VIRTUALI.DATA_DOCUMENTO.le(dataA));
-                    condDataPag = condDataPag.and(Tables.MOVIMENTI_VIRTUALI.DATA_PAGAMENTO.le(dataA));
-                } else {
-                    condDataDoc = condDataDoc.or(Tables.MOVIMENTI_VIRTUALI.DATA_DOCUMENTO.le(dataA));
-                    condDataPag = condDataPag.or(Tables.MOVIMENTI_VIRTUALI.DATA_PAGAMENTO.le(dataA));
+            if (sc.dataPagA != null) {
+                if (sc.dataPagDa != null) {                    
+                    condDataPag = condDataPag.and(Tables.MOVIMENTI_VIRTUALI.DATA_PAGAMENTO.le(sc.dataPagA));
+                } else {                    
+                    condDataPag = condDataPag.or(Tables.MOVIMENTI_VIRTUALI.DATA_PAGAMENTO.le(sc.dataPagA));
                 }
             }
 
-            if (dataAnd) {
-                cond = cond.and(condDataDoc.or(condDataPag));
+            if (sc.dataPagAnd) {
+                cond = cond.and(condDataPag);
             } else {
-                cond = cond.or(condDataDoc.or(condDataPag));
+                cond = cond.or(condDataPag);
             }
         }
 
-        if (importoDa != null || importoA != null) {
-            Condition condImp = DSL.noCondition();
-
-            if (importoDa != null) {
-                condImp = condImp.or(Tables.MOVIMENTI_VIRTUALI.IMPORTO.ge(importoDa));
+        if (sc.dataDocDa != null || sc.dataDocA != null) {
+            Condition condDataDoc = DSL.noCondition();
+            
+            if (sc.dataDocDa != null) {
+                condDataDoc = condDataDoc.or(Tables.MOVIMENTI_VIRTUALI.DATA_DOCUMENTO.ge(sc.dataDocDa));            
             }
 
-            if (importoA != null) {
-                if (importoDa != null) {
-                    condImp = condImp.and(Tables.MOVIMENTI_VIRTUALI.IMPORTO.le(importoA));
+            if (sc.dataDocA != null) {
+                if (sc.dataDocDa != null) {
+                    condDataDoc = condDataDoc.and(Tables.MOVIMENTI_VIRTUALI.DATA_DOCUMENTO.le(sc.dataDocA));                    
                 } else {
-                    condImp = condImp.or(Tables.MOVIMENTI_VIRTUALI.IMPORTO.le(importoA));
+                    condDataDoc = condDataDoc.or(Tables.MOVIMENTI_VIRTUALI.DATA_DOCUMENTO.le(sc.dataDocA));                    
                 }
             }
 
-            if (importoAnd) {
+            if (sc.dataDocAnd) {
+                cond = cond.and(condDataDoc);
+            } else {
+                cond = cond.or(condDataDoc);
+            }
+        }
+        
+        if (sc.importoDa != null || sc.importoA != null) {
+            Condition condImp = DSL.noCondition();
+
+            if (sc.importoDa != null) {
+                condImp = condImp.or(Tables.MOVIMENTI_VIRTUALI.IMPORTO.ge(sc.importoDa));
+            }
+
+            if (sc.importoA != null) {
+                if (sc.importoDa != null) {
+                    condImp = condImp.and(Tables.MOVIMENTI_VIRTUALI.IMPORTO.le(sc.importoA));
+                } else {
+                    condImp = condImp.or(Tables.MOVIMENTI_VIRTUALI.IMPORTO.le(sc.importoA));
+                }
+            }
+
+            if (sc.importoAnd) {
                 cond = cond.and(condImp);
             } else {
                 cond = cond.or(condImp);
             }
         }
 
-        if (codici != null && codici.length > 0) {
-            List<Integer> lCodici = Arrays.stream(codici).map(CodiceRecord::getId).collect(Collectors.toList());
-            if (codiciAnd) {
+        if (sc.codici != null && sc.codici.length > 0) {
+            List<Integer> lCodici = Arrays.stream(sc.codici).map(CodiceRecord::getId).collect(Collectors.toList());
+            if (sc.codiciAnd) {
                 cond = cond.and(Tables.MOVIMENTI_VIRTUALI.ID_CODICE.in(lCodici));
             } else {
                 cond = cond.or(Tables.MOVIMENTI_VIRTUALI.ID_CODICE.in(lCodici));
             }
         }
 
-        if (annoCompetenza != null) {
-            if (annoCompAnd) {
-                cond = cond.and(Tables.COMPETENZA.ANNO.eq(annoCompetenza));
+        if (sc.annoCompetenza != null) {
+            if (sc.annoCompAnd) {
+                cond = cond.and(Tables.COMPETENZA.ANNO.eq(sc.annoCompetenza));
             } else {
-                cond = cond.or(Tables.COMPETENZA.ANNO.eq(annoCompetenza));
+                cond = cond.or(Tables.COMPETENZA.ANNO.eq(sc.annoCompetenza));
             }
         }
 
-        if (annoCompetenza != null) {
+        if (sc.annoCompetenza != null) {
             return ctx.select().from(Tables.MOVIMENTI_VIRTUALI).join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.MOVIMENTI_VIRTUALI);
         } else {
             return ctx.selectFrom(Tables.MOVIMENTI_VIRTUALI).where(cond).fetch();

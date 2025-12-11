@@ -5,6 +5,7 @@
                 xmlns:jsf="jakarta.faces"
                 xmlns:fn="jakarta.tags.functions"
                 xmlns:p="primefaces"
+                xmlns:pe="primefaces.extensions"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="title">Ricerca</ui:define>
@@ -68,20 +69,36 @@
                             </div>
                             <div class="formgrid grid">
                                 <div class="field col-1 data">
-                                    <p:outputLabel for="dataeo">Data</p:outputLabel>
-                                    <p:selectOneMenu id="dataeo" value="#{ricercaController.dataAnd}">
+                                    <p:outputLabel for="datadeo">Data Documento</p:outputLabel>
+                                    <p:selectOneMenu id="datadeo" value="#{ricercaController.dataDocAnd}">
                                         <f:selectItem itemValue="true" itemLabel="E" />
                                         <f:selectItem itemValue="false" itemLabel="O" />
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="field col-1 data">
-                                    <p:outputLabel for="dal">Dal</p:outputLabel>
-                                    <p:datePicker id="dal" value="#{ricercaController.dataDa}" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showTime="false" showOnFocus="false"/>
+                                    <p:outputLabel for="dddal">Dal</p:outputLabel>
+                                    <p:datePicker id="dddal" value="#{ricercaController.dataDocDa}" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showTime="false" showOnFocus="false"/>
                                 </div>
                                 <div class="field col-1 data">
-                                    <p:outputLabel for="al">Al</p:outputLabel>
-                                    <p:datePicker id="al" value="#{ricercaController.dataA}" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showTime="false" showOnFocus="false" />
+                                    <p:outputLabel for="ddal">Al</p:outputLabel>
+                                    <p:datePicker id="ddal" value="#{ricercaController.dataDocA}" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showTime="false" showOnFocus="false" />
                                 </div>      
+
+                                <div class="field col-1 data">
+                                    <p:outputLabel for="datapeo">Data Pagamento</p:outputLabel>
+                                    <p:selectOneMenu id="datapeo" value="#{ricercaController.dataPagAnd}">
+                                        <f:selectItem itemValue="true" itemLabel="E" />
+                                        <f:selectItem itemValue="false" itemLabel="O" />
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="field col-1 data">
+                                    <p:outputLabel for="dpdal">Dal</p:outputLabel>
+                                    <p:datePicker id="dpdal" value="#{ricercaController.dataPagDa}" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showTime="false" showOnFocus="false"/>
+                                </div>
+                                <div class="field col-1 data">
+                                    <p:outputLabel for="dpal">Al</p:outputLabel>
+                                    <p:datePicker id="dpal" value="#{ricercaController.dataPagA}" pattern="dd/MM/yyyy" showButtonBar="true" mask="true" showIcon="true" showTime="false" showOnFocus="false" />
+                                </div>
 
                                 <div class="field col-1 importo">
                                     <p:outputLabel for="importoeo">Importo</p:outputLabel>
@@ -110,7 +127,9 @@
                                     <p:selectCheckboxMenu id="tiports" value="#{ricercaController.tipiRtsSelezionati}" converter="tipoRtsConverter" updateLabel="true" selectedLabel="Selezione effettuata. Cliccare per mostrare l'elenco" filter="true" filterMatchMode="contains">
                                         <f:selectItems value="#{ricercaController.tipiRts}" var="c" itemValue="#{c}" itemLabel="#{c.codice}: #{c.descrizione}" />                               
                                     </p:selectCheckboxMenu>
-                                </div>
+                                </div>                                
+                            </div>  
+                            <div class="formgrid grid">
                                 <div class="field col-3 tipologia">
                                     <p:outputLabel for="tipologia">Mostra</p:outputLabel>
                                     <p:selectCheckboxMenu id="tipologia" value="#{ricercaController.tipologieSelezionate}" updateLabel="true" multiple="true" required="true" requiredMessage="Selezionare almeno una tipologia dall'elenco.">
@@ -119,7 +138,7 @@
                                         <f:selectItem itemValue="MV" itemLabel="MOVIMENTI VIRT." />
                                     </p:selectCheckboxMenu>
                                 </div>
-                            </div>  
+                            </div>
                             <div class="formgrid grid">
                                 <div class="field col-4" />
                                 <div class="field col-4">
@@ -138,7 +157,7 @@
                     <div class="col-12 md:col-12 lg:col-12">
                         <div class="card ui-fluid">                            
                             <p:dataTable id="ordinativitable" value="#{ricercaController.risultato}" var="r" rowKey="#{r.id}" lazy="false"
-                                         paginator="true" rows="100" paginatorPosition="top" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" sortMode="multiple"
+                                         paginator="true" rows="100" paginatorPosition="both" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" sortMode="multiple"
                                          currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" rowsPerPageTemplate="5,10,100,{ShowAll|'Tutti'}" widgetVar="risultatoTable" size="small" rowStyleClass="#{ricercaController.decodeColor(r.tipologia)}"
                                          resizableColumns="true" showGridlines="true">
                                 <f:facet name="header">
@@ -153,7 +172,7 @@
                                         </div>
                                     </div>
                                 </f:facet>
-                                <p:column headerText="COMPETENZA/CAPITOLO" style="width: 15%" sortBy="#{ricercaController.decodeCapComp(r.idCompetenza).anno} | #{ricercaController.decodeCapComp(r.idCompetenza).descrizione}" exportFunction="#{tableExporterController.decodeCompetenza(r.idCompetenza)}">
+                                <p:column headerText="COMPETENZA/CAPITOLO" style="width: 15%" styleClass="word-wrap" sortBy="#{ricercaController.decodeCapComp(r.idCompetenza).anno} | #{ricercaController.decodeCapComp(r.idCompetenza).descrizione}" exportFunction="#{tableExporterController.decodeCompetenza(r.idCompetenza)}">
                                     <h:outputText value="#{ricercaController.decodeCapComp(r.idCompetenza).anno} | #{ricercaController.decodeCapComp(r.idCompetenza).descrizione}" />
                                 </p:column>
                                 <p:column sortable="true" sortBy="#{ricercaController.decodeCapComp(r.idCompetenza).chiuso}" style="width: 2%" exportFunction="#{tableExporterController.decodeStato(ricercaController.decodeCapComp(r.idCompetenza).chiuso)}" exportHeaderValue="STATO">
@@ -167,17 +186,17 @@
                                         <i class="pi pi-clock" />
                                     </ui:fragment>
                                 </p:column>
-                                <p:column headerText="CONTO" style="width: 4%;" sortBy="#{formatter.codiceComposto(ricercaController.decodeCodice(r.idCodice))}" exportFunction="#{tableExporterController.decodeConto(r.idCodice)}">
-                                    <i jsf:id="infoCodice" class="pi pi-info-circle" />
+                                <p:column headerText="CONTO" style="width: 4%" styleClass="word-wrap" sortBy="#{formatter.codiceComposto(ricercaController.decodeCodice(r.idCodice))}" exportFunction="#{tableExporterController.decodeConto(r.idCodice)}">
+                                    <!-- <i jsf:id="infoCodice" class="pi pi-info-circle" /> -->
                                     <h:outputText value="#{formatter.codiceComposto(ricercaController.decodeCodice(r.idCodice))}" />
-                                    <p:tooltip for="infoCodice" value="#{ricercaController.codiceTooltip(r.idCodice)}" position="bottom" escape="false" />
+                                    <!-- <p:tooltip for="infoCodice" value="#{ricercaController.codiceTooltip(r.idCodice)}" position="bottom" escape="false" /> -->
                                 </p:column>
-                                <p:column headerText="DESCR. CONTO" style="width: 4%;" sortBy="#{ricercaController.decodeCodice(r.idCodice).descrizione}">
+                                <p:column headerText="DESCR. CONTO" style="width: 4%;" styleClass="word-wrap" sortBy="#{ricercaController.decodeCodice(r.idCodice).descrizione}">
                                     <h:outputText value="#{ricercaController.decodeCodice(r.idCodice).descrizione}" />                                    
                                 </p:column>
                                 <p:column headerText="RTS" style="width: 3%;" sortBy="#{ricercaController.decodeTipoRts(r.idTipoRts).codice}" exportFunction="#{tableExporterController.decodeRts(r.idTipoRts)}">
                                     <ui:fragment rendered="#{not empty r.idTipoRts}">
-                                        <i jsf:id="infoRts" class="pi pi-info-circle" />
+                                        <i jsf:id="infoRts" class="pi pi-info-circle" />&#160;
                                         <h:outputText value="#{ricercaController.decodeTipoRts(r.idTipoRts).codice}" />
                                         <p:tooltip for="infoRts" value="#{ricercaController.decodeTipoRts(r.idTipoRts).descrizione}" position="bottom" />
                                     </ui:fragment>
@@ -188,31 +207,31 @@
                                 <p:column headerText="N." style="width: 3%;" sortBy="#{r.numeroDocumento}">
                                     <h:outputText value="#{r.numeroDocumento}" />
                                 </p:column>
-                                <p:column headerText="DEL" style="width: 4%;" sortBy="#{r.dataDocumento}">
+                                <p:column headerText="DEL" style="width: 4%;" styleClass="word-wrap" sortBy="#{r.dataDocumento}">
                                     <h:outputText value="#{r.dataDocumento}">
                                         <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="RICEVIM." style="width: 5%;" sortBy="#{r.dataRicevimento}">
+                                <p:column headerText="RICEVIM." style="width: 5%;" styleClass="word-wrap" sortBy="#{r.dataRicevimento}">
                                     <h:outputText value="#{r.dataRicevimento}">
                                         <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="N. PAG." style="width: 4%;" sortBy="#{r.numeroPagamento}">
+                                <p:column headerText="N. PAG." style="width: 4%;" styleClass="word-wrap" sortBy="#{r.numeroPagamento}">
                                     <h:outputText value="#{r.numeroPagamento}" />
                                 </p:column>
-                                <p:column headerText="DEL" style="width: 4%;" sortBy="#{r.dataPagamento}">
+                                <p:column headerText="DEL" style="width: 4%;" styleClass="word-wrap" sortBy="#{r.dataPagamento}">
                                     <h:outputText value="#{r.dataPagamento}">
                                         <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="SOGGETTO" sortBy="#{r.soggetto}" styleClass="wrap">
+                                <p:column headerText="SOGGETTO" styleClass="word-wrap" sortBy="#{r.soggetto}">
                                     <h:outputText value="#{r.soggetto}" />
                                 </p:column>
-                                <p:column headerText="DESCRIZIONE" sortBy="#{r.descrizione}">
+                                <p:column headerText="DESCRIZIONE" styleClass="word-wrap" sortBy="#{r.descrizione}">
                                     <h:outputText value="#{r.descrizione}" />
                                 </p:column>
-                                <p:column headerText="ENTRATA" style="width: 5%; text-align: right;" sortBy="#{r.importoE}">
+                                <p:column headerText="ENTRATA"  style="width: 5%; text-align: right;" sortBy="#{r.importoE}">
                                     <h:outputText value="#{r.importoE}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
@@ -227,12 +246,13 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
-                                <p:column style="width: 2%; text-align: center;" exportable="false">
-                                    <p:commandButton id="note" icon="pi pi-book" title="Note" type="button" styleClass="ui-button-help" rendered="#{not empty r.note}"/>
+                                <p:column style="width: 4%; text-align: center;" exportable="false">
+                                    <p:commandButton id="note" icon="pi pi-book" title="Note" type="button" styleClass="ui-button-help" rendered="#{not empty r.note}"/>&#160;
                                     <p:overlayPanel for="note" style="width:350px" showCloseIcon="true" >
                                         <h5>Note</h5>
-                                        <p>#{r.note}</p>
+                                        <p style="text-wrap: initial">#{r.note}</p>
                                     </p:overlayPanel>
+                                    <p:commandButton id="all" icon="pi pi-paperclip" title="Allegati" styleClass="ui-button-danger" update="@form:allegati" oncomplete="PF('documentiDialog').show()" actionListener="#{ricercaController.aggiornaAllegati(r)}"/>
                                 </p:column>
 
                                 <p:columnGroup type="footer" >
@@ -245,7 +265,7 @@
                                                 <span class="movimento_virtuale">Movimenti Virtuali: #{ricercaController.numeroMovimenti()}</span>
                                             </f:facet>
                                         </p:column>                         
-                                        <p:column colspan="7" />
+                                        <p:column colspan="8" />
                                         <p:column style="text-align: right">
                                             <f:facet name="footer">  
                                                 <b>Totale:</b>
@@ -280,11 +300,49 @@
                                             </f:facet>
                                         </p:column>
                                     </p:row>                                    
-                                </p:columnGroup>
-                            </p:dataTable>
+                                </p:columnGroup>                              
+                            </p:dataTable>                                                        
                         </div>
                     </div>
                 </ui:fragment>
+
+                <p:dialog header="Documenti" showEffect="fade" modal="true" widgetVar="documentiDialog" responsive="true" width="90%">
+                    <p:panel id="allegati-panel" header="ALLEGATI" style="min-height: 400px">
+                        <div class="grid">
+                            <div class="col-6 md:col-6">
+                                <p:dataTable id="allegati" lazy="true" value="#{ricercaController.allegati}" var="a" paginator="true" rows="5" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} allegati"  rowsPerPageTemplate="5,10,{ShowAll|'Tutti'}" stripedRows="true" size="small" rowKey="#{a.id}"
+                                             emptyMessage="Nessun allegato per la voce selezionata." scrollable="true" scrollHeight="350">
+                                    <p:column headerText="DOCUMENTO" sortBy="#{a.nomefile}" styleClass="word-wrap">
+                                        #{a.nomeFile}
+                                    </p:column>
+                                    <p:column headerText="GRUPPO" sortBy="#{a.gruppo}" sortOrder="asc" styleClass="word-wrap" width="10%">
+                                        #{a.gruppo}                                        
+                                    </p:column> 
+                                    <p:column headerText="DESCRIZIONE" styleClass="word-wrap">
+                                        #{a.descrizione}
+                                    </p:column>
+                                    <p:column style="width: 4%">
+                                        <p:commandButton id="show" icon="pi pi-eye" title="Mostra documento" styleClass="ui-button-secondary" process="@this" update="form:docviewer">
+                                            <f:setPropertyActionListener target="#{ricercaController.allegato}" value="#{a}" />
+                                        </p:commandButton>
+                                    </p:column>                                        
+                                    <p:column style="width: 4%">
+                                        <p:linkButton id="download" icon="pi pi-download" title="Scarica allegato" styleClass="ui-button-help" href="#{request.contextPath}/download?scope=#{a.tipo}&#38;id=#{a.id}" />
+                                    </p:column>
+                                </p:dataTable>
+                            </div>                        
+                            <div class="col-6 md:col-6">
+                                <pe:documentViewer id="docviewer" value="#{docController.stream}" width="100%" height="500">
+                                    <f:param name="x" value="#{ricercaController.timeStamp}" />
+                                    <f:param name="scope" value="#{ricercaController.allegato.tipo}" />
+                                    <f:param name="id" value="#{ricercaController.allegato.id}" />
+                                    <f:param name="empty" value="#{empty ricercaController.allegato}" />
+                                </pe:documentViewer>
+                            </div>
+                        </div>
+                    </p:panel>
+                </p:dialog>
 
                 <p:growl id="msg" escape="false" sticky="false" life="1500" />                
             </h:panelGroup>

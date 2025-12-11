@@ -6,8 +6,12 @@ package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
 import it.usr.web.producer.AppLogger;
+import it.usr.web.usrbilancio.domain.tables.records.AllegatoCodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
+import it.usr.web.usrbilancio.model.Documento;
 import it.usr.web.usrbilancio.service.CodiceService;
+import it.usr.web.usrbilancio.service.DocumentService;
 import it.usr.web.usrbilancio.service.DuplicationException;
 import it.usr.web.usrbilancio.service.IntegrityException;
 import it.usr.web.usrbilancio.service.StaleRecordException;
@@ -15,9 +19,14 @@ import jakarta.ejb.EJBException;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import org.primefaces.PrimeFaces;
+import org.primefaces.event.RowEditEvent;
+import org.primefaces.model.file.UploadedFile;
+import org.primefaces.model.file.UploadedFiles;
 import org.slf4j.Logger;
 
 /**
@@ -32,15 +41,25 @@ public class CodiciController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject 
+    DocumentService ds;
     List<CodiceRecord> codici;
+    List<AllegatoCodiceRecord> allegati;
+    AllegatoCodiceRecord allegato;
     CodiceRecord codice;
+    UploadedFiles documentFiles;
     String codiceComposto;
+    String gruppo;
     String azione;
     
     public void init() {
         codici = cs.getCodici();
         codice = null;
         azione = null;
+        allegati = null;
+        allegato = null;
+        gruppo = null;
+        documentFiles = null;
         codiceComposto = null;
     }
 
@@ -67,7 +86,35 @@ public class CodiciController extends BaseController {
     public void setCodiceComposto(String codiceComposto) {
         this.codiceComposto = codiceComposto;
     }                
-    
+
+    public List<AllegatoCodiceRecord> getAllegati() {
+        return allegati;
+    }
+
+    public AllegatoCodiceRecord getAllegato() {
+        return allegato;
+    }
+
+    public void setAllegato(AllegatoCodiceRecord allegato) {
+        this.allegato = allegato;
+    }
+
+    public String getGruppo() {
+        return gruppo;
+    }
+
+    public void setGruppo(String gruppo) {
+        this.gruppo = gruppo;
+    }
+
+    public void setDocumentFiles(UploadedFiles documentFiles) {
+        this.documentFiles = documentFiles;
+    }
+
+    public UploadedFiles getDocumentFiles() {
+        return documentFiles;
+    }
+                           
     public void nuovo() {
         codice = new CodiceRecord();
         codiceComposto = null;
@@ -187,6 +234,66 @@ public class CodiciController extends BaseController {
         }
         else {
             addMessage(Message.warn("Non è stato trovato alcun conto in archivio con i codici indicati."));
+        }
+    }
+    
+    public void caricaAllegati() {
+        allegato = null;
+        documentFiles = null;
+        if(codice!=null) {
+            allegati = cs.getAllegatiCodice(codice.getId());
+        }
+        else {
+            allegati = null;
+        }
+    }
+    
+    public void onAllegatoRowEdit(RowEditEvent<AllegatoCodiceRecord> event) {        
+        cs.modifica(allegato);            
+        addMessage(Message.info("Informazioni allegato aggiornata."));             
+    }
+    
+    public void aggiungiAllegati() {
+        List<Documento> lAll = new ArrayList<>();
+        for (UploadedFile f : documentFiles.getFiles()) {
+            Documento d = new Documento(f.getFileName(), gruppo, f.getContent(), cs.getMimeType(f.getContentType()));
+            lAll.add(d);
+
+            // Se P7M sbusta e aggiunge
+            if (d.getFileName().toLowerCase().endsWith("p7m")) {
+                try {
+                    Documento extr = ds.extractP7M(d);
+                    if (extr != null) {
+                        lAll.add(extr);
+                    } else {
+                        logger.debug("L'estrazione del file P7M {} non è andata a buon fine.", d.getFileName());
+                    }
+                } catch (Exception ex) {
+                    logger.debug("Errore imprevisto {} durante l'estrazione di un file P7M per il codice {}. Errrore: {}", ex.getCause().getClass(), codice, ex.getCause());
+                }
+            }
+        }
+
+        try {
+            cs.inserisci(lAll, codice.getId());
+
+            caricaAllegati();
+            
+            PrimeFaces.current().executeScript("PF('allegatiDialog').hide()");
+        } catch (EJBException ex) {
+            addMessage(Message.error("Errore imprevisto: " + ex.getCausedByException().getMessage()));
+            logger.debug("Errore imprevisto {} durante il salvataggio degli allegati del codice {}. Errrore: {}", ex.getCausedByException().getClass(), codice, ex.getCausedByException());
+        }
+    }
+    
+    public void eliminaAllegato() {
+         try {
+            cs.elimina(allegato);
+
+            caricaAllegati();
+        } catch (EJBException ex) {
+            addMessage(Message.error("Errore imprevisto: " + ex.getCausedByException().getMessage()));
+            logger.debug("Errore imprevisto {} durante il l'eliminazione dell'allegato {} del codice {}. Errrore: {}", ex.getCausedByException().getClass(), allegato, codice, ex.getCausedByException());
         }
     }
 }

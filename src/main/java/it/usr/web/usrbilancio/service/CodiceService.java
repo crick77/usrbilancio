@@ -4,14 +4,18 @@
  */
 package it.usr.web.usrbilancio.service;
 
+import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.Tables;
+import it.usr.web.usrbilancio.domain.tables.records.AllegatoCodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MimeTypeRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
 import it.usr.web.usrbilancio.interceptor.LogDatabaseOperation;
+import it.usr.web.usrbilancio.model.Documento;
 import it.usr.web.usrbilancio.model.Intervento;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
+import it.usr.web.usrbilancio.producer.DocumentFolder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,14 +23,21 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Inject;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
+import java.util.UUID;
+import org.apache.commons.io.FilenameUtils;
 import org.jooq.Condition;
 import org.jooq.DSLContext;
 import org.jooq.OrderField;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
 import org.jooq.impl.SQLDataType;
+import org.slf4j.Logger;
 
 /**
  *
@@ -34,13 +45,19 @@ import org.jooq.impl.SQLDataType;
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public class CodiceService {       
+public class CodiceService {               
     public enum GruppoRts {
         RTS_QUIETANZA, RTS_ORDINATIVO, RTS_TUTTI;
     }
     @DSLBilancio
     @Inject
     DSLContext ctx;
+    @AppLogger
+    @Inject
+    Logger logger;
+    @DocumentFolder
+    @Inject
+    String documentFolder;
 
     public List<CodiceRecord> getCodici() {
         return ctx.selectFrom(Tables.CODICE).orderBy(Tables.CODICE.CODICE_, Tables.CODICE.C01, Tables.CODICE.C02, Tables.CODICE.C03, Tables.CODICE.C04, Tables.CODICE.C05).fetch();
@@ -71,8 +88,8 @@ public class CodiceService {
 
     public List<TipoRtsRecord> getTipiRts(GruppoRts tipoRts) {
         return switch (tipoRts) {
-            case RTS_ORDINATIVO -> ctx.selectFrom(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.likeRegex("^[A-Z]+$")).orderBy(Tables.TIPO_RTS.CODICE).fetch();
-            case RTS_QUIETANZA -> ctx.selectFrom(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.likeRegex("^[0-9]+$")).orderBy(Tables.TIPO_RTS.CODICE).fetch();
+            case RTS_ORDINATIVO -> ctx.selectFrom(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.likeRegex("^[A-Z]+$")).or(Tables.TIPO_RTS.CODICE.eq("99")).orderBy(Tables.TIPO_RTS.CODICE).fetch();
+            case RTS_QUIETANZA -> ctx.selectFrom(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.likeRegex("^[0-9]+$")).or(Tables.TIPO_RTS.CODICE.eq("99")).orderBy(Tables.TIPO_RTS.CODICE).fetch();
             default -> ctx.selectFrom(Tables.TIPO_RTS).orderBy(Tables.TIPO_RTS.CODICE).fetch();
         };
     }
@@ -326,4 +343,71 @@ public class CodiceService {
             return elenco.isEmpty() ? null : elenco.get(0);
         }
     } 
+    
+    public List<AllegatoCodiceRecord> getAllegatiCodice(Integer idCodice) {
+        return ctx.selectFrom(Tables.ALLEGATO_CODICE).where(Tables.ALLEGATO_CODICE.ID_CODICE.eq(idCodice)).fetch();
+    }
+    
+    public AllegatoCodiceRecord getAllegatoCodiceById(int idAllegatoCodice) {
+        return ctx.selectFrom(Tables.ALLEGATO_CODICE).where(Tables.ALLEGATO_CODICE.ID.eq(idAllegatoCodice)).fetchOne();
+    }
+    
+    @LogDatabaseOperation
+    public void inserisci(List<Documento> documenti, Integer idCodice) {
+        List<AllegatoCodiceRecord> all = new ArrayList<>();
+ 
+        try {
+            ctx.transaction(trx -> {
+                try {
+                    for (Documento doc : documenti) {
+                        String localFileName = UUID.randomUUID().toString() + "." + FilenameUtils.getExtension(doc.getFileName());
+                        Files.write(Paths.get(documentFolder + "/" + localFileName), doc.getContent());
+                        logger.info("Il documento [{}] con nome logico [{}] è stato correttamente aggiunto al volume.", localFileName, doc.getFileName());
+
+                        AllegatoCodiceRecord a = new AllegatoCodiceRecord(null, idCodice, doc.getGruppo(), doc.getFileName(), localFileName, doc.getContentType());                        
+                        trx.dsl().insertInto(Tables.ALLEGATO_CODICE).set(a).execute();
+                        all.add(a);
+                    } 
+                } catch (IOException ioe) {
+                    throw new UploadException("Impossibile caricare il file a causa di " + ioe.getMessage());
+                }
+            });
+        } 
+        catch (DataAccessException dae) {
+            for (AllegatoCodiceRecord a : all) {
+                try {
+                    if (a.getNomefileLocale() != null) {
+                        Files.delete(Paths.get(documentFolder + "/" + a.getNomefileLocale()));
+                        logger.info("Il documento [{}] è stato correttamente rimosso dal volume.", a.getNomefileLocale());
+                    }
+                } catch (IOException e) {
+                }
+            }
+
+            throw dae;
+        }
+    }
+    
+    @LogDatabaseOperation
+    public void modifica(AllegatoCodiceRecord allegato) {           
+        ctx.update(Tables.ALLEGATO_CODICE).set(allegato).where(Tables.ALLEGATO_CODICE.ID.eq(allegato.getId())).execute();   
+    }
+    
+    @LogDatabaseOperation
+    public void elimina(AllegatoCodiceRecord allegato) {
+        ctx.transaction(trx -> {
+            int rem = trx.dsl().deleteFrom(Tables.ALLEGATO_CODICE).where(Tables.ALLEGATO_CODICE.ID.eq(allegato.getId())).execute();
+            if (rem != 1) {
+                throw new StaleRecordException("L'allegato [" + allegato.getId() + "] è stato già eliminato.");
+            }
+
+            try {
+                Files.delete(Paths.get(documentFolder + "/" + allegato.getNomefileLocale()));
+                logger.info("Il documento [{}] è stato correttamente rimosso dal volume.", allegato.getNomefileLocale());
+            } 
+            catch (IOException e) {
+                logger.warn("Errore nell'eliminazione del file per l'allegato id [{}] nomefile [{}]. Il record è stato eliminato. Errore: {}", allegato.getId(), allegato.getNomefileLocale(), e);
+            }
+        });
+    }
 }

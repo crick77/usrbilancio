@@ -14,6 +14,7 @@ import jakarta.ejb.ConcurrencyManagement;
 import jakarta.ejb.ConcurrencyManagementType;
 import jakarta.ejb.Lock;
 import jakarta.ejb.LockType;
+import jakarta.ejb.Schedule;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
@@ -65,7 +66,7 @@ public class SessionStorage {
             try {
                 DecodedJWT jwt = ws.decodeToken(token);
                 if(jwt!=null) {
-                    purge();
+                    //purge();
                     
                     session.put(token, jwt);
                     return true; 
@@ -128,11 +129,16 @@ public class SessionStorage {
      * 
      */
     @Lock(LockType.WRITE)
+    @Schedule(hour = "2", persistent = false)
     public void purge() {
+        int original = session.size();
+        log.info("Avviamento pulizia programmata sessioni scadute. Sessioni attive: {}", original);
         Date term = new Date(System.currentTimeMillis()+WebServices.EXPIRE_24H);
         session.entrySet().removeIf(e -> {
             Date d = e.getValue().getExpiresAt();
             return d!=null && d.after(term);
         });        
+        int newSize = session.size();
+        log.info("Pulizia programmata sessioni scadute terminata. Sessioni attive: {}, Sessioni eliminate: {}.", newSize, (original-newSize));
     }
-}
+} 

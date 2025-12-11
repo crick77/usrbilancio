@@ -5,6 +5,7 @@ package it.usr.web.usrbilancio.domain;
 
 
 import it.usr.web.usrbilancio.domain.tables.Allegato;
+import it.usr.web.usrbilancio.domain.tables.AllegatoCodice;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.MovimentiVirtuali;
 import it.usr.web.usrbilancio.domain.tables.Ordinativo;
@@ -29,6 +30,7 @@ public class Indexes {
     // -------------------------------------------------------------------------
 
     public static final Index ALLEGATO_FK_ALLEGATO_ORDINATIVO_IDX = Internal.createIndex(DSL.name("fk_allegato_ordinativo_idx"), Allegato.ALLEGATO, new OrderField[] { Allegato.ALLEGATO.ID_ORDINATIVO }, false);
+    public static final Index ALLEGATO_CODICE_FK_ALLEGATOCODICE_CODICE_IDX = Internal.createIndex(DSL.name("fk_allegatocodice_codice_idx"), AllegatoCodice.ALLEGATO_CODICE, new OrderField[] { AllegatoCodice.ALLEGATO_CODICE.ID_CODICE }, false);
     public static final Index COMPETENZA_FK_ANNUALITA_CAPITOLO_IDX = Internal.createIndex(DSL.name("fk_annualita_capitolo_idx"), Competenza.COMPETENZA, new OrderField[] { Competenza.COMPETENZA.ID_CAPITOLO }, false);
     public static final Index ORDINATIVO_FK_ORDINATIVO_ANNUALITA_IDX = Internal.createIndex(DSL.name("fk_ordinativo_annualita_idx"), Ordinativo.ORDINATIVO, new OrderField[] { Ordinativo.ORDINATIVO.ID_COMPETENZA }, false);
     public static final Index ORDINATIVO_FK_ORDINATIVO_CODICE_IDX = Internal.createIndex(DSL.name("fk_ordinativo_codice_idx"), Ordinativo.ORDINATIVO, new OrderField[] { Ordinativo.ORDINATIVO.ID_CODICE }, false);

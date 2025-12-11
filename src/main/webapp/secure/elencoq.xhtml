@@ -32,7 +32,7 @@
                                         <div class="flex">                                            
                                             <div class="flex justify-content-end" style="width: 100%">
                                                 <p:commandButton process="@this" value="Excel" icon="pi pi-file-excel" styleClass="mr-2 mb-2 ui-button-outlined ui-button-success" title="Esporta elenco tabella in Excel">
-                                                    <p:dataExporter type="xlsxstream" target="quietanze" fileName="quietanze" />
+                                                    <p:dataExporter type="xlsxstream" target="quietanze" fileName="quietanze" options="#{tableExporterController.excelOpt}" />
                                                 </p:commandButton>
                                                 <p:commandButton process="@this" value="PDF" icon="pi pi-file-pdf" styleClass="mr-2 mb-2 ui-button-outlined ui-button-danger" title="Esporta elenco tabella in PDF">
                                                     <p:dataExporter type="pdf" target="quietanze" fileName="quietanze" />
@@ -119,7 +119,7 @@
                                             <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                         </h:outputText>
                                     </p:column>
-                                    <p:column field="numeroPagamento" headerText="N.QUI." style="width: 4%;" filterMatchMode="contains" sortFunction="#{sorter.sortStringAsInt}" sortBy="#{q.numeroPagamento }">
+                                    <p:column field="numeroPagamento" headerText="N.QUI." style="width: 4%;" styleClass="word-wrap" filterMatchMode="contains" sortFunction="#{sorter.sortStringAsInt}" sortBy="#{q.numeroPagamento }" exportValue="#{q.numeroPagamento}">
                                         #{q.numeroPagamento}
                                     </p:column>
                                     <p:column field="dataPagamento" headerText="DEL" style="width: 9%;" filterMatchMode="between" exportFunction="#{tableExporterController.decodeDate(q.dataPagamento)}" sortBy="#{q.dataPagamento}" sortOrder="desc">

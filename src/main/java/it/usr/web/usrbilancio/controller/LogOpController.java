@@ -26,9 +26,14 @@ public class LogOpController extends BaseController {
     Logger logger;
     @Inject
     LogOperazioniService los;
-    List<LogOperazioniRecord> log;    
+    List<LogOperazioniRecord> log;
+    List<LogOperazioniRecord> logFiltrati;    
     LogOperazioniRecord logSelezionato;
-    
+    String servizioFiltro;
+    String operatoreFiltro;
+    List<String> servizi;
+    List<String> operatori;
+        
     public void init() {
         aggiornaLog();
     }
@@ -36,7 +41,7 @@ public class LogOpController extends BaseController {
     public List<LogOperazioniRecord> getLog() {
         return log;
     }        
-
+ 
     public LogOperazioniRecord getLogSelezionato() {
         return logSelezionato;
     }
@@ -44,23 +49,46 @@ public class LogOpController extends BaseController {
     public void setLogSelezionato(LogOperazioniRecord logSelezionato) {
         this.logSelezionato = logSelezionato;
     }    
+
+    public String getServizioFiltro() {
+        return servizioFiltro;
+    }
+
+    public void setServizioFiltro(String servizioFiltro) {
+        this.servizioFiltro = servizioFiltro;
+    }
     
+    public List<String> getServizi() {
+        return servizi;
+    }
+
+    public List<LogOperazioniRecord> getLogFiltrati() {
+        return logFiltrati;
+    }
+
+    public void setLogFiltrati(List<LogOperazioniRecord> logFiltrati) {
+        this.logFiltrati = logFiltrati; 
+    } 
+
+    public List<String> getOperatori() {
+        return operatori;
+    }
+
+    public String getOperatoreFiltro() {
+        return operatoreFiltro;
+    }
+
+    public void setOperatoreFiltro(String operatoreFiltro) {
+        this.operatoreFiltro = operatoreFiltro;
+    }
+                  
     public void aggiornaLog() {
-        log = los.getLogOperazioni();
+        log = los.getLogOperazioni();   
+        servizi = los.getServizi();
+        operatori = los.getOperatori();
         logSelezionato = null;
-    }
-    
-    public String getServizio(String s) {
-        if(isEmpty(s)) return s;
-        
-        String[] parts = s.split("\\.");
-        return parts[0];
-    }
-    
-    public String getFunzione(String s) {
-        if(isEmpty(s)) return s;
-        
-        String[] parts = s.split("\\.");
-        return parts.length>1 ? parts[1] : parts[0];
-    }
+        servizioFiltro = null; 
+        logFiltrati = null;   
+        operatoreFiltro = null;        
+    }       
 }

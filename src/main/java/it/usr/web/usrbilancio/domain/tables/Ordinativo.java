@@ -132,6 +132,11 @@ public class Ordinativo extends TableImpl<OrdinativoRecord> {
     public final TableField<OrdinativoRecord, BigDecimal> IMPORTO = createField(DSL.name("importo"), SQLDataType.DECIMAL(10, 2).nullable(false), this, "");
 
     /**
+     * The column <code>usrbilancio.ordinativo.importo_cons</code>.
+     */
+    public final TableField<OrdinativoRecord, BigDecimal> IMPORTO_CONS = createField(DSL.name("importo_cons"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
      * The column <code>usrbilancio.ordinativo.note</code>.
      */
     public final TableField<OrdinativoRecord, String> NOTE = createField(DSL.name("note"), SQLDataType.VARCHAR(1024), this, "");
@@ -177,9 +182,10 @@ public class Ordinativo extends TableImpl<OrdinativoRecord> {
     public final TableField<OrdinativoRecord, Integer> ORDINATIVO_RITENUTA = createField(DSL.name("ordinativo_ritenuta"), SQLDataType.INTEGER, this, "");
 
     /**
-     * The column <code>usrbilancio.ordinativo.consolidamento</code>.
+     * The column <code>usrbilancio.ordinativo.consolidamento</code>. 0=non
+     * impostato,1=da consolidare,2=consolidato
      */
-    public final TableField<OrdinativoRecord, Byte> CONSOLIDAMENTO = createField(DSL.name("consolidamento"), SQLDataType.TINYINT.nullable(false).defaultValue(DSL.inline("0", SQLDataType.TINYINT)), this, "");
+    public final TableField<OrdinativoRecord, Byte> CONSOLIDAMENTO = createField(DSL.name("consolidamento"), SQLDataType.TINYINT.nullable(false).defaultValue(DSL.inline("0", SQLDataType.TINYINT)), this, "0=non impostato,1=da consolidare,2=consolidato");
 
     /**
      * The column <code>usrbilancio.ordinativo.noterag</code>.
@@ -187,10 +193,10 @@ public class Ordinativo extends TableImpl<OrdinativoRecord> {
     public final TableField<OrdinativoRecord, String> NOTERAG = createField(DSL.name("noterag"), SQLDataType.VARCHAR(1024), this, "");
 
     /**
-     * The column <code>usrbilancio.ordinativo.flag</code>. 0 = nulla
-     * 1 = commissario
+     * The column <code>usrbilancio.ordinativo.flag</code>. 0 = nulla\n1 =
+     * commissario\n2 = f24/ritenuta caricato e in attesa di ortes conclusivo
      */
-    public final TableField<OrdinativoRecord, Integer> FLAG = createField(DSL.name("flag"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.inline("0", SQLDataType.INTEGER)), this, "0 = nulla\n1 = commissario");
+    public final TableField<OrdinativoRecord, Integer> FLAG = createField(DSL.name("flag"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.inline("0", SQLDataType.INTEGER)), this, "0 = nulla\\n1 = commissario\\n2 = f24/ritenuta caricato e in attesa di ortes conclusivo");
 
     /**
      * The column <code>usrbilancio.ordinativo.versione</code>.

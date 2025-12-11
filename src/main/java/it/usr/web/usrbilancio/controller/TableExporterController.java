@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import org.primefaces.component.export.ExcelOptions;
 
 /**
  *
@@ -37,6 +38,7 @@ public class TableExporterController extends BaseController {
     Map<Integer, CodiceRecord> codici;
     Map<Integer, TipoDocumentoRecord> documenti;
     Map<Integer, TipoRtsRecord> rts;
+    ExcelOptions excelOpt;
     
     @PostConstruct
     public void init() {
@@ -49,8 +51,15 @@ public class TableExporterController extends BaseController {
         codServ.getCodici().forEach(c -> codici.put(c.getId(), c));
         codServ.getTipiDocumento().forEach(t -> documenti.put(t.getId(), t));
         codServ.getTipiRts(CodiceService.GruppoRts.RTS_TUTTI).forEach(t -> rts.put(t.getId(), t));
+        
+        excelOpt = new ExcelOptions();
+        excelOpt.setStronglyTypedCells(false);
     }
-    
+
+    public ExcelOptions getExcelOpt() {
+        return excelOpt;
+    }
+            
     public String decodeCompetenza(int idCapComp) {
         CapitoloCompetenza cc = capComp.get(idCapComp);
         return (cc!=null) ? cc.getAnno()+" | "+cc.getDescrizione() : null;

@@ -204,187 +204,203 @@ public class OrdinativoRecord extends UpdatableRecordImpl<OrdinativoRecord> {
     }
 
     /**
+     * Setter for <code>usrbilancio.ordinativo.importo_cons</code>.
+     */
+    public void setImportoCons(BigDecimal value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.ordinativo.importo_cons</code>.
+     */
+    public BigDecimal getImportoCons() {
+        return (BigDecimal) get(13);
+    }
+
+    /**
      * Setter for <code>usrbilancio.ordinativo.note</code>.
      */
     public void setNote(String value) {
-        set(13, value);
+        set(14, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.note</code>.
      */
     public String getNote() {
-        return (String) get(13);
+        return (String) get(14);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.rts_completo</code>.
      */
     public void setRtsCompleto(Byte value) {
-        set(14, value);
+        set(15, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.rts_completo</code>.
      */
     public Byte getRtsCompleto() {
-        return (Byte) get(14);
+        return (Byte) get(15);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.rts_stampato</code>.
      */
     public void setRtsStampato(Byte value) {
-        set(15, value);
+        set(16, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.rts_stampato</code>.
      */
     public Byte getRtsStampato() {
-        return (Byte) get(15);
+        return (Byte) get(16);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.fattura_numero</code>.
      */
     public void setFatturaNumero(String value) {
-        set(16, value);
+        set(17, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.fattura_numero</code>.
      */
     public String getFatturaNumero() {
-        return (String) get(16);
+        return (String) get(17);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.fattura_data</code>.
      */
     public void setFatturaData(LocalDate value) {
-        set(17, value);
+        set(18, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.fattura_data</code>.
      */
     public LocalDate getFatturaData() {
-        return (LocalDate) get(17);
+        return (LocalDate) get(18);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.importo_iva</code>.
      */
     public void setImportoIva(BigDecimal value) {
-        set(18, value);
+        set(19, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.importo_iva</code>.
      */
     public BigDecimal getImportoIva() {
-        return (BigDecimal) get(18);
+        return (BigDecimal) get(19);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.ordinativo_iva</code>.
      */
     public void setOrdinativoIva(Integer value) {
-        set(19, value);
+        set(20, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.ordinativo_iva</code>.
      */
     public Integer getOrdinativoIva() {
-        return (Integer) get(19);
+        return (Integer) get(20);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.importo_ritenuta</code>.
      */
     public void setImportoRitenuta(BigDecimal value) {
-        set(20, value);
+        set(21, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.importo_ritenuta</code>.
      */
     public BigDecimal getImportoRitenuta() {
-        return (BigDecimal) get(20);
+        return (BigDecimal) get(21);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.ordinativo_ritenuta</code>.
      */
     public void setOrdinativoRitenuta(Integer value) {
-        set(21, value);
+        set(22, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.ordinativo_ritenuta</code>.
      */
     public Integer getOrdinativoRitenuta() {
-        return (Integer) get(21);
+        return (Integer) get(22);
     }
 
     /**
-     * Setter for <code>usrbilancio.ordinativo.consolidamento</code>.
+     * Setter for <code>usrbilancio.ordinativo.consolidamento</code>. 0=non
+     * impostato,1=da consolidare,2=consolidato
      */
     public void setConsolidamento(Byte value) {
-        set(22, value);
+        set(23, value);
     }
 
     /**
-     * Getter for <code>usrbilancio.ordinativo.consolidamento</code>.
+     * Getter for <code>usrbilancio.ordinativo.consolidamento</code>. 0=non
+     * impostato,1=da consolidare,2=consolidato
      */
     public Byte getConsolidamento() {
-        return (Byte) get(22);
+        return (Byte) get(23);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.noterag</code>.
      */
     public void setNoterag(String value) {
-        set(23, value);
+        set(24, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.noterag</code>.
      */
     public String getNoterag() {
-        return (String) get(23);
+        return (String) get(24);
     }
 
     /**
-     * Setter for <code>usrbilancio.ordinativo.flag</code>. 0 = nulla
-     * 1 = commissario
+     * Setter for <code>usrbilancio.ordinativo.flag</code>. 0 = nulla\n1 =
+     * commissario\n2 = f24/ritenuta caricato e in attesa di ortes conclusivo
      */
     public void setFlag(Integer value) {
-        set(24, value);
+        set(25, value);
     }
 
     /**
-     * Getter for <code>usrbilancio.ordinativo.flag</code>. 0 = nulla
-     * 1 = commissario
+     * Getter for <code>usrbilancio.ordinativo.flag</code>. 0 = nulla\n1 =
+     * commissario\n2 = f24/ritenuta caricato e in attesa di ortes conclusivo
      */
     public Integer getFlag() {
-        return (Integer) get(24);
+        return (Integer) get(25);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo.versione</code>.
      */
     public void setVersione(Long value) {
-        set(25, value);
+        set(26, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo.versione</code>.
      */
     public Long getVersione() {
-        return (Long) get(25);
+        return (Long) get(26);
     }
 
     // -------------------------------------------------------------------------
@@ -410,7 +426,7 @@ public class OrdinativoRecord extends UpdatableRecordImpl<OrdinativoRecord> {
     /**
      * Create a detached, initialised OrdinativoRecord
      */
-    public OrdinativoRecord(Integer id, Integer idCompetenza, Integer idTipoDocumento, Integer idTipoRts, Integer idCodice, String numeroPagamento, LocalDate dataPagamento, String numeroDocumento, LocalDate dataDocumento, LocalDate dataRicevimento, String beneficiario, String descrizioneRts, BigDecimal importo, String note, Byte rtsCompleto, Byte rtsStampato, String fatturaNumero, LocalDate fatturaData, BigDecimal importoIva, Integer ordinativoIva, BigDecimal importoRitenuta, Integer ordinativoRitenuta, Byte consolidamento, String noterag, Integer flag, Long versione) {
+    public OrdinativoRecord(Integer id, Integer idCompetenza, Integer idTipoDocumento, Integer idTipoRts, Integer idCodice, String numeroPagamento, LocalDate dataPagamento, String numeroDocumento, LocalDate dataDocumento, LocalDate dataRicevimento, String beneficiario, String descrizioneRts, BigDecimal importo, BigDecimal importoCons, String note, Byte rtsCompleto, Byte rtsStampato, String fatturaNumero, LocalDate fatturaData, BigDecimal importoIva, Integer ordinativoIva, BigDecimal importoRitenuta, Integer ordinativoRitenuta, Byte consolidamento, String noterag, Integer flag, Long versione) {
         super(Ordinativo.ORDINATIVO);
 
         setId(id);
@@ -426,6 +442,7 @@ public class OrdinativoRecord extends UpdatableRecordImpl<OrdinativoRecord> {
         setBeneficiario(beneficiario);
         setDescrizioneRts(descrizioneRts);
         setImporto(importo);
+        setImportoCons(importoCons);
         setNote(note);
         setRtsCompleto(rtsCompleto);
         setRtsStampato(rtsStampato);

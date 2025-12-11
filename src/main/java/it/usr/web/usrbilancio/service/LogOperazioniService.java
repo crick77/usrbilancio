@@ -4,7 +4,7 @@
  */
 package it.usr.web.usrbilancio.service;
 
-import it.usr.web.usrbilancio.domain.Tables;
+import static it.usr.web.usrbilancio.domain.Tables.*;
 import it.usr.web.usrbilancio.domain.tables.records.LogOperazioniRecord;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
 import java.util.List;
@@ -23,6 +23,14 @@ public class LogOperazioniService {
     DSLContext ctx;
     
     public List<LogOperazioniRecord> getLogOperazioni() {
-        return ctx.selectFrom(Tables.LOG_OPERAZIONI).orderBy(Tables.LOG_OPERAZIONI.DATA_ORA.desc()).fetch();
+        return ctx.selectFrom(LOG_OPERAZIONI).orderBy(LOG_OPERAZIONI.DATA_ORA.desc()).fetch();
+    }       
+    
+    public List<String> getServizi() {
+        return ctx.selectDistinct(LOG_OPERAZIONI.SERVICE).from(LOG_OPERAZIONI).fetchInto(String.class);
+    }
+    
+    public List<String> getOperatori() {
+        return ctx.selectDistinct(LOG_OPERAZIONI.OPERATORE).from(LOG_OPERAZIONI).fetchInto(String.class);
     }
 }

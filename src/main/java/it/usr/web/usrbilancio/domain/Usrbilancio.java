@@ -6,11 +6,14 @@ package it.usr.web.usrbilancio.domain;
 
 import it.usr.web.usrbilancio.domain.tables.Allegato;
 import it.usr.web.usrbilancio.domain.tables.AllegatoAppoggio;
+import it.usr.web.usrbilancio.domain.tables.AllegatoCodice;
+import it.usr.web.usrbilancio.domain.tables.Anagrafica;
 import it.usr.web.usrbilancio.domain.tables.Capitolo;
 import it.usr.web.usrbilancio.domain.tables.Codice;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.LogOperazioni;
 import it.usr.web.usrbilancio.domain.tables.MimeType;
+import it.usr.web.usrbilancio.domain.tables.Modelli;
 import it.usr.web.usrbilancio.domain.tables.MovimentiVirtuali;
 import it.usr.web.usrbilancio.domain.tables.Ordinativo;
 import it.usr.web.usrbilancio.domain.tables.OrdinativoAppoggio;
@@ -54,6 +57,16 @@ public class Usrbilancio extends SchemaImpl {
     public final AllegatoAppoggio ALLEGATO_APPOGGIO = AllegatoAppoggio.ALLEGATO_APPOGGIO;
 
     /**
+     * The table <code>usrbilancio.allegato_codice</code>.
+     */
+    public final AllegatoCodice ALLEGATO_CODICE = AllegatoCodice.ALLEGATO_CODICE;
+
+    /**
+     * The table <code>usrbilancio.anagrafica</code>.
+     */
+    public final Anagrafica ANAGRAFICA = Anagrafica.ANAGRAFICA;
+
+    /**
      * The table <code>usrbilancio.capitolo</code>.
      */
     public final Capitolo CAPITOLO = Capitolo.CAPITOLO;
@@ -77,6 +90,11 @@ public class Usrbilancio extends SchemaImpl {
      * The table <code>usrbilancio.mime_type</code>.
      */
     public final MimeType MIME_TYPE = MimeType.MIME_TYPE;
+
+    /**
+     * The table <code>usrbilancio.modelli</code>.
+     */
+    public final Modelli MODELLI = Modelli.MODELLI;
 
     /**
      * The table <code>usrbilancio.movimenti_virtuali</code>.
@@ -146,11 +164,14 @@ public class Usrbilancio extends SchemaImpl {
         return Arrays.asList(
             Allegato.ALLEGATO,
             AllegatoAppoggio.ALLEGATO_APPOGGIO,
+            AllegatoCodice.ALLEGATO_CODICE,
+            Anagrafica.ANAGRAFICA,
             Capitolo.CAPITOLO,
             Codice.CODICE,
             Competenza.COMPETENZA,
             LogOperazioni.LOG_OPERAZIONI,
             MimeType.MIME_TYPE,
+            Modelli.MODELLI,
             MovimentiVirtuali.MOVIMENTI_VIRTUALI,
             Ordinativo.ORDINATIVO,
             OrdinativoAppoggio.ORDINATIVO_APPOGGIO,

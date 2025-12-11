@@ -301,7 +301,7 @@ public class OrdinativoService {
                     oRiep.setNumeroDocumento(null);
                     oRiep.setDataDocumento(null);
                     oRiep.setBeneficiario("ERARIO");
-                    oRiep.setDescrizioneRts("RIEPILOGO VERSAMENTO IVA " + mese + " " + anno);
+                    oRiep.setDescrizioneRts("RIEPILOGO VERSAMENTO IVA " + anno + "-" + String.format("%02d", anno));
                     oRiep.setFatturaNumero(null);
                     oRiep.setFatturaData(null);
                     oRiep.setImporto(BigDecimal.ZERO);
@@ -310,7 +310,7 @@ public class OrdinativoService {
                     oRiep.setVersione(1L);
                     trx.dsl().insertInto(Tables.ORDINATIVO).set(oRiep).execute();
                     int idOrdinativo = trx.dsl().lastID().intValue();
-                    AllegatoRecord a = new AllegatoRecord(null, idOrdinativo, documento.getGruppo(), "RiepilogoIVA_" + mese + "_" + anno + ".pdf", pdfRiep, "Prospetto Riepilogo IVA");
+                    AllegatoRecord a = new AllegatoRecord(null, idOrdinativo, documento.getGruppo(), "RiepilogoIVA_" + anno + "_" + String.format("%02d", anno) + ".pdf", pdfRiep, "Prospetto Riepilogo IVA");
                     trx.dsl().insertInto(Tables.ALLEGATO).set(a).execute();
                     a = new AllegatoRecord(null, idOrdinativo, documento.getGruppo(), documento.getFileName(), localFileName, "Ordinativo IVA");
                     trx.dsl().insertInto(Tables.ALLEGATO).set(a).execute();
@@ -726,6 +726,7 @@ public class OrdinativoService {
                 o.setBeneficiario(oar.getBeneficiario());
                 o.setDescrizioneRts(oar.getDescrizioneRts());
                 o.setImporto(oar.getImporto());
+                o.setImportoCons(oar.getImporto());
                 o.setNote(oar.getNote());
                 o.setNoterag(oar.getNoterag());
                 o.setDataRicevimento(oar.getDataRicevimento());
@@ -820,99 +821,115 @@ public class OrdinativoService {
         return tot;
     }
 
-    public List<OrdinativoRecord> cerca(String testo, boolean dataAnd, LocalDate dataDa, LocalDate dataA, boolean importoAnd, BigDecimal importoDa, BigDecimal importoA,
-            boolean tipiRtsAnd, TipoRtsRecord[] tipiRts, boolean codiciAnd, CodiceRecord[] codici, boolean annoCompAnd, Integer annoCompetenza, boolean competenzeAnd, CapitoloCompetenza[] competenze) {
+    public List<OrdinativoRecord> cerca(SearchCriteria sc) {
         Condition cond = DSL.noCondition();
 
-        if (notEmpty(testo)) {
-            testo = "%" + testo + "%";
-            cond = cond.and(Tables.ORDINATIVO.BENEFICIARIO.like(testo).or(Tables.ORDINATIVO.DESCRIZIONE_RTS.like(testo)).or(Tables.ORDINATIVO.NOTE.like(testo)));
+        if (notEmpty(sc.testo)) {
+            sc.testo = "%" + sc.testo + "%";
+            cond = cond.and(Tables.ORDINATIVO.BENEFICIARIO.like(sc.testo).or(Tables.ORDINATIVO.DESCRIZIONE_RTS.like(sc.testo)).or(Tables.ORDINATIVO.NOTE.like(sc.testo)));
         }
 
-        if (notEmpty(competenze)) {
-            List<Integer> lComp = Arrays.stream(competenze).map(CapitoloCompetenza::getId).collect(Collectors.toList());
+        if (notEmpty(sc.competenze)) {
+            List<Integer> lComp = Arrays.stream(sc.competenze).map(CapitoloCompetenza::getId).collect(Collectors.toList());
 
-            if (competenzeAnd) {
+            if (sc.competenzeAnd) {
                 cond = cond.and(Tables.ORDINATIVO.ID_COMPETENZA.in(lComp));
             } else {
                 cond = cond.or(Tables.ORDINATIVO.ID_COMPETENZA.in(lComp));
             }
         }
 
-        if (dataDa != null || dataA != null) {
+        if (sc.dataDocDa != null || sc.dataDocA != null) {
             Condition condDataDoc = DSL.noCondition();
-            Condition condDataPag = DSL.noCondition();
-            if (dataDa != null) {
-                condDataDoc = condDataDoc.or(Tables.ORDINATIVO.DATA_DOCUMENTO.ge(dataDa));
-                condDataPag = condDataPag.or(Tables.ORDINATIVO.DATA_PAGAMENTO.ge(dataDa));
+            if (sc.dataDocDa != null) {
+                condDataDoc = condDataDoc.or(Tables.ORDINATIVO.DATA_DOCUMENTO.ge(sc.dataDocDa));
             }
 
-            if (dataA != null) {
-                if (dataDa != null) {
-                    condDataDoc = condDataDoc.and(Tables.ORDINATIVO.DATA_DOCUMENTO.le(dataA));
-                    condDataPag = condDataPag.and(Tables.ORDINATIVO.DATA_PAGAMENTO.le(dataA));
+            if (sc.dataDocA != null) {
+                if (sc.dataDocDa != null) {
+                    condDataDoc = condDataDoc.and(Tables.ORDINATIVO.DATA_DOCUMENTO.le(sc.dataDocA));                    
                 } else {
-                    condDataDoc = condDataDoc.or(Tables.ORDINATIVO.DATA_DOCUMENTO.le(dataA));
-                    condDataPag = condDataPag.or(Tables.ORDINATIVO.DATA_PAGAMENTO.le(dataA));
+                    condDataDoc = condDataDoc.or(Tables.ORDINATIVO.DATA_DOCUMENTO.le(sc.dataDocA));
                 }
             }
 
-            if (dataAnd) {
-                cond = cond.and(condDataDoc.or(condDataPag));
+            if (sc.dataDocAnd) {
+                cond = cond.and(condDataDoc);
             } else {
-                cond = cond.or(condDataDoc.or(condDataPag));
+                cond = cond.or(condDataDoc);
             }
         }
 
-        if (importoDa != null || importoA != null) {
-            Condition condImp = DSL.noCondition();
-
-            if (importoDa != null) {
-                condImp = condImp.or(Tables.ORDINATIVO.IMPORTO.ge(importoDa));
+        if (sc.dataPagDa != null || sc.dataPagA != null) {            
+            Condition condDataPag = DSL.noCondition();
+            if (sc.dataPagDa != null) {
+                condDataPag = condDataPag.or(Tables.ORDINATIVO.DATA_PAGAMENTO.ge(sc.dataPagDa));
             }
 
-            if (importoA != null) {
-                if (importoDa != null) {
-                    condImp = condImp.and(Tables.ORDINATIVO.IMPORTO.le(importoA));
-                } else {
-                    condImp = condImp.or(Tables.ORDINATIVO.IMPORTO.le(importoA));
+            if (sc.dataPagA != null) {
+                if (sc.dataPagDa != null) {                    
+                    condDataPag = condDataPag.and(Tables.ORDINATIVO.DATA_PAGAMENTO.le(sc.dataPagA));
+                } else {                    
+                    condDataPag = condDataPag.or(Tables.ORDINATIVO.DATA_PAGAMENTO.le(sc.dataPagA));
                 }
             }
 
-            if (importoAnd) {
+            if (sc.dataPagAnd) {
+                cond = cond.and(condDataPag);
+            } else {
+                cond = cond.or(condDataPag);
+            }
+        }
+        
+        if (sc.importoDa != null || sc.importoA != null) {
+            Condition condImp = DSL.noCondition();
+
+            if (sc.importoDa != null) {
+                condImp = condImp.or(Tables.ORDINATIVO.IMPORTO.ge(sc.importoDa));
+            }
+
+            if (sc.importoA != null) {
+                if (sc.importoDa != null) {
+                    condImp = condImp.and(Tables.ORDINATIVO.IMPORTO.le(sc.importoA));
+                } else {
+                    condImp = condImp.or(Tables.ORDINATIVO.IMPORTO.le(sc.importoA));
+                }
+            }
+
+            if (sc.importoAnd) {
                 cond = cond.and(condImp);
             } else {
                 cond = cond.or(condImp);
             }
         }
 
-        if (tipiRts != null && tipiRts.length > 0) {
-            List<Integer> lTipiRts = Arrays.stream(tipiRts).map(TipoRtsRecord::getId).collect(Collectors.toList());
-            if (tipiRtsAnd) {
+        if (sc.tipiRts != null && sc.tipiRts.length > 0) {
+            List<Integer> lTipiRts = Arrays.stream(sc.tipiRts).map(TipoRtsRecord::getId).collect(Collectors.toList());
+            if (sc.tipiRtsAnd) {
                 cond = cond.and(Tables.ORDINATIVO.ID_TIPO_RTS.in(lTipiRts));
             } else {
                 cond = cond.or(Tables.ORDINATIVO.ID_TIPO_RTS.in(lTipiRts));
             }
         }
 
-        if (codici != null && codici.length > 0) {
-            List<Integer> lCodici = Arrays.stream(codici).map(CodiceRecord::getId).collect(Collectors.toList());
-            if (codiciAnd) {
+        if (sc.codici != null && sc.codici.length > 0) {
+            List<Integer> lCodici = Arrays.stream(sc.codici).map(CodiceRecord::getId).collect(Collectors.toList());
+            if (sc.codiciAnd) {
                 cond = cond.and(Tables.ORDINATIVO.ID_CODICE.in(lCodici));
             } else {
                 cond = cond.or(Tables.ORDINATIVO.ID_CODICE.in(lCodici));
             }
         }
 
-        if (annoCompetenza != null) {
-            if (annoCompAnd) {
-                cond = cond.and(Tables.COMPETENZA.ANNO.eq(annoCompetenza));
+        if (sc.annoCompetenza != null) {
+            if (sc.annoCompAnd) {
+                cond = cond.and(Tables.COMPETENZA.ANNO.eq(sc.annoCompetenza));
             } else {
-                cond = cond.or(Tables.COMPETENZA.ANNO.eq(annoCompetenza));
+                cond = cond.or(Tables.COMPETENZA.ANNO.eq(sc.annoCompetenza));
             }
         }
 
-        if (annoCompetenza != null) {
+        if (sc.annoCompetenza != null) {
             return ctx.select().from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.ORDINATIVO);
         } else {
             return ctx.selectFrom(Tables.ORDINATIVO).where(cond).fetch();

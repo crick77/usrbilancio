@@ -118,9 +118,7 @@ public class QuietanzeController extends BaseController {
     }
 
     public void setCapCompSelezionato(CapitoloCompetenza capCompSelezionato) {
-        this.capCompSelezionato = capCompSelezionato;  
-        
-        modifica = true;
+        this.capCompSelezionato = capCompSelezionato;         
     }
 
     public List<CapitoloCompetenza> getCapComp() {
@@ -268,7 +266,11 @@ public class QuietanzeController extends BaseController {
     public List<FilterMeta> getFilterBy() {
         return filterBy;
     }
-                    
+
+    public void setModifica(boolean modifica) {
+        this.modifica = modifica;
+    }
+                            
     public boolean isModifica() {
         return modifica;
     }
@@ -280,8 +282,7 @@ public class QuietanzeController extends BaseController {
         quietanzaCodice = null;
         quietanzaTipoRts = null;
         quietanzaTipoDocumento = null;
-        documento = null;
-        modifica = false;
+        documento = null;        
     }
     
     public void salva() {
