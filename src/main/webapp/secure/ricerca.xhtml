@@ -187,9 +187,9 @@
                                     </ui:fragment>
                                 </p:column>
                                 <p:column headerText="CONTO" style="width: 4%" styleClass="word-wrap" sortBy="#{formatter.codiceComposto(ricercaController.decodeCodice(r.idCodice))}" exportFunction="#{tableExporterController.decodeConto(r.idCodice)}">
-                                    <!-- <i jsf:id="infoCodice" class="pi pi-info-circle" /> -->
+                                    <i jsf:id="infoCodice" class="pi pi-info-circle" />
                                     <h:outputText value="#{formatter.codiceComposto(ricercaController.decodeCodice(r.idCodice))}" />
-                                    <!-- <p:tooltip for="infoCodice" value="#{ricercaController.codiceTooltip(r.idCodice)}" position="bottom" escape="false" /> -->
+                                    <p:tooltip for="infoCodice" value="#{ricercaController.codiceTooltip(r.idCodice)}" position="bottom" escape="false" />
                                 </p:column>
                                 <p:column headerText="DESCR. CONTO" style="width: 4%;" styleClass="word-wrap" sortBy="#{ricercaController.decodeCodice(r.idCodice).descrizione}">
                                     <h:outputText value="#{ricercaController.decodeCodice(r.idCodice).descrizione}" />                                    
