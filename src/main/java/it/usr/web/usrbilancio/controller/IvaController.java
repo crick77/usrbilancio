@@ -502,10 +502,10 @@ public class IvaController extends BaseController {
             PrimeFaces.current().executeScript("PF('caricaF24Dialog').hide();");
         } catch (IOException ie) {
             addMessage(Message.error("Errore di importazione: " + ie.getMessage()));
-            logger.error("Errore I/O di importazione IVA: {}", ie);
+            logger.error("Errore I/O di importazione IVA: ", ie);
         } catch (Exception e) {
             addMessage(Message.error("Errore generale: "+ e.toString()));            
-            logger.error("Errore generale di importazione IVA: {}", e);
+            logger.error("Errore generale di importazione IVA: ", e);
         }        
     }
     
@@ -522,17 +522,20 @@ public class IvaController extends BaseController {
                                
             addMessage(Message.info("Ordinativo Or.TeS. IVA caricato e concluso correttamente. Numero ordinativi aggiornati: "+num));
             aggiornaOrdinativiIva();
-            PrimeFaces.current().executeScript("PF('caricaDialog').hide();");
+            PrimeFaces.current().executeScript("PF('caricaDialog').hide();");            
         } catch (IOException ie) {
-            addMessage(Message.error("Errore di importazione: " + ie.getMessage()));
-            logger.error("Errore I/O di importazione IVA: {}", ie);
+            addMessage(Message.error("Errore grave di importazione: " + ie.getMessage()));
+            logger.error("Errore I/O di importazione IVA: {}", ie);        
+        } catch(ImportException ie) {
+            addMessage(Message.error("Errore di formato durante l'importazione: " + ie.getMessage()));
+            logger.error("Errore di formato durante l'importazione IVA: {}", ie);        
         } catch (Exception e) {
             addMessage(Message.error("Errore generale: "+ e.toString()));            
             logger.error("Errore generale di importazione IVA: {}", e);
         }
     }
     
-    private OrdinativoRecord elaboraFile(byte[] pdfFile) throws IOException {
+    private OrdinativoRecord elaboraFile(byte[] pdfFile) throws IOException, ImportException {
         PDDocument doc = Loader.loadPDF(pdfFile);
         String txt = new PDFTextStripper().getText(doc);
 
@@ -544,18 +547,18 @@ public class IvaController extends BaseController {
         }
         
         String tipologia = extract(lines, TIPOLOGIA, String.class);
-        if(!"045".equalsIgnoreCase(tipologia)) throw new IOException("Tipologia documento NON corretta.");
+        if(!"045".equalsIgnoreCase(tipologia)) throw new ImportException("Tipologia documento NON corretta ["+tipologia+"]. Attesa [045].");
         LocalDate dataContabile = extract(lines, DATA_CONTABILE, LocalDate.class);
         BigDecimal importo = extract(lines, IMPORTO, BigDecimal.class);
         String numOrd = extract(lines, N_ORDINATIVO, String.class);
         if(numOrd.length()>16) {
             numOrd = extract(lines, N_ORDINATIVO_LONG, String.class);
-            if(numOrd.length()>16) throw new IOException("Impossibile estrarre il numero ordinativo/quietanza. Verificare lo zoom del documento.");
+            if(numOrd.length()>16) throw new ImportException("Impossibile estrarre il numero ordinativo/quietanza. Verificare lo zoom del documento.");
         }
         String end2End = extract(lines, END2ENDID, String.class);
-        if(isEmpty(end2End)) throw new IOException("Impossibile estrarre il protocollo End2End. Verificare lo zoom del documento.");
+        if(isEmpty(end2End)) throw new ImportException("Impossibile estrarre il protocollo End2End. Verificare lo zoom del documento.");
         String[] e2e = end2End.split("-");
-        if(e2e.length!=2) throw new IOException("Il numero End2End non è nel formato corretto <n>-<m>. Verificare lo zoom del documento.");
+        if(e2e.length!=2) throw new ImportException("Il numero End2End non è nel formato corretto <n>-<m>. Verificare lo zoom del documento.");
                                             
         OrdinativoRecord or = new OrdinativoRecord();         
         or.setDataPagamento(dataContabile);

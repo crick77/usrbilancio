@@ -1111,7 +1111,9 @@ public class OrdinativoService {
                         for(OrdinativoRecord p : lPagati) {
                             // Scarta il riepilogo erario (non ha alcun ordinativo collegato)
                             logger.info("Processo l'ordinativo collegato di {}", p);
-                            if(p.getImporto().equals(BigDecimal.ZERO) && (p.getFatturaNumero()==null && p.getFatturaData()==null)) {
+                            boolean cond = p.getImporto().compareTo(BigDecimal.ZERO)==0 && (p.getFatturaNumero()==null && p.getFatturaData()==null);
+                            logger.info("Condizione di test ERARIO (importo=0, numerofattura=null, datafattura=null): {}", cond);
+                            if(cond) {
                                 logger.info("Scarto l'ordinativo [ID={}] in quanto riepilogo ERARIO.", p.getId());
                                 // conta come aggiornato
                                 totUpd++;
