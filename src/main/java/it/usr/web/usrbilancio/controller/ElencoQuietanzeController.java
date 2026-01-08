@@ -379,6 +379,7 @@ public class ElencoQuietanzeController extends BaseController {
                 qq.setId(null);
                 qq.setNomefile("vuoto.pdf");
                 qq.setNomefileLocale("__blank.pdf");
+                qq.setDescrizioneOrdinanza("COPIA-"+quietanza.getDescrizioneOrdinanza());
                 qq.setVersione(1L);
                 qs.inserisci(qq, null);
                 

@@ -102,7 +102,7 @@
                                             <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="N. PAG." style="width: 5%;" exportValue="#{orit.numeroPagamento}">
+                                    <p:column headerText="N. PAG." style="width: 5%;" exportFunction="#{tableExporterController.exportAsString(orit.numeroPagamento)}">
                                         #{orit.numeroPagamento}
                                     </p:column>
                                     <p:column headerText="DEL" style="width: 4%;" exportFunction="#{tableExporterController.decodeDate(orit.dataPagamento)}">

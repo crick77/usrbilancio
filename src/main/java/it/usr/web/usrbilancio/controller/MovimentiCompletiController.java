@@ -430,6 +430,7 @@ public class MovimentiCompletiController extends BaseController {
         MovimentiVirtualiRecord mvr = movimento.copy();
         mvr.setId(null);
         mvr.setIdCompetenza(null);
+        mvr.setDescrizioneRagioneria("COPIA-"+movimento.getDescrizioneRagioneria());
         movimentoCapComp = mCampComp.get(movimento.getIdCompetenza());
         mvr.setVersione(1L);
         movimento = mvr;

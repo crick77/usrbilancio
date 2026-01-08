@@ -66,7 +66,7 @@
                                             <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                         </h:outputText>
                                     </p:column>                                    
-                                    <p:column headerText="N. PAG." style="width: 5%;" filterMatchMode="contains" field="numeroPagamento" exportValue="#{o.numeroPagamento}">
+                                    <p:column headerText="N. PAG." style="width: 5%;" filterMatchMode="contains" field="numeroPagamento" exportFunction="#{tableExporterController.exportAsString(o.numeroPagamento)}">
                                         #{o.numeroPagamento}
                                     </p:column>
                                     <p:column headerText="DEL" style="width: 4%;" exportFunction="#{tableExporterController.decodeDate(o.dataPagamento)}">

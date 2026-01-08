@@ -101,4 +101,8 @@ public class TableExporterController extends BaseController {
     public String decodePagato(boolean pagato) {
         return pagato ? "SI" : "NO";            
     }
+    
+    public String exportAsString(String o) {
+        return o!=null ? " "+o : "";
+    }
 }

@@ -667,6 +667,7 @@ public class ImportatiController extends BaseController {
         if(ordinativo!=null) {
             OrdinativoAppoggioRecord oo = ordinativo.copy();
             oo.setId(null);
+            oo.setDescrizioneRts("COPIA-"+ordinativo.getDescrizioneRts());
             try {
                 oas.inserisci(oo, new ArrayList<>());
         

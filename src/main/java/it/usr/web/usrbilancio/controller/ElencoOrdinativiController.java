@@ -529,6 +529,7 @@ public class ElencoOrdinativiController extends BaseController {
         }
         or.setId(null);
         or.setVersione(1L);
+        or.setDescrizioneRts("COPIA-"+ordinativo.getDescrizioneRts());
         ordinativo = or;
         azione = "Duplica";
     }

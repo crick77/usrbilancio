@@ -370,8 +370,9 @@ public class QuietanzeController extends BaseController {
             if(quietanza!=null) {
                 QuietanzaRecord qq = quietanza.copy();
                 qq.setId(null);
+                qq.setDescrizioneOrdinanza("COPIA-"+quietanza.getDescrizioneOrdinanza());
                 qq.setNomefile("vuoto.pdf");
-                qq.setNomefileLocale("__blank.pdf");
+                qq.setNomefileLocale("__blank.pdf"); 
                 qq.setVersione(1L);
                 qs.inserisci(qq, null);
                 
