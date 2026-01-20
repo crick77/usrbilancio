@@ -1146,7 +1146,7 @@ public class OrdinativoService {
                         
                         // aggiorna gli ordinativi F24 sostituendo numero e data con i dati dell'ortes
                         int res = trx.dsl().update(Tables.ORDINATIVO).set(Tables.ORDINATIVO.NUMERO_PAGAMENTO, o.getNumeroPagamento())
-                                                                     .set(Tables.ORDINATIVO.DATA_PAGAMENTO, o.getDataPagamento())
+                                                                     //.set(Tables.ORDINATIVO.DATA_PAGAMENTO, o.getDataPagamento()) // La data di pagamento deve rimanere quella dell'F24 (agg. 20/01/2026)
                                                                      .set(Tables.ORDINATIVO.RTS_COMPLETO, (byte)1)
                                                                      .set(Tables.ORDINATIVO.VERSIONE, Tables.ORDINATIVO.VERSIONE.plus(1))
                                            .where(Tables.ORDINATIVO.NUMERO_PAGAMENTO.eq(o.getDescrizioneRts())).execute();

@@ -12,6 +12,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.omnifaces.filter.FacesExceptionFilter;
 import org.slf4j.Logger;
 import it.usr.web.producer.AppLogger;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  *
@@ -36,12 +39,13 @@ public class LogFilter extends FacesExceptionFilter  {
             logger.error("Destinazione [{}]", location);            
             logger.error("Messaggio [{}]", message);
             logger.error("Eccezione di base [{}]", exception!=null ? exception.toString() : null);
-            logger.error("StackTrace:\n{}", stackTraceToString(exception!=null ? exception.getCause() : exception));
+            //logger.error("StackTrace:\n{}", stackTraceToString(exception!=null ? exception.getCause() : exception));
+            logger.error("StackTrace:\n{}", exception!=null ? stackTraceToString(exception) : "--");
             logger.error("UUID [{}] -- FINE --", request.getAttribute("org.omnifaces.exception_uuid"));
         } 
     }
     
-    private String stackTraceToString(Throwable t) {                
+    /*private String stackTraceToString(Throwable t) {                
         if(t!=null) {
             StringBuilder sb = new StringBuilder();
             int i = 0;
@@ -55,8 +59,18 @@ public class LogFilter extends FacesExceptionFilter  {
         else {
             return "No Exception Trace.";
         }        
-    }
+    }*/
 
+    private String stackTraceToString(Throwable t) {
+        try(StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+            t.printStackTrace(pw);
+            return sw.toString(); // stack trace as a string
+        }
+        catch(IOException ioe) {
+            return "No Exception Trace.";
+        }
+    }
+    
     @Override
     public void init() throws ServletException {
         super.init(); //To change body of generated methods, choose Tools | Templates.
