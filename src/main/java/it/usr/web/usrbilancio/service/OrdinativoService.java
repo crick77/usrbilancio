@@ -821,6 +821,10 @@ public class OrdinativoService {
         return tot;
     }
 
+    public int getNumeroOrdinativiAnno(int anno) {
+        return ctx.select(DSL.count()).from(Tables.ORDINATIVO).where(DSL.year(Tables.ORDINATIVO.DATA_PAGAMENTO).eq(anno)).fetchOneInto(Integer.class);
+    }
+    
     public List<OrdinativoRecord> cerca(SearchCriteria sc) {
         Condition cond = DSL.noCondition();
 

@@ -59,6 +59,8 @@ public class IndexController extends BaseController {
     BigDecimal totaleOrdinativi;
     int numeroOrdinativiMesePrec;
     int numeroOrdinativiMeseCorr;
+    int numeroOrdinativiAnnoPrec;
+    int numeroOrdinativiAnnoCorr;
     Integer ultimoNumeroOrdinativo;
     Map<String, BigDecimal> totaliAnnoCorrente;
     Map<String, BigDecimal> totaliComplessivo;
@@ -84,9 +86,9 @@ public class IndexController extends BaseController {
         
         aggiornaAnnoCorrente();
         aggiornaSaldo();
-        aggiornaSaldoLR8();
-        aggiornaOrdinativiMeseCorrente();
-        aggiornaOrdinativiMesePrecedente();
+        aggiornaSaldoLR8();        
+        aggiornaOrdinativiMese();
+        aggiornaOrdinativiAnno();
         aggiornaUltimoNumeroOrdinativo();
         aggiornaIVA();
         aggiornaTotaliQuietanzeOrdintivi();
@@ -209,6 +211,14 @@ public class IndexController extends BaseController {
         return numeroOrdinativiMeseCorr;
     }
 
+    public int getNumeroOrdinativiAnnoPrec() {
+        return numeroOrdinativiAnnoPrec;
+    }
+
+    public int getNumeroOrdinativiAnnoCorr() {
+        return numeroOrdinativiAnnoCorr;
+    }
+        
     public Integer getUltimoNumeroOrdinativo() {
         return ultimoNumeroOrdinativo;
     }
@@ -275,19 +285,23 @@ public class IndexController extends BaseController {
         saldoLR8 = compServ.getSaldoLR8();
     }
     
-    public void aggiornaOrdinativiMesePrecedente() {
+    public void aggiornaOrdinativiMese() {
         LocalDate initial = LocalDate.now().minusMonths(1);
         LocalDate start = initial.withDayOfMonth(1);
         LocalDate end = initial.withDayOfMonth(initial.getMonth().length(initial.isLeapYear()));
         numeroOrdinativiMesePrec = os.getNumeroOrdinativiPeriodo(start, end);
-    }
-    
-    public void aggiornaOrdinativiMeseCorrente() {
+        
         LocalDate now = LocalDate.now();
-        LocalDate start = now.withDayOfMonth(1);        
+        start = now.withDayOfMonth(1);        
         numeroOrdinativiMeseCorr = os.getNumeroOrdinativiPeriodo(start, now);
     }
     
+    public void aggiornaOrdinativiAnno() {
+        int annoCorr = LocalDate.now().getYear();
+        numeroOrdinativiAnnoCorr = os.getNumeroOrdinativiAnno(annoCorr);
+        numeroOrdinativiAnnoPrec = os.getNumeroOrdinativiAnno(annoCorr-1);
+    }
+             
     public void aggiornaUltimoNumeroOrdinativo() {
         ultimoNumeroOrdinativo = os.getUltimoNumeroOrdinativo(getAnnoAttuale());
     }

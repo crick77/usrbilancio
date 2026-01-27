@@ -44,8 +44,10 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.StringJoiner;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
@@ -355,7 +357,7 @@ public class WebServices {
             
             i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
                     .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("7")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.in("7", "7GSE")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);
             r.getEntrate().setAltro(i!=null ? i : BigDecimal.ZERO);
             
@@ -445,6 +447,7 @@ public class WebServices {
         //int codice2 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("2")).fetchSingleInto(Integer.class);
         //int codice7 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("7")).fetchSingleInto(Integer.class);
         int codice2 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("2")).fetchSingleInto(Integer.class);
+        int codice7GSE = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("7GSE")).fetchSingleInto(Integer.class);
         int codice99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
         
        /* String sql = """
@@ -464,20 +467,22 @@ public class WebServices {
                             concat(c.codice, '.', c.c01, '.', c.c02, '.', c.c03) as codice,
                             ifnull(c.ordinanza, '') as ordinanza, 
                             ifnull(c.ente_diocesi, '') as ente, 
-                            ifnull(c.provincia, '') as provincia, 
+                            ifnull(c.provincia, '') as provincia,  
                             ifnull(c.descrizione, '') as intervento,
-                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts = {5} and q.data_pagamento between {0} and {1}), 0) as trasferito,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts in ({5}) and q.data_pagamento between {0} and {1}), 0) as trasferito,
                             ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {1}), 0) as liquidato,
-                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts <> {5} and q.data_pagamento between {0} and {1}), 0) as stornato,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts not in ({5}) and q.data_pagamento between {0} and {1}), 0) as stornato,
                             ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {2}), 0) as liquidato_ap,
-                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts <> {5} and q.data_pagamento between {0} and {2}), 0) as stornato_ap
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts not in ({5}) and q.data_pagamento between {0} and {2}), 0) as stornato_ap
                      FROM usrbilancio.codice c where c.codice = {3} and c03 is not null
                      """;
-       
+        StringJoiner sj = new StringJoiner(",");
+        sj.add(String.valueOf(codice2));
+        sj.add(String.valueOf(codice7GSE));         
         //return ctx.fetch(sql, from, to, toAp, tipo, codice2, codice7).into(OperaPubblica.class);
-        return ctx.fetch(sql, from, to, toAp, tipo, codice99, codice2).into(OperaPubblica.class);
+        return ctx.fetch(sql, from, to, toAp, tipo, codice99, sj.toString()).into(OperaPubblica.class);
     }
-    
+     
     @GET
     @Path("oopp/{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)

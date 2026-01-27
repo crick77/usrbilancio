@@ -244,7 +244,7 @@ public class QuietanzaService {
                 condDataPag = condDataPag.or(Tables.QUIETANZA.DATA_PAGAMENTO.ge(sc.dataPagDa));
             }
 
-            if(sc.dataDocA!=null) {
+            if(sc.dataPagA!=null) {
                 if(sc.dataPagDa!=null) {
                     condDataPag = condDataPag.and(Tables.QUIETANZA.DATA_PAGAMENTO.le(sc.dataPagA));                    
                 }

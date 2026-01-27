@@ -26,7 +26,7 @@
                         </div>
                         <div class="col-9">
                             <span class="overview-box-count card-header">
-                                <h:outputText id="saldo" value="#{indexController.saldo}">
+                                € <h:outputText id="saldo" value="#{indexController.saldo}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </span>
@@ -52,7 +52,7 @@
                         </div>
                         <div class="col-9">
                             <span class="overview-box-count card-header">
-                                <h:outputText id="saldolr8" value="#{indexController.saldoLR8}" styleClass="#{indexController.saldoLR8ChiusiDifferente ? 'red' : 'green'}">
+                                € <h:outputText id="saldolr8" value="#{indexController.saldoLR8}" styleClass="#{indexController.saldoLR8ChiusiDifferente ? 'red' : 'green'}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </span>
@@ -76,11 +76,11 @@
                                 <p:tooltip for="nordmp" value="MESE PRECEDENTE" escape="false" />
                             </span>
                             <span class="overview-box-name">
-                                ORDINATIVI MESE CORR./PREC.                               
+                                # ORDINATIVI MESE CORR./PREC.                               
                             </span>
                             <span>
                                 <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna conteggio"
-                                                 process="@this" action="#{indexController.aggiornaOrdinativiMesePrecedente()}" update="nordmp nordmc" />
+                                                 process="@this" action="#{indexController.aggiornaOrdinativiMese()}" update="nordmp nordmc" />
                             </span>
                         </div>
                     </div>
@@ -89,14 +89,36 @@
                 <div class="col-3 md:col-6 lg:col-3">
                     <div class="grid card grid-nogutter overview-box overview-box-1">
                         <div class="col-3 overview-box-icon">
+                            <p:graphicImage name="images/folders.svg" library="verona-layout"/>
+                        </div>
+                        <div class="col-9">
+                            <span class="overview-box-count card-header">
+                                <h:outputText id="nordac" value="#{indexController.numeroOrdinativiAnnoCorr}" /> / <h:outputText id="nordap" value="#{indexController.numeroOrdinativiAnnoPrec}" />
+                                <p:tooltip for="nordac" value="ANNO CORRENTE" escape="false" />
+                                <p:tooltip for="nordap" value="ANNO PRECEDENTE" escape="false" />
+                            </span>
+                            <span class="overview-box-name">
+                                # ORDINATIVI ANNO CORR./PREC.                               
+                            </span>
+                            <span>
+                                <p:commandButton icon="pi pi-refresh" styleClass="rounded-button ui-button-success ui-button-flat" title="Aggiorna conteggio"
+                                                 process="@this" action="#{indexController.aggiornaOrdinativiAnno()}" update="nordac nordap" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-3 md:col-6 lg:col-3">
+                    <div class="grid card grid-nogutter overview-box overview-box-1">
+                        <div class="col-3 overview-box-icon">
                             <p:graphicImage name="images/infinity.svg" library="verona-layout"/>
                         </div>
                         <div class="col-9">
                             <span class="overview-box-count card-header" style="font-size: 25px !important;">
-                                <h:outputText id="totqui" value="#{indexController.totaleQuietanze}">
+                                € <h:outputText id="totqui" value="#{indexController.totaleQuietanze}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText> / 
-                                <h:outputText id="totord" value="#{indexController.totaleOrdinativi}">
+                                € <h:outputText id="totord" value="#{indexController.totaleOrdinativi}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </span>
@@ -124,7 +146,7 @@
                         </div>
                         <div class="col-9">
                             <span class="overview-box-count card-header">
-                                <h:outputText id="ivaanagrafica" value="#{indexController.ivaAnagrafica}">                                
+                                € <h:outputText id="ivaanagrafica" value="#{indexController.ivaAnagrafica}">                                
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>                                
                             </span>
@@ -146,7 +168,7 @@
                         </div>
                         <div class="col-9">
                             <span class="overview-box-count card-header">
-                                <h:outputText id="ivapagata" value="#{indexController.ivaPagata}">                                
+                                € <h:outputText id="ivapagata" value="#{indexController.ivaPagata}">                                
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>                                
                             </span>
@@ -168,7 +190,7 @@
                         </div>
                         <div class="col-9">
                             <span class="overview-box-count card-header">
-                                <h:outputText id="ivadapagare" value="#{indexController.ivaDaPagare}" styleClass="#{indexController.IVAOk}">                                
+                                € <h:outputText id="ivadapagare" value="#{indexController.ivaDaPagare}" styleClass="#{indexController.IVAOk}">                                
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </span>
