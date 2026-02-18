@@ -12,6 +12,7 @@ import it.usr.web.usrbilancio.domain.tables.Ordinativo;
 import it.usr.web.usrbilancio.domain.tables.OrdinativoAppoggio;
 import it.usr.web.usrbilancio.domain.tables.Quietanza;
 import it.usr.web.usrbilancio.domain.tables.Richiesta;
+import it.usr.web.usrbilancio.domain.tables.Ritenuta;
 
 import org.jooq.Index;
 import org.jooq.OrderField;
@@ -47,6 +48,9 @@ public class Indexes {
     public static final Index QUIETANZA_FK_QUIETANZA_TIPODOCUMENTO_IDX = Internal.createIndex(DSL.name("fk_quietanza_tipodocumento_idx"), Quietanza.QUIETANZA, new OrderField[] { Quietanza.QUIETANZA.ID_TIPO_DOCUMENTO }, false);
     public static final Index QUIETANZA_FK_QUIETANZA_TIPORTS_IDX = Internal.createIndex(DSL.name("fk_quietanza_tiports_idx"), Quietanza.QUIETANZA, new OrderField[] { Quietanza.QUIETANZA.ID_TIPO_RTS }, false);
     public static final Index RICHIESTA_FK_RICHIESTA_COMPETENZA_IDX = Internal.createIndex(DSL.name("fk_richiesta_competenza_idx"), Richiesta.RICHIESTA, new OrderField[] { Richiesta.RICHIESTA.ID_COMPETENZA }, false);
+    public static final Index RITENUTA_FK_RITENUTA_ANAGRAFICA_IDX = Internal.createIndex(DSL.name("fk_ritenuta_anagrafica_idx"), Ritenuta.RITENUTA, new OrderField[] { Ritenuta.RITENUTA.ID_ANAGRAFICA }, false);
+    public static final Index RITENUTA_FK_RITENUTA_ORDINATIVO_IDX = Internal.createIndex(DSL.name("fk_ritenuta_ordinativo_idx"), Ritenuta.RITENUTA, new OrderField[] { Ritenuta.RITENUTA.ID_ORDINATIVO }, false);
     public static final Index ORDINATIVO_FK_SELF_ORDINATIVO_IVA_IDX = Internal.createIndex(DSL.name("fk_self_ordinativo_iva_idx"), Ordinativo.ORDINATIVO, new OrderField[] { Ordinativo.ORDINATIVO.ORDINATIVO_IVA }, false);
     public static final Index ORDINATIVO_FK_SELF_ORDINATIVO_RITENUTA_IDX = Internal.createIndex(DSL.name("fk_self_ordinativo_ritenuta_idx"), Ordinativo.ORDINATIVO, new OrderField[] { Ordinativo.ORDINATIVO.ORDINATIVO_RITENUTA }, false);
+    public static final Index RITENUTA_RITENUTA_UQ = Internal.createIndex(DSL.name("ritenuta_uq"), Ritenuta.RITENUTA, new OrderField[] { Ritenuta.RITENUTA.ID_ORDINATIVO, Ritenuta.RITENUTA.ID_ANAGRAFICA }, false);
 }

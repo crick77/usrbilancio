@@ -423,7 +423,7 @@ public class ElencoOrdinativiController extends BaseController {
         ordinativo = new OrdinativoRecord();
         ordinativo.setRtsCompleto((byte)0);
         ordinativo.setRtsStampato((byte)0);
-        ordinativo.setConsolidamento((byte)1);
+        ordinativo.setConsolidamento((byte)0);
         ordinativo.setFlag(0);
         ordinativo.setVersione(1L);
         ordinativoCapComp = null;

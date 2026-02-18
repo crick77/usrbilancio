@@ -1,0 +1,172 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="jakarta.faces.core"
+                xmlns:h="jakarta.faces.html"
+                xmlns:ui="jakarta.faces.facelets"
+                xmlns:p="primefaces"
+                xmlns:jsf="jakarta.faces"
+                xmlns:pe="primefaces.extensions"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Anagrafica</ui:define>
+    <ui:define name="head">
+        <f:metadata>
+            <f:viewAction action="#{anagraficaController.init()}" />
+        </f:metadata>
+    </ui:define>
+
+    <ui:define name="content">
+        <h:form id="form" enctype="multipart/form-data">
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">
+                        <h4>Gestione Anagrafica</h4>
+                    </div>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card">                          
+                        <div class="grid" jsf:id="anagraficaPanel">
+                            <div class="col-12">
+                                <p:dataTable id="anagrafica" value="#{anagraficaController.anagrafica}" var="a" rowKey="#{a.id}" paginator="true" rows="10"
+                                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" stripedRows="true"
+                                             currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} voci" rowsPerPageTemplate="5,10,20,50,100,{ShowAll|'Tutti'}" widgetVar="anagraficaTable" size="small">
+                                    <p:column headerText="COGNOME/RAG.SOC." style="width: 15%" filterBy="#{a.cognomeRagsoc}" filterMatchMode="contains" sortable="true" sortBy="#{a.cognomeRagsoc}" sortOrder="asc">
+                                        #{a.cognomeRagsoc}
+                                    </p:column>
+                                    <p:column headerText="NOME" style="width: 12%" filterBy="#{a.nome}" filterMatchMode="contains" sortable="true" sortBy="#{a.nome}">
+                                        #{a.nome}
+                                    </p:column>
+                                    <p:column headerText="C.F." style="width: 8%" filterBy="#{a.cf}" filterMatchMode="contains" sortable="true" sortBy="#{a.cf}">
+                                        #{a.cf}
+                                    </p:column>
+                                    <p:column headerText="P.IVA" style="width: 6%" filterBy="#{a.piva}" filterMatchMode="contains" sortable="true" sortBy="#{a.piva}">
+                                        #{a.piva}
+                                    </p:column>
+                                    <p:column headerText="INDIRIZZO" style="width: 15%" filterBy="#{a.indirizzo}" filterMatchMode="contains" sortable="true" sortBy="#{a.indirizzo}">
+                                        #{a.indirizzo}
+                                    </p:column>
+                                    <p:column headerText="CITTA" style="width: 8%" filterBy="#{a.citta}" filterMatchMode="contains" sortable="true" sortBy="#{a.citta}">
+                                        #{a.citta}
+                                    </p:column>
+                                    <p:column headerText="PROV." style="width: 4%" filterBy="#{a.provincia}" filterMatchMode="contains" sortable="true" sortBy="#{a.provincia}">
+                                        #{a.provincia}
+                                    </p:column>
+                                    <p:column headerText="C./.CAT." style="width: 4%" filterBy="#{a.codiceCatastale}" filterMatchMode="contains" sortable="true" sortBy="#{a.codiceCatastale}">
+                                        #{a.codiceCatastale}
+                                    </p:column>
+                                    <p:column headerText="TEL." filterBy="#{a.telefono}" filterMatchMode="contains" sortable="true" sortBy="#{a.telefono}">
+                                        #{a.telefono}
+                                    </p:column>
+                                    <p:column headerText="PEO" filterBy="#{a.peo}" filterMatchMode="contains" sortable="true" sortBy="#{a.peo}">
+                                        #{a.peo}
+                                    </p:column>
+                                    <p:column headerText="PEC" filterBy="#{a.pec}" filterMatchMode="contains" sortable="true" sortBy="#{a.pec}">
+                                        #{a.pec}
+                                    </p:column>
+                                    <p:column style="width: 2%">
+                                        <p:commandButton id="modifica" icon="pi pi-pencil" styleClass="rounded-button ui-button-info ui-button-outlined" action="#{anagraficaController.modifica(a)}" process="@this" update="@form:anagraficaDialog" oncomplete="PF('anagraficaDialogWV').show();" />
+                                    </p:column>
+                                    <p:column style="width: 2%">    
+                                        <p:commandButton id="elimina" icon="pi pi-trash" styleClass="rounded-button ui-button-danger ui-button-outlined" action="#{anagraficaController.elimina(a)}" process="@this" update="@form">
+                                            <p:confirm type="popup" header="Conferma" message="Sicuro di voler eliminare l'anagrafica?" icon="pi pi-exclamation-triangle"/>
+                                        </p:commandButton>
+                                    </p:column>                                    
+                                </p:dataTable>
+                            </div>
+                            <div class="col-1">
+                                <p:commandButton id="nuovo" value="Nuovo" icon="pi pi-plus-circle" styleClass="ui-button-primary" action="#{anagraficaController.nuovo()}" process="@this" update="@form:anagraficaDialog" oncomplete="PF('anagraficaDialogWV').show();"/>
+                            </div>                                                   
+                            <div class="col-10" />
+                            <div class="col-1">
+                                <p:commandButton id="aggiorna" value="Aggiorna" styleClass="ui-button-secondary" icon="pi pi-refresh" action="#{anagraficaController.aggiorna()}" process="@this" update="@form"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p:dialog id="anagraficaDialog" widgetVar="anagraficaDialogWV" visible="#{not empty anagraficaController.anagraficaSelezionata}" modal="true" header="#{anagraficaController.azione} Anagrafica" width="80%">
+                    <div class="ui-fluid grid formgrid">
+                        <div class="field col-6">
+                            <p:outputLabel for="@next">Cognome/Rag. Soc.</p:outputLabel>
+                            <p:inputText id="cognome" value="#{anagraficaController.anagraficaSelezionata.cognomeRagsoc}" maxlength="64" required="true" requiredMessage="Cognome o ragione sociale obbligatoria" />                                    
+                        </div>
+
+                        <div class="field col-6">    
+                            <p:outputLabel for="@next">Nome</p:outputLabel>
+                            <p:inputText id="nome" value="#{anagraficaController.anagraficaSelezionata.nome}" maxlength="64" />                                    
+                        </div>
+
+                        <div class="field col-5">    
+                            <p:outputLabel for="@next">Indirizzo</p:outputLabel>
+                            <p:inputText id="indirizzo" value="#{anagraficaController.anagraficaSelezionata.indirizzo}" maxlength="128" />
+                        </div>
+
+                        <div class="field col-4">
+                            <p:outputLabel for="@next">Città</p:outputLabel>
+                            <p:autoComplete id="citta" value="#{anagraficaController.anagraficaSelezionata.citta}" maxlength="64" minQueryLength="3" 
+                                            completeMethod="#{anagraficaController.cercaComune}" var="c" itemValue="#{c.comune}" itemLabel="#{anagraficaController.formattaComune(c)}">
+                                <p:ajax event="itemSelect" listener="#{anagraficaController.onComuneSelect}" update="@this provincia codicecatastale" /> 
+                            </p:autoComplete>
+                        </div>
+
+                        <div class="field col-1">
+                            <p:outputLabel for="@next">Provincia</p:outputLabel>
+                            <p:inputText id="provincia" value="#{anagraficaController.anagraficaSelezionata.provincia}" maxlength="2" />
+                        </div>
+
+                        <div class="field col-1">
+                            <p:outputLabel for="@next">Codice Catastale</p:outputLabel>
+                            <p:inputText id="codicecatastale" value="#{anagraficaController.anagraficaSelezionata.codiceCatastale}" maxlength="4" />
+                        </div>
+                        
+                        <div class="field col-1">
+                            <p:outputLabel for="@next">CAP</p:outputLabel>
+                            <p:inputText id="cap" value="#{anagraficaController.anagraficaSelezionata.cap}" maxlength="5" />
+                        </div>
+
+                        <div class="field col-6">
+                            <p:outputLabel for="@next">Codisce Fiscale</p:outputLabel>
+                            <p:inputText id="cf" value="#{anagraficaController.anagraficaSelezionata.cf}" maxlength="16" />
+                        </div>                        
+
+                        <div class="field col-6">
+                            <p:outputLabel for="@next">P. IVA</p:outputLabel>
+                            <p:inputText id="piva" value="#{anagraficaController.anagraficaSelezionata.piva}" maxlength="11" />
+                        </div>
+
+                        <div class="field col-4">
+                            <p:outputLabel for="@next">Telefono</p:outputLabel>
+                            <p:inputText id="tel" value="#{anagraficaController.anagraficaSelezionata.telefono}" maxlength="64" />
+                        </div>
+
+                        <div class="field col-4">
+                            <p:outputLabel for="@next">PEO</p:outputLabel>
+                            <p:inputText id="peo" value="#{anagraficaController.anagraficaSelezionata.peo}" maxlength="128" />
+                        </div>
+
+                        <div class="field col-4">
+                            <p:outputLabel for="@next">PEC</p:outputLabel>
+                            <p:inputText id="pec" value="#{anagraficaController.anagraficaSelezionata.pec}" maxlength="128" />
+                        </div>
+
+                        <div class="field col-2">
+                            <p:commandButton id="salva" value="Salva" icon="pi pi-save" process="@form:anagraficaDialog" update="@form" action="#{anagraficaController.salva()}" styleClass="ui-button-success" />
+                        </div>
+                        <div class="field col-8" />
+                        <div class="field col-2">
+                            <p:commandButton id="annulla" value="Annulla" icon="pi pi-times" process="@this" update="@form" immediate="true" action="#{anagraficaController.annulla()}" styleClass="ui-button-secondary" />
+                        </div>
+                    </div>
+                </p:dialog>
+            </div>
+
+            <p:confirmPopup global="true">
+                <p:commandButton value="No" type="button" styleClass="ui-confirm-popup-no ui-button-flat" icon="pi pi-times"/>
+                <p:commandButton value="Si" type="button" styleClass="ui-confirm-popup-yes" icon="pi pi-check"/>
+            </p:confirmPopup>
+
+            <p:growl id="msg" showDetail="true" escape="false"/>
+        </h:form>
+    </ui:define>
+</ui:composition>

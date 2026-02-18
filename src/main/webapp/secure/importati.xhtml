@@ -207,7 +207,9 @@
                                     <p:commandButton id="txSelezionatiLibrocassa" value="Trasf. in Libro Cassa" styleClass="ui-button-help" icon="pi pi-book" process="@this" oncomplete="PF('trasferisciOrdinativiDialog').show()" disabled="#{not importatiController.canTransferMulti or importatiController.multiDaConsolidare}"/>
                                 </div>
                                 <div class="col-2 center">
-                                    <p:commandButton id="txSelezionatiLibrocassaCompl" value="Trasf. in Libro Cassa Completati" styleClass="ui-button-primary" icon="pi pi-file-check" process="@this" oncomplete="PF('trasferisciOrdinativiCompletiDialog').show()" disabled="#{not importatiController.canTransferMulti or importatiController.multiDaConsolidare}"/>
+                                    <p:commandButton id="txSelezionatiLibrocassaCompl" value="Trasf. in Libro Cassa Completati" styleClass="ui-button-primary" icon="pi pi-file-check" process="@this" oncomplete="PF('trasferisciOrdinativiCompletiDialog').show()" disabled="#{not importatiController.canTransferMulti or importatiController.multiDaConsolidare}">
+                                        <p:confirm type="popup" header="Attenzione" message="Nel caso di ritenuta collegare l'anagrafica nella pagina 'Ritenute'!" icon="pi pi-exclamation-triangle"/>
+                                    </p:commandButton>
                                 </div>
                                 <div class="col-2 center">
                                     <p:commandButton id="txSelezionatiLibrocassaConsol" value="Trasf. in Libro Cassa Da Consol." styleClass="ui-button-secondary" icon="pi pi-objects-column" process="@this" oncomplete="PF('trasferisciOrdinativiConsolidaDialog').show()" disabled="#{not importatiController.canTransferMulti or not importatiController.multiDaConsolidare}"/>
@@ -402,7 +404,7 @@
                             </p:commandButton>
                         </f:facet>
                     </p:dialog>
-
+                                        
                     <p:dialog header="Documento" showEffect="fade" modal="true" widgetVar="documentoDialog" responsive="true" width="60%">
                         <p:outputPanel id="documento-content" class="ui-fluid" > 
                             <pe:documentViewer id="docviewer" value="#{docController.stream}" width="100%" height="500">
@@ -488,6 +490,10 @@
                         <p:commandButton value="No" type="button" styleClass="ui-button-secondary" immediate="true" icon="pi pi-times" onclick="PF('duplicaOrdinativoDialog').hide()" />
                     </p:confirmDialog>
                 </div>
+                
+                <p:confirmPopup global="true">                    
+                    <p:commandButton value="Ok" type="button" styleClass="ui-confirm-popup-yes" icon="pi pi-check"/>
+                </p:confirmPopup>
             </h:panelGroup>        
         </h:form>
 

@@ -165,13 +165,13 @@
                                             <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
                                         </p:commandButton>&#160;
                                         <p:menuButton value="Azioni" styleClass="ui-button-danger">
-                                            <p:menuitem id="modifica" icon="pi pi-pencil" value="Modifica" action="#{movimentiCompletiController.modifica()}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()" rendered="#{not movimentiCompletiController.chiuso(mov)}">                                                
+                                            <p:menuitem id="modifica" icon="pi pi-pencil" value="Modifica" action="#{movimentiCompletiController.modifica(mov)}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()" rendered="#{not movimentiCompletiController.chiuso(mov)}">                                                
                                                 <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
                                             </p:menuitem>
-                                            <p:menuitem id="mostra" icon="pi pi-eye" value="Mostra" action="#{movimentiCompletiController.mostra()}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()" rendered="#{movimentiCompletiController.chiuso(mov)}">                                                
+                                            <p:menuitem id="mostra" icon="pi pi-eye" value="Mostra" action="#{movimentiCompletiController.mostra(mov)}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()" rendered="#{movimentiCompletiController.chiuso(mov)}">                                                
                                                 <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
                                             </p:menuitem>
-                                            <p:menuitem id="duplica" icon="pi pi-clone" value="Duplica" action="#{movimentiCompletiController.duplica()}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()">
+                                            <p:menuitem id="duplica" icon="pi pi-clone" value="Duplica" action="#{movimentiCompletiController.duplica(mov)}" process="@this" update=":form:movimento-content" oncomplete="PF('movimentoDialog').show()">
                                                 <f:setPropertyActionListener value="#{mov}" target="#{movimentiCompletiController.movimento}" />
                                             </p:menuitem>
                                             <p:separator rendered="#{not movimentiCompletiController.chiuso}"/>

@@ -35,5 +35,4 @@ public class CapCompConverter implements Converter<CapitoloCompetenza> {
     public String getAsString(FacesContext fc, UIComponent uic, CapitoloCompetenza t) {
         return (t==null) ? null : String.valueOf(t.getId());
     }
-    
 }

@@ -335,19 +335,19 @@ public class IvaController extends BaseController {
             return;
         }
 
-        ordinativiAggancio = os.getOrdinativiPagamento();
+        ordinativiAggancio = os.getOrdinativiPagamento(LocalDate.now());
         ordinativoAggancioSelezionato = null;
 
-        PrimeFaces.current().executeScript("PF('ordinativoTargetDialog').show();");
+        //PrimeFaces.current().executeScript("PF('ordinativoTargetDialog').show();");
     }
 
     public void agganciaSingolo(OrdinativoRecord o) {
-        ordinativiAggancio = os.getOrdinativiPagamento();
+        ordinativiAggancio = os.getOrdinativiPagamento(o.getDataPagamento());
         ordinativoAggancioSelezionato = (o.getOrdinativoIva() != null) ? os.getOrdinativoById(o.getOrdinativoIva()) : null;
         ordinativiIvaSelezionati = new ArrayList<>();
         ordinativiIvaSelezionati.add(o);
 
-        PrimeFaces.current().executeScript("PF('ordinativoTargetDialog').show();");
+        //PrimeFaces.current().executeScript("PF('ordinativoTargetDialog').show();");
     }
 
     public void aggiornaParziale() {

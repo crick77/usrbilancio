@@ -11,6 +11,7 @@ import it.usr.web.usrbilancio.domain.tables.Anagrafica;
 import it.usr.web.usrbilancio.domain.tables.Capitolo;
 import it.usr.web.usrbilancio.domain.tables.Codice;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
+import it.usr.web.usrbilancio.domain.tables.Comune;
 import it.usr.web.usrbilancio.domain.tables.LogOperazioni;
 import it.usr.web.usrbilancio.domain.tables.MimeType;
 import it.usr.web.usrbilancio.domain.tables.Modelli;
@@ -21,6 +22,7 @@ import it.usr.web.usrbilancio.domain.tables.Parametri;
 import it.usr.web.usrbilancio.domain.tables.Quietanza;
 import it.usr.web.usrbilancio.domain.tables.RettificaIva;
 import it.usr.web.usrbilancio.domain.tables.Richiesta;
+import it.usr.web.usrbilancio.domain.tables.Ritenuta;
 import it.usr.web.usrbilancio.domain.tables.TipoDocumento;
 import it.usr.web.usrbilancio.domain.tables.TipoRts;
 import it.usr.web.usrbilancio.domain.tables.Utente;
@@ -66,6 +68,11 @@ public class Tables {
      * The table <code>usrbilancio.competenza</code>.
      */
     public static final Competenza COMPETENZA = Competenza.COMPETENZA;
+
+    /**
+     * The table <code>usrbilancio.comune</code>.
+     */
+    public static final Comune COMUNE = Comune.COMUNE;
 
     /**
      * The table <code>usrbilancio.log_operazioni</code>.
@@ -116,6 +123,11 @@ public class Tables {
      * The table <code>usrbilancio.richiesta</code>.
      */
     public static final Richiesta RICHIESTA = Richiesta.RICHIESTA;
+
+    /**
+     * The table <code>usrbilancio.ritenuta</code>.
+     */
+    public static final Ritenuta RITENUTA = Ritenuta.RITENUTA;
 
     /**
      * The table <code>usrbilancio.tipo_documento</code>.

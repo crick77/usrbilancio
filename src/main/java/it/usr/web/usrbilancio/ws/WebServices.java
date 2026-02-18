@@ -23,7 +23,6 @@ import it.usr.web.usrbilancio.model.RiepilogoRGS;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
 import it.usr.web.usrbilancio.producer.DocumentFolder;
 import it.usr.web.usrbilancio.service.CompetenzaService;
-import it.usr.web.usrbilancio.ws.security.JWTVerify;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
@@ -44,10 +43,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.StringJoiner;
 import org.jooq.DSLContext;
 import org.jooq.exception.DataAccessException;
 import org.jooq.impl.DSL;
@@ -163,8 +160,9 @@ public class WebServices {
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
         
             int id99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
+            int id98 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("98")).fetchSingleInto(Integer.class);
             String sOrd = ctx.selectFrom(ORDINATIVO)
-                            .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%").and(ORDINATIVO.ID_TIPO_RTS.ne(id99))))
+                            .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%").and(ORDINATIVO.ID_TIPO_RTS.notIn(id98, id99))))
                             .orderBy(ORDINATIVO.DATA_PAGAMENTO, ORDINATIVO.NUMERO_PAGAMENTO)
                             .fetch()
                             .formatJSON();        
@@ -188,8 +186,9 @@ public class WebServices {
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
         
             int id99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
+            int id98 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("98")).fetchSingleInto(Integer.class);
             String sQui = ctx.selectFrom(QUIETANZA)
-                            .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%").and(QUIETANZA.ID_TIPO_RTS.ne(id99))))
+                            .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%").and(QUIETANZA.ID_TIPO_RTS.notIn(id98, id99))))
                             .orderBy(QUIETANZA.DATA_PAGAMENTO, QUIETANZA.NUMERO_PAGAMENTO)
                             .fetch()
                             .formatJSON();        
@@ -449,6 +448,7 @@ public class WebServices {
         int codice2 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("2")).fetchSingleInto(Integer.class);
         int codice7GSE = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("7GSE")).fetchSingleInto(Integer.class);
         int codice99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
+        int codice98 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("98")).fetchSingleInto(Integer.class);
         
        /* String sql = """
                      SELECT ifnull(c.ordinanza, '') as ordinanza, 
@@ -462,6 +462,21 @@ public class WebServices {
                      """;
        */
        
+       /* String sql = """
+                     SELECT 
+                            concat(c.codice, '.', c.c01, '.', c.c02, '.', c.c03) as codice,
+                            ifnull(c.ordinanza, '') as ordinanza, 
+                            ifnull(c.ente_diocesi, '') as ente, 
+                            ifnull(c.provincia, '') as provincia,  
+                            ifnull(c.descrizione, '') as intervento,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts in ({5}, {6}, {7}) and q.data_pagamento between {0} and {1}), 0) as trasferito,
+                            ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {1}), 0) as liquidato,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts not in ({5}, {6}, {7}) and q.data_pagamento between {0} and {1}), 0) as stornato,
+                            ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {2}), 0) as liquidato_ap,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts not in ({5}, {6}, {7}) and q.data_pagamento between {0} and {2}), 0) as stornato_ap
+                     FROM usrbilancio.codice c where c.codice = {3} and c03 is not null
+                     """;
+        */
         String sql = """
                      SELECT 
                             concat(c.codice, '.', c.c01, '.', c.c02, '.', c.c03) as codice,
@@ -469,18 +484,17 @@ public class WebServices {
                             ifnull(c.ente_diocesi, '') as ente, 
                             ifnull(c.provincia, '') as provincia,  
                             ifnull(c.descrizione, '') as intervento,
-                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts in ({5}) and q.data_pagamento between {0} and {1}), 0) as trasferito,
+                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.data_pagamento between {0} and {1}), 0) as trasferito,
                             ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {1}), 0) as liquidato,
-                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts not in ({5}) and q.data_pagamento between {0} and {1}), 0) as stornato,
+                            0 as stornato,
                             ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {2}), 0) as liquidato_ap,
-                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.id_tipo_rts not in ({5}) and q.data_pagamento between {0} and {2}), 0) as stornato_ap
+                            0 as stornato_ap
                      FROM usrbilancio.codice c where c.codice = {3} and c03 is not null
                      """;
-        StringJoiner sj = new StringJoiner(",");
-        sj.add(String.valueOf(codice2));
-        sj.add(String.valueOf(codice7GSE));         
+        
         //return ctx.fetch(sql, from, to, toAp, tipo, codice2, codice7).into(OperaPubblica.class);
-        return ctx.fetch(sql, from, to, toAp, tipo, codice99, sj.toString()).into(OperaPubblica.class);
+        //                      0    1   2     3       4        5         6           7
+        return ctx.fetch(sql, from, to, toAp, tipo, codice99, codice2, codice7GSE, codice98).into(OperaPubblica.class);
     }
      
     @GET

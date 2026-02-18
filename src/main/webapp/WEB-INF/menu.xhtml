@@ -45,6 +45,7 @@
                         <p:menuitem id="m_ricerca" value="Ricerca globale" icon="pi pi-fw pi-search" outcome="/secure/ricerca"/>
                         <p:menuitem id="m_codici" value="Gestione conti" icon="pi pi-fw pi-qrcode" outcome="/secure/codici"/>
                         <p:menuitem id="m_rts" value="Gestione tipi RTS" icon="pi pi-fw pi-database" outcome="/secure/rts"/>
+                        <p:menuitem id="m_anagrafica" value="Anagrafica" icon="pi pi-fw pi-users" outcome="/secure/anagrafica"/>
                         <p:menuitem id="m_log" value="Registro operazioni" icon="pi pi-fw pi-book" outcome="/secure/logop" rendered="#{activeUser.currentUser.attributes.admin eq 1}"/>
                     </p:submenu>
                     <p:submenu id="m_pubblica" label="Pubblica" icon="pi pi-fw pi-building-columns">

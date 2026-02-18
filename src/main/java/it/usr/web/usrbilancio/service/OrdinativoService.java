@@ -155,10 +155,8 @@ public class OrdinativoService {
         return ctx.selectFrom(Tables.ORDINATIVO).where(Tables.ORDINATIVO.CONSOLIDAMENTO.eq((byte) 1)).orderBy(Tables.ORDINATIVO.NUMERO_PAGAMENTO).fetch();
     }
 
-    public List<OrdinativoRecord> getOrdinativiPagamento() {
-        LocalDate initial = LocalDate.now().withMonth(1);
-        LocalDate start = initial.withDayOfMonth(1);
-        LocalDate end = LocalDate.now();
+    public List<OrdinativoRecord> getOrdinativiPagamento(LocalDate end) {
+        LocalDate start = end.minusYears(1);
         return ctx.selectFrom(Tables.ORDINATIVO).where(Tables.ORDINATIVO.IMPORTO_IVA.isNull()).and(Tables.ORDINATIVO.IMPORTO_RITENUTA.isNull()).and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(start, end)).fetch();
     }
         
@@ -778,7 +776,11 @@ public class OrdinativoService {
     }
 
     public int getNumeroOrdinativiPeriodo(LocalDate from, LocalDate to) {
-        return ctx.select(DSL.countDistinct(Tables.ORDINATIVO.NUMERO_PAGAMENTO)).from(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to)).fetchSingle().into(Integer.class);
+        Integer codice98 = ctx.select(Tables.TIPO_RTS.ID).from(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.eq("98")).fetchOneInto(Integer.class);
+        Integer codice99 = ctx.select(Tables.TIPO_RTS.ID).from(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.eq("99")).fetchOneInto(Integer.class);
+        return ctx.select(DSL.countDistinct(Tables.ORDINATIVO.NUMERO_PAGAMENTO)).from(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to).
+                and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice98)).and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice99))).
+                fetchSingle().into(Integer.class);
     }
 
     public Integer getUltimoNumeroOrdinativo(int anno) {
@@ -819,10 +821,14 @@ public class OrdinativoService {
         BigDecimal tot = rettifica != null ? res.add(rettifica) : res;
         logger.info("Valore IVA Anagrafica prima della rettifica [{}], rettifica [{}] totale [{}].", res, rettifica, tot);
         return tot;
-    }
+    } 
 
     public int getNumeroOrdinativiAnno(int anno) {
-        return ctx.select(DSL.count()).from(Tables.ORDINATIVO).where(DSL.year(Tables.ORDINATIVO.DATA_PAGAMENTO).eq(anno)).fetchOneInto(Integer.class);
+        Integer codice98 = ctx.select(Tables.TIPO_RTS.ID).from(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.eq("98")).fetchOneInto(Integer.class);
+        Integer codice99 = ctx.select(Tables.TIPO_RTS.ID).from(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.eq("99")).fetchOneInto(Integer.class);
+        return ctx.select(DSL.countDistinct(Tables.ORDINATIVO.NUMERO_PAGAMENTO)).from(Tables.ORDINATIVO).where(DSL.year(Tables.ORDINATIVO.DATA_PAGAMENTO).eq(anno).
+                and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice98)).and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice99))).
+                fetchOneInto(Integer.class);
     }
     
     public List<OrdinativoRecord> cerca(SearchCriteria sc) {

@@ -18,7 +18,6 @@ import jakarta.ejb.EJBException;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.math.BigDecimal;
 import org.primefaces.PrimeFaces;
 import org.slf4j.Logger;
 

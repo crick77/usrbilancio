@@ -117,87 +117,115 @@ public class AnagraficaRecord extends UpdatableRecordImpl<AnagraficaRecord> {
     }
 
     /**
+     * Setter for <code>usrbilancio.anagrafica.codice_catastale</code>.
+     */
+    public void setCodiceCatastale(String value) {
+        set(7, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.anagrafica.codice_catastale</code>.
+     */
+    public String getCodiceCatastale() {
+        return (String) get(7);
+    }
+
+    /**
      * Setter for <code>usrbilancio.anagrafica.piva</code>.
      */
     public void setPiva(String value) {
-        set(7, value);
+        set(8, value);
     }
 
     /**
      * Getter for <code>usrbilancio.anagrafica.piva</code>.
      */
     public String getPiva() {
-        return (String) get(7);
+        return (String) get(8);
     }
 
     /**
      * Setter for <code>usrbilancio.anagrafica.cf</code>.
      */
     public void setCf(String value) {
-        set(8, value);
+        set(9, value);
     }
 
     /**
      * Getter for <code>usrbilancio.anagrafica.cf</code>.
      */
     public String getCf() {
-        return (String) get(8);
+        return (String) get(9);
     }
 
     /**
      * Setter for <code>usrbilancio.anagrafica.telefono</code>.
      */
     public void setTelefono(String value) {
-        set(9, value);
+        set(10, value);
     }
 
     /**
      * Getter for <code>usrbilancio.anagrafica.telefono</code>.
      */
     public String getTelefono() {
-        return (String) get(9);
+        return (String) get(10);
     }
 
     /**
      * Setter for <code>usrbilancio.anagrafica.peo</code>.
      */
     public void setPeo(String value) {
-        set(10, value);
+        set(11, value);
     }
 
     /**
      * Getter for <code>usrbilancio.anagrafica.peo</code>.
      */
     public String getPeo() {
-        return (String) get(10);
+        return (String) get(11);
     }
 
     /**
      * Setter for <code>usrbilancio.anagrafica.pec</code>.
      */
     public void setPec(String value) {
-        set(11, value);
+        set(12, value);
     }
 
     /**
      * Getter for <code>usrbilancio.anagrafica.pec</code>.
      */
     public String getPec() {
-        return (String) get(11);
+        return (String) get(12);
     }
 
     /**
      * Setter for <code>usrbilancio.anagrafica.giuridica</code>.
      */
     public void setGiuridica(Boolean value) {
-        set(12, value);
+        set(13, value);
     }
 
     /**
      * Getter for <code>usrbilancio.anagrafica.giuridica</code>.
      */
     public Boolean getGiuridica() {
-        return (Boolean) get(12);
+        return (Boolean) get(13);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.anagrafica.versione</code>.
+     */
+    public void setVersione(Long value) {
+        set(14, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.anagrafica.versione</code>.
+     */
+    public Long getVersione() {
+        return (Long) get(14);
     }
 
     // -------------------------------------------------------------------------
@@ -223,7 +251,7 @@ public class AnagraficaRecord extends UpdatableRecordImpl<AnagraficaRecord> {
     /**
      * Create a detached, initialised AnagraficaRecord
      */
-    public AnagraficaRecord(Integer id, String cognomeRagsoc, String nome, String indirizzo, String citta, String provincia, String cap, String piva, String cf, String telefono, String peo, String pec, Boolean giuridica) {
+    public AnagraficaRecord(Integer id, String cognomeRagsoc, String nome, String indirizzo, String citta, String provincia, String cap, String codiceCatastale, String piva, String cf, String telefono, String peo, String pec, Boolean giuridica, Long versione) {
         super(Anagrafica.ANAGRAFICA);
 
         setId(id);
@@ -233,12 +261,14 @@ public class AnagraficaRecord extends UpdatableRecordImpl<AnagraficaRecord> {
         setCitta(citta);
         setProvincia(provincia);
         setCap(cap);
+        setCodiceCatastale(codiceCatastale);
         setPiva(piva);
         setCf(cf);
         setTelefono(telefono);
         setPeo(peo);
         setPec(pec);
         setGiuridica(giuridica);
+        setVersione(versione);
         resetChangedOnNotNull();
     }
 }

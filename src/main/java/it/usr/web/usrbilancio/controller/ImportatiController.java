@@ -9,7 +9,6 @@ import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
-import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
 import it.usr.web.usrbilancio.model.CapitoloCompetenza;
@@ -333,7 +332,7 @@ public class ImportatiController extends BaseController {
     public void setGruppo(String gruppo) {
         this.gruppo = gruppo;
     }
-            
+              
     public String getDescrizioneOrdinativo() {
         if(ordinativo==null) return "";
         StringBuilder sb = new StringBuilder();
@@ -404,7 +403,7 @@ public class ImportatiController extends BaseController {
         documentFiles = null;        
         canTransferMulti = false;   
         multiDaConsolidare = false;
-        gruppo = null;
+        gruppo = null;        
     }
     
     public void cambioMostraTutti(AjaxBehaviorEvent e) {
@@ -685,5 +684,5 @@ public class ImportatiController extends BaseController {
                 }
             }
         }
-    }
+    }   
 }

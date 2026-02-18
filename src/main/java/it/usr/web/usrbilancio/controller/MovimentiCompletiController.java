@@ -191,11 +191,13 @@ public class MovimentiCompletiController extends BaseController {
         }
     }
 
-    public void modifica() {
+    public void modifica(MovimentiVirtualiRecord mvr) {
+        this.movimento = mvr;
         azione = "Modifica";
     }
 
-    public void mostra() {
+    public void mostra(MovimentiVirtualiRecord mvr) {
+        this.movimento = mvr;
         azione = "Mostra";
     }
 
@@ -423,11 +425,11 @@ public class MovimentiCompletiController extends BaseController {
                 addMessage(Message.error("Errore imprevisto: " + ex.getCausedByException().getMessage()));
                 logger.debug("Errore imprevisto {} durante l'eliminazione del movimento virtuale {}. Errrore: {}", ex.getCausedByException().getClass(), movimento, ex.getCausedByException());
             }
-        }
+        } 
     }
 
-    public void duplica() {
-        MovimentiVirtualiRecord mvr = movimento.copy();
+    public void duplica(MovimentiVirtualiRecord m) {         
+        MovimentiVirtualiRecord mvr = m.copy();
         mvr.setId(null);
         mvr.setIdCompetenza(null);
         mvr.setDescrizioneRagioneria("COPIA-"+movimento.getDescrizioneRagioneria());
@@ -435,7 +437,7 @@ public class MovimentiCompletiController extends BaseController {
         mvr.setVersione(1L);
         movimento = mvr;
         azione = "Duplica";
-    }
+    } 
 
     public CapitoloCompetenza decodeCapComp(int idCapComp) {
         return mCampComp.get(idCapComp);

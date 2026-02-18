@@ -6,16 +6,21 @@ package it.usr.web.usrbilancio.domain.tables;
 
 import it.usr.web.usrbilancio.domain.Keys;
 import it.usr.web.usrbilancio.domain.Usrbilancio;
+import it.usr.web.usrbilancio.domain.tables.Ritenuta.RitenutaPath;
 import it.usr.web.usrbilancio.domain.tables.records.AnagraficaRecord;
 
 import java.util.Collection;
 
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.ForeignKey;
 import org.jooq.Identity;
+import org.jooq.InverseForeignKey;
 import org.jooq.Name;
+import org.jooq.Path;
 import org.jooq.PlainSQL;
 import org.jooq.QueryPart;
+import org.jooq.Record;
 import org.jooq.SQL;
 import org.jooq.Schema;
 import org.jooq.Select;
@@ -86,6 +91,11 @@ public class Anagrafica extends TableImpl<AnagraficaRecord> {
     public final TableField<AnagraficaRecord, String> CAP = createField(DSL.name("cap"), SQLDataType.VARCHAR(5), this, "");
 
     /**
+     * The column <code>usrbilancio.anagrafica.codice_catastale</code>.
+     */
+    public final TableField<AnagraficaRecord, String> CODICE_CATASTALE = createField(DSL.name("codice_catastale"), SQLDataType.VARCHAR(4), this, "");
+
+    /**
      * The column <code>usrbilancio.anagrafica.piva</code>.
      */
     public final TableField<AnagraficaRecord, String> PIVA = createField(DSL.name("piva"), SQLDataType.VARCHAR(11), this, "");
@@ -114,6 +124,11 @@ public class Anagrafica extends TableImpl<AnagraficaRecord> {
      * The column <code>usrbilancio.anagrafica.giuridica</code>.
      */
     public final TableField<AnagraficaRecord, Boolean> GIURIDICA = createField(DSL.name("giuridica"), SQLDataType.BIT.nullable(false).defaultValue(DSL.inline("b'0'", SQLDataType.BIT)), this, "");
+
+    /**
+     * The column <code>usrbilancio.anagrafica.versione</code>.
+     */
+    public final TableField<AnagraficaRecord, Long> VERSIONE = createField(DSL.name("versione"), SQLDataType.BIGINT.nullable(false).defaultValue(DSL.inline("0", SQLDataType.BIGINT)), this, "");
 
     private Anagrafica(Name alias, Table<AnagraficaRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
@@ -144,6 +159,39 @@ public class Anagrafica extends TableImpl<AnagraficaRecord> {
         this(DSL.name("anagrafica"), null);
     }
 
+    public <O extends Record> Anagrafica(Table<O> path, ForeignKey<O, AnagraficaRecord> childPath, InverseForeignKey<O, AnagraficaRecord> parentPath) {
+        super(path, childPath, parentPath, ANAGRAFICA);
+    }
+
+    /**
+     * A subtype implementing {@link Path} for simplified path-based joins.
+     */
+    public static class AnagraficaPath extends Anagrafica implements Path<AnagraficaRecord> {
+
+        private static final long serialVersionUID = 1L;
+        public <O extends Record> AnagraficaPath(Table<O> path, ForeignKey<O, AnagraficaRecord> childPath, InverseForeignKey<O, AnagraficaRecord> parentPath) {
+            super(path, childPath, parentPath);
+        }
+        private AnagraficaPath(Name alias, Table<AnagraficaRecord> aliased) {
+            super(alias, aliased);
+        }
+
+        @Override
+        public AnagraficaPath as(String alias) {
+            return new AnagraficaPath(DSL.name(alias), this);
+        }
+
+        @Override
+        public AnagraficaPath as(Name alias) {
+            return new AnagraficaPath(alias, this);
+        }
+
+        @Override
+        public AnagraficaPath as(Table<?> alias) {
+            return new AnagraficaPath(alias.getQualifiedName(), this);
+        }
+    }
+
     @Override
     public Schema getSchema() {
         return aliased() ? null : Usrbilancio.USRBILANCIO;
@@ -157,6 +205,19 @@ public class Anagrafica extends TableImpl<AnagraficaRecord> {
     @Override
     public UniqueKey<AnagraficaRecord> getPrimaryKey() {
         return Keys.KEY_ANAGRAFICA_PRIMARY;
+    }
+
+    private transient RitenutaPath _ritenuta;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>usrbilancio.ritenuta</code> table
+     */
+    public RitenutaPath ritenuta() {
+        if (_ritenuta == null)
+            _ritenuta = new RitenutaPath(this, null, Keys.FK_RITENUTA_ANAGRAFICA.getInverseKey());
+
+        return _ritenuta;
     }
 
     @Override

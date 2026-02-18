@@ -153,7 +153,7 @@
                                             <h5>Note</h5> 
                                             <p>#{oi.note}</p>
                                         </p:overlayPanel>&#160;
-                                        <p:commandButton id="ordinativoiva" icon="pi pi-link" title="Ordinativo IVA" styleClass="ui-button-secondary" process="@this" action="#{ivaController.agganciaSingolo(oi)}" update=":form:msg :form:ordinativotarget-content" />
+                                        <p:commandButton id="ordinativoiva" icon="pi pi-link" title="Ordinativo IVA" styleClass="ui-button-secondary" process="@this" action="#{ivaController.agganciaSingolo(oi)}" update=":form:msg :form:ordinativotarget-content" oncomplete="PF('ordinativoTargetDialog').show();"/>
                                     </p:column>
                                     <p:column style="width: 2%" exportable="false">
                                         <p:commandButton id="ordinativoivaupload" icon="pi pi-upload" title="Carica F24 IVA" styleClass="ui-button-danger" process="@this" update="form:caricaF24Dialog" oncomplete="PF('caricaF24Dialog').show();" rendered="#{empty oi.ordinativoIva}">
@@ -210,7 +210,7 @@
                             </div>
                             <div class="col-2">
                                 <p:commandButton id="aggancia" value="Aggancia ordinativo liquidazione IVA" icon="pi pi-plus-circle" styleClass="ui-button-primary" title="Aggancia un ordinativo esistente come liquidazone IVA"
-                                                 action="#{ivaController.aggancia()}" process="@this ordinativi" update="msg :form:ordinativotarget-content" />                                
+                                                 action="#{ivaController.aggancia()}" process="@this ordinativi" update="msg :form:ordinativotarget-content" oncomplete="PF('ordinativoTargetDialog').show();" />                                
                             </div>
                             <div class="col-2">
                                 <p:commandButton id="caricaf24" value="Carica F24 liquidazione IVA" icon="pi pi-plus-circle" styleClass="ui-button-help" title="Carica e aggancia un F24 da documento PDF"

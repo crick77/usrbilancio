@@ -11,6 +11,7 @@ import it.usr.web.usrbilancio.domain.tables.Allegato.AllegatoPath;
 import it.usr.web.usrbilancio.domain.tables.Codice.CodicePath;
 import it.usr.web.usrbilancio.domain.tables.Competenza.CompetenzaPath;
 import it.usr.web.usrbilancio.domain.tables.Ordinativo.OrdinativoPath;
+import it.usr.web.usrbilancio.domain.tables.Ritenuta.RitenutaPath;
 import it.usr.web.usrbilancio.domain.tables.TipoDocumento.TipoDocumentoPath;
 import it.usr.web.usrbilancio.domain.tables.TipoRts.TipoRtsPath;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
@@ -378,6 +379,19 @@ public class Ordinativo extends TableImpl<OrdinativoRecord> {
             _allegato = new AllegatoPath(this, null, Keys.FK_ALLEGATO_ORDINATIVO.getInverseKey());
 
         return _allegato;
+    }
+
+    private transient RitenutaPath _ritenuta;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>usrbilancio.ritenuta</code> table
+     */
+    public RitenutaPath ritenuta() {
+        if (_ritenuta == null)
+            _ritenuta = new RitenutaPath(this, null, Keys.FK_RITENUTA_ORDINATIVO.getInverseKey());
+
+        return _ritenuta;
     }
 
     @Override

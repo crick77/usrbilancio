@@ -129,7 +129,7 @@
                                             <f:convertDateTime pattern="dd-MM-yyyy" type="localDate" /> 
                                         </h:outputText>
                                     </p:column>
-                                    <p:column headerText="N. ORD." style="width: 5%;" field="numeroPagamento" filterMatchMode="contains" sortFunction="#{sorter.sortStringAsInt}" sortBy="#{o.numeroPagamento}">
+                                    <p:column headerText="N. ORD." style="width: 7%;" field="numeroPagamento" filterMatchMode="contains" sortFunction="#{sorter.sortStringAsInt}" sortBy="#{o.numeroPagamento}">
                                         #{o.numeroPagamento}
                                     </p:column>
                                     <p:column headerText="DEL" style="width: 9%;" field="dataPagamento" filterMatchMode="between" exportFunction="#{tableExporterController.decodeDate(o.dataPagamento)}" sortOrder="desc">

@@ -88,8 +88,8 @@ public class CodiceService {
 
     public List<TipoRtsRecord> getTipiRts(GruppoRts tipoRts) {
         return switch (tipoRts) {
-            case RTS_ORDINATIVO -> ctx.selectFrom(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.likeRegex("^[A-Z]+$")).or(Tables.TIPO_RTS.CODICE.eq("99")).orderBy(Tables.TIPO_RTS.CODICE).fetch();
-            case RTS_QUIETANZA -> ctx.selectFrom(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.likeRegex("^[0-9]+(?:[a-zA-Z]+)?$")).or(Tables.TIPO_RTS.CODICE.eq("99")).orderBy(Tables.TIPO_RTS.CODICE).fetch();
+            case RTS_ORDINATIVO -> ctx.selectFrom(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.likeRegex("^[A-Z]+$")).or(Tables.TIPO_RTS.CODICE.in("99", "98")).orderBy(Tables.TIPO_RTS.CODICE).fetch();
+            case RTS_QUIETANZA -> ctx.selectFrom(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.likeRegex("^[0-9]+(?:[a-zA-Z]+)?$")).or(Tables.TIPO_RTS.CODICE.in("99", "98")).orderBy(Tables.TIPO_RTS.CODICE).fetch();
             default -> ctx.selectFrom(Tables.TIPO_RTS).orderBy(Tables.TIPO_RTS.CODICE).fetch();
         };
     }
