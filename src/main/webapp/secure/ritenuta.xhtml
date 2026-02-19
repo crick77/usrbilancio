@@ -326,8 +326,9 @@
                         <p:inputNumber id="impIva" value="#{ritenutaController.ritenuta.iva}" decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />
                     </div>
                     <div class="field col-4">
-                        <p:outputLabel for="@next" value="Tipologia tributo" />
+                        <p:outputLabel for="@next" value="Considera solo..." />
                         <p:selectOneMenu id="tipoRitenuta" value="#{ritenutaController.tipoRitenuta}">
+                            <p:ajax process="@this"  update="percRitenuta impRitenuta percIrap impIrap" />
                             <f:selectItem itemValue="0" itemLabel="RITENUTA" />
                             <f:selectItem itemValue="1" itemLabel="IRAP" />
                             <f:selectItem itemValue="2" itemLabel="RITENUTA+IRAP" />
@@ -335,23 +336,23 @@
                     </div>
                     <div class="field col-2">
                         <p:outputLabel for="@next" value="% Ritenuta su imponibile" />
-                        <p:inputNumber id="percRitenuta" value="#{ritenutaController.ritenuta.percRitenuteOperate}" decimalSeparator="," symbol="%" symbolPosition="s" decimalPlaces="2" decimalSeparatorAlternative=".">
+                        <p:inputNumber id="percRitenuta" value="#{ritenutaController.ritenuta.percRitenuteOperate}" decimalSeparator="," symbol="%" symbolPosition="s" decimalPlaces="2" decimalSeparatorAlternative="." disabled="#{ritenutaController.tipoRitenuta eq 1}">
                             <p:ajax event="change" listener="#{ritenutaController.ricalcolaImporti()}" process="@this" update="impRitenuta" />
                         </p:inputNumber>
                     </div>
                     <div class="field col-2">
                         <p:outputLabel for="@next" value="Importo ritenuta su imponibile" />
-                        <p:inputNumber id="impRitenuta" value="#{ritenutaController.importoRitenuta}" decimalSeparator="," decimalPlaces="2" decimalSeparatorAlternative="." readonly="true" />
+                        <p:inputNumber id="impRitenuta" value="#{ritenutaController.importoRitenuta}" decimalSeparator="," decimalPlaces="2" decimalSeparatorAlternative="." readonly="true" disabled="#{ritenutaController.tipoRitenuta eq 1}" />
                     </div>
                     <div class="field col-2">
                         <p:outputLabel for="@next" value="% IRAP su imponibile" />
-                        <p:inputNumber id="percIrap" value="#{ritenutaController.ritenuta.percIrapVersata}" decimalSeparator="," symbol="%" symbolPosition="s" decimalPlaces="2" decimalSeparatorAlternative="." minValue="0" maxValue="100">
+                        <p:inputNumber id="percIrap" value="#{ritenutaController.ritenuta.percIrapVersata}" decimalSeparator="," symbol="%" symbolPosition="s" decimalPlaces="2" decimalSeparatorAlternative="." minValue="0" maxValue="100" disabled="#{ritenutaController.tipoRitenuta eq 0}">
                              <p:ajax event="change" listener="#{ritenutaController.ricalcolaImporti()}" process="@this" update="impIrap" />
                         </p:inputNumber>
                     </div>
                     <div class="field col-2">
                         <p:outputLabel for="@next" value="Importo IRAP su imponibile" />
-                        <p:inputNumber id="impIrap" value="#{ritenutaController.importoIRAP}" decimalSeparator="," decimalPlaces="2" decimalSeparatorAlternative="." readonly="true" />
+                        <p:inputNumber id="impIrap" value="#{ritenutaController.importoIRAP}" decimalSeparator="," decimalPlaces="2" decimalSeparatorAlternative="." readonly="true" disabled="#{ritenutaController.tipoRitenuta eq 0}"/>
                     </div>
                 </p:outputPanel>
 

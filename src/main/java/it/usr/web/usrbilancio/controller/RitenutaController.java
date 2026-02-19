@@ -792,7 +792,7 @@ public class RitenutaController extends BaseController {
                 tipoRitenuta = RITENUTA_IRAP;
             }
             else {
-                tipoRitenuta = ritenuta.getPercRitenuteOperate() != null ? RITENUTA : IRAP;
+                tipoRitenuta = ritenuta.getPercIrapVersata() != null ?  IRAP : RITENUTA;
             }            
         } else {
             ritenuta = new RitenutaRecord();                        
