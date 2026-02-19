@@ -642,6 +642,7 @@ public class OrdinativiController extends BaseController {
     
     public void duplica() {
         OrdinativoRecord or = ordinativo.copy();
+        or.setConsolidamento((byte)0);
         or.setId(null);
         or.setDescrizioneRts("COPIA-"+ordinativo.getDescrizioneRts());
         or.setVersione(1L);

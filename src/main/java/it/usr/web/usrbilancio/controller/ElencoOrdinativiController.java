@@ -527,6 +527,7 @@ public class ElencoOrdinativiController extends BaseController {
         if (isChiuso()) {
             or.setIdCompetenza(null);
         }
+        or.setConsolidamento((byte)0);
         or.setId(null);
         or.setVersione(1L);
         or.setDescrizioneRts("COPIA-"+ordinativo.getDescrizioneRts());
