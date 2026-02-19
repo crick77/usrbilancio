@@ -10,6 +10,7 @@ import it.usr.web.usrbilancio.domain.tables.AllegatoCodice;
 import it.usr.web.usrbilancio.domain.tables.Anagrafica;
 import it.usr.web.usrbilancio.domain.tables.Capitolo;
 import it.usr.web.usrbilancio.domain.tables.Codice;
+import it.usr.web.usrbilancio.domain.tables.CodiciTributo;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.Comune;
 import it.usr.web.usrbilancio.domain.tables.LogOperazioni;
@@ -26,6 +27,7 @@ import it.usr.web.usrbilancio.domain.tables.Ritenuta;
 import it.usr.web.usrbilancio.domain.tables.TipoDocumento;
 import it.usr.web.usrbilancio.domain.tables.TipoRts;
 import it.usr.web.usrbilancio.domain.tables.Utente;
+import it.usr.web.usrbilancio.domain.tables.VRitenute;
 
 import java.util.Arrays;
 import java.util.List;
@@ -77,6 +79,11 @@ public class Usrbilancio extends SchemaImpl {
      * The table <code>usrbilancio.codice</code>.
      */
     public final Codice CODICE = Codice.CODICE;
+
+    /**
+     * The table <code>usrbilancio.codici_tributo</code>.
+     */
+    public final CodiciTributo CODICI_TRIBUTO = CodiciTributo.CODICI_TRIBUTO;
 
     /**
      * The table <code>usrbilancio.competenza</code>.
@@ -159,6 +166,12 @@ public class Usrbilancio extends SchemaImpl {
     public final Utente UTENTE = Utente.UTENTE;
 
     /**
+     * View 'usrbilancio.v_ritenute' references invalid table(s) or column(s) or
+     * function(s) or definer/invoker of view lack rights to use them
+     */
+    public final VRitenute V_RITENUTE = VRitenute.V_RITENUTE;
+
+    /**
      * No further instances allowed
      */
     private Usrbilancio() {
@@ -180,6 +193,7 @@ public class Usrbilancio extends SchemaImpl {
             Anagrafica.ANAGRAFICA,
             Capitolo.CAPITOLO,
             Codice.CODICE,
+            CodiciTributo.CODICI_TRIBUTO,
             Competenza.COMPETENZA,
             Comune.COMUNE,
             LogOperazioni.LOG_OPERAZIONI,
@@ -195,7 +209,8 @@ public class Usrbilancio extends SchemaImpl {
             Ritenuta.RITENUTA,
             TipoDocumento.TIPO_DOCUMENTO,
             TipoRts.TIPO_RTS,
-            Utente.UTENTE
+            Utente.UTENTE,
+            VRitenute.V_RITENUTE
         );
     }
 }

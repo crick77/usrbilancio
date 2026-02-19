@@ -8,6 +8,7 @@ import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.Tables;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoCodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.CodiciTributoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MimeTypeRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -94,6 +95,10 @@ public class CodiceService {
         };
     }
 
+    public List<CodiciTributoRecord> getCodiciTributo() {
+        return ctx.selectFrom(Tables.CODICI_TRIBUTO).orderBy(Tables.CODICI_TRIBUTO.CODICE).fetch();
+    }
+    
     /*public Map<Integer, TipoRtsRecord> getTipiRtsAsMap(GruppoRts tipoRts) {
         List<TipoRtsRecord> rts = getTipiRts(tipoRts);
         Map<Integer, TipoRtsRecord> tMap = new HashMap<>();
@@ -409,5 +414,5 @@ public class CodiceService {
                 logger.warn("Errore nell'eliminazione del file per l'allegato id [{}] nomefile [{}]. Il record è stato eliminato. Errore: {}", allegato.getId(), allegato.getNomefileLocale(), e);
             }
         });
-    }
+    }        
 }

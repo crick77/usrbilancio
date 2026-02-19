@@ -147,17 +147,31 @@ public class RitenutaRecord extends UpdatableRecordImpl<RitenutaRecord> {
     }
 
     /**
+     * Setter for <code>usrbilancio.ritenuta.codice_tributo</code>.
+     */
+    public void setCodiceTributo(String value) {
+        set(9, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.ritenuta.codice_tributo</code>.
+     */
+    public String getCodiceTributo() {
+        return (String) get(9);
+    }
+
+    /**
      * Setter for <code>usrbilancio.ritenuta.versione</code>.
      */
     public void setVersione(Long value) {
-        set(9, value);
+        set(10, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ritenuta.versione</code>.
      */
     public Long getVersione() {
-        return (Long) get(9);
+        return (Long) get(10);
     }
 
     // -------------------------------------------------------------------------
@@ -183,7 +197,7 @@ public class RitenutaRecord extends UpdatableRecordImpl<RitenutaRecord> {
     /**
      * Create a detached, initialised RitenutaRecord
      */
-    public RitenutaRecord(Integer id, Integer idOrdinativo, Integer idAnagrafica, BigDecimal imponibile, BigDecimal cassa, BigDecimal speseAnticipo, BigDecimal iva, BigDecimal percRitenuteOperate, BigDecimal percIrapVersata, Long versione) {
+    public RitenutaRecord(Integer id, Integer idOrdinativo, Integer idAnagrafica, BigDecimal imponibile, BigDecimal cassa, BigDecimal speseAnticipo, BigDecimal iva, BigDecimal percRitenuteOperate, BigDecimal percIrapVersata, String codiceTributo, Long versione) {
         super(Ritenuta.RITENUTA);
 
         setId(id);
@@ -195,6 +209,7 @@ public class RitenutaRecord extends UpdatableRecordImpl<RitenutaRecord> {
         setIva(iva);
         setPercRitenuteOperate(percRitenuteOperate);
         setPercIrapVersata(percIrapVersata);
+        setCodiceTributo(codiceTributo);
         setVersione(versione);
         resetChangedOnNotNull();
     }

@@ -107,6 +107,11 @@ public class Ritenuta extends TableImpl<RitenutaRecord> {
     public final TableField<RitenutaRecord, BigDecimal> PERC_IRAP_VERSATA = createField(DSL.name("perc_irap_versata"), SQLDataType.DECIMAL(10, 2), this, "");
 
     /**
+     * The column <code>usrbilancio.ritenuta.codice_tributo</code>.
+     */
+    public final TableField<RitenutaRecord, String> CODICE_TRIBUTO = createField(DSL.name("codice_tributo"), SQLDataType.VARCHAR(4), this, "");
+
+    /**
      * The column <code>usrbilancio.ritenuta.versione</code>.
      */
     public final TableField<RitenutaRecord, Long> VERSIONE = createField(DSL.name("versione"), SQLDataType.BIGINT.nullable(false).defaultValue(DSL.inline("0", SQLDataType.BIGINT)), this, "");

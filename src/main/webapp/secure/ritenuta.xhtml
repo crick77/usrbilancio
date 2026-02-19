@@ -325,7 +325,7 @@
                         <p:outputLabel for="@next" value="IVA" />
                         <p:inputNumber id="impIva" value="#{ritenutaController.ritenuta.iva}" decimalSeparator="," thousandSeparator="." decimalSeparatorAlternative="." />
                     </div>
-                    <div class="field col-4">
+                    <div class="field col-2">
                         <p:outputLabel for="@next" value="Considera solo..." />
                         <p:selectOneMenu id="tipoRitenuta" value="#{ritenutaController.tipoRitenuta}">
                             <p:ajax process="@this"  update="percRitenuta impRitenuta percIrap impIrap" />
@@ -333,6 +333,11 @@
                             <f:selectItem itemValue="1" itemLabel="IRAP" />
                             <f:selectItem itemValue="2" itemLabel="RITENUTA+IRAP" />
                         </p:selectOneMenu>
+                    </div>
+                    <div class="field col-2">
+                        <p:outputLabel for="@next" value="Codice tributo" />
+                        <p:autoComplete id="citta" value="#{ritenutaController.ritenuta.codiceTributo}" maxlength="4" minQueryLength="1" 
+                                        completeMethod="#{ritenutaController.cercaCodiceTributo}" var="ct" itemValue="#{ct.codice}" itemLabel="#{ritenutaController.formattaCodiceTributo(ct)}" />                        
                     </div>
                     <div class="field col-2">
                         <p:outputLabel for="@next" value="% Ritenuta su imponibile" />

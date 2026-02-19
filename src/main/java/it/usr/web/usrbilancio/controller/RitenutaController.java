@@ -8,6 +8,7 @@ import it.usr.web.controller.BaseController;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AnagraficaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.CodiciTributoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.RitenutaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
@@ -24,7 +25,7 @@ import jakarta.ejb.EJBException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashMap; 
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -40,6 +41,7 @@ import java.util.Arrays;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -100,6 +102,7 @@ public class RitenutaController extends BaseController {
     AnagraficaRecord anagraficaSelezionata;
     RitenutaRecord ritenuta;
     List<AnagraficaRecord> anagrafica;
+    List<CodiciTributoRecord> codiciTributo;
     TipoRtsRecord rtsIva;
     List<FilterMeta> filterBy;
     List<LocalDate> periodo;       
@@ -786,6 +789,7 @@ public class RitenutaController extends BaseController {
     public void aggiornaAnagrafica() {
         anagraficaSelezionata = as.getAnagraficaOrdinativo(ordinativoSelezionato);
         anagrafica = as.getAnagrafica();
+        codiciTributo = codServ.getCodiciTributo();
         if (anagraficaSelezionata != null) {
             ritenuta = as.getRitenuta(ordinativoSelezionato.getId(), anagraficaSelezionata.getId());
             if(ritenuta.getPercRitenuteOperate()!=null && ritenuta.getPercIrapVersata()!=null) {
@@ -859,10 +863,26 @@ public class RitenutaController extends BaseController {
                 logger.debug("Errore imprevisto {} durante il salvataggio dell'anagrafica-ritenuta {}. Errore: {}", ex.getCausedByException().getClass(), ritenuta, ex.getCausedByException());
             }
         }
-    }
+    } 
     
     public boolean anagraficaCollegata(OrdinativoRecord ord) {
         return as.getAnagraficaOrdinativo(ord)!=null; 
+    }
+    
+    public List<CodiciTributoRecord> cercaCodiceTributo(String query) {
+        if(isEmpty(query)) return null;
+        
+        final String fQuery = query.trim().toUpperCase();        
+        return codiciTributo.stream().filter(c -> c.getCodice().toUpperCase().contains(fQuery)).collect(Collectors.toList());
+    }  
+    
+    public String formattaCodiceTributo(Object obj) {
+        if(obj==null) return null;        
+        if(obj instanceof String string) return string;
+        
+        CodiciTributoRecord ctr = (CodiciTributoRecord)obj;
+        StringBuilder sb = new StringBuilder();
+        return sb.append("[").append(ctr.getCodice()).append("] ").append(ctr.getDescrizione()).toString();
     }
 }
  

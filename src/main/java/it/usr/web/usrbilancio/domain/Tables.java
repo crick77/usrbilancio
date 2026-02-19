@@ -10,6 +10,7 @@ import it.usr.web.usrbilancio.domain.tables.AllegatoCodice;
 import it.usr.web.usrbilancio.domain.tables.Anagrafica;
 import it.usr.web.usrbilancio.domain.tables.Capitolo;
 import it.usr.web.usrbilancio.domain.tables.Codice;
+import it.usr.web.usrbilancio.domain.tables.CodiciTributo;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.Comune;
 import it.usr.web.usrbilancio.domain.tables.LogOperazioni;
@@ -26,6 +27,7 @@ import it.usr.web.usrbilancio.domain.tables.Ritenuta;
 import it.usr.web.usrbilancio.domain.tables.TipoDocumento;
 import it.usr.web.usrbilancio.domain.tables.TipoRts;
 import it.usr.web.usrbilancio.domain.tables.Utente;
+import it.usr.web.usrbilancio.domain.tables.VRitenute;
 
 
 /**
@@ -63,6 +65,11 @@ public class Tables {
      * The table <code>usrbilancio.codice</code>.
      */
     public static final Codice CODICE = Codice.CODICE;
+
+    /**
+     * The table <code>usrbilancio.codici_tributo</code>.
+     */
+    public static final CodiciTributo CODICI_TRIBUTO = CodiciTributo.CODICI_TRIBUTO;
 
     /**
      * The table <code>usrbilancio.competenza</code>.
@@ -143,4 +150,10 @@ public class Tables {
      * The table <code>usrbilancio.utente</code>.
      */
     public static final Utente UTENTE = Utente.UTENTE;
+
+    /**
+     * View 'usrbilancio.v_ritenute' references invalid table(s) or column(s) or
+     * function(s) or definer/invoker of view lack rights to use them
+     */
+    public static final VRitenute V_RITENUTE = VRitenute.V_RITENUTE;
 }
