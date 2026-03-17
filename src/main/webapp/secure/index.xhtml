@@ -210,7 +210,7 @@
                         <div class="grid">
                             <div class="col-12">
                                 <p:dataTable id="statoac" value="#{indexController.statoCapitoliAnnoCorrente}" var="sc" rowKey="#{sc.id}" stripedRows="true" selectionMode="single" selection="#{indexController.capitoloAnnoCorrenteSelezionato}"
-                                             rowStyleClass="#{sc.chiuso eq 2 ? 'lightgreen' : ''}">
+                                             rowStyleClass="#{sc.chiuso eq 2 ? 'lightcyan' : ''}">
                                     <f:facet name="header">
                                         <div class="flex">      
                                             <div class="flex" style="width: 250px">
@@ -294,7 +294,7 @@
                                     </p:columnGroup>                                                                        
                                 </p:dataTable>
                             </div>
-                            <div class="col-2 lightgreen">
+                            <div class="col-2 lightcyan">
                                 Capitoli in attesa di rimborso dal Comissario.
                             </div>
                             <div class="col-9"></div>
