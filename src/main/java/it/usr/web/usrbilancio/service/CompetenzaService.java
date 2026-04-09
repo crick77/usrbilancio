@@ -8,6 +8,7 @@ import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.Tables;
 import it.usr.web.usrbilancio.domain.tables.records.CompetenzaRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.LogOperazioniRecord;
 import it.usr.web.usrbilancio.domain.tables.records.RichiestaRecord;
 import it.usr.web.usrbilancio.interceptor.LogDatabaseOperation;
@@ -110,50 +111,56 @@ public class CompetenzaService {
         }
     }
 
-    public List<CapitoloCompetenza> getCapitoliCompetenze() {
+    public List<CapitoloCompetenza> getCapitoliCompetenze(ContabilitaRecord contabilita) {
         return ctx.select(Tables.COMPETENZA.ID, Tables.COMPETENZA.ID_CAPITOLO, Tables.CAPITOLO.DESCRIZIONE, Tables.CAPITOLO.STANZIAMENTO, Tables.CAPITOLO.NUOVOANNO, Tables.COMPETENZA.ANNO, Tables.COMPETENZA.CHIUSO, Tables.CAPITOLO.DACONSOLIDARE)
                 .from(Tables.CAPITOLO).innerJoin(Tables.COMPETENZA).on(Tables.CAPITOLO.ID.eq(Tables.COMPETENZA.ID_CAPITOLO))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
                 .orderBy(Tables.CAPITOLO.DESCRIZIONE, Tables.COMPETENZA.ANNO.desc())
                 .fetch().into(CapitoloCompetenza.class);
     }
 
-    public List<CapitoloCompetenza> getCapitoliCompetenzeAperti() {
+    public List<CapitoloCompetenza> getCapitoliCompetenzeAperti(ContabilitaRecord contabilita) {
         return ctx.select(Tables.COMPETENZA.ID, Tables.COMPETENZA.ID_CAPITOLO, Tables.CAPITOLO.DESCRIZIONE, Tables.CAPITOLO.STANZIAMENTO, Tables.CAPITOLO.NUOVOANNO, Tables.COMPETENZA.ANNO, Tables.COMPETENZA.CHIUSO, Tables.CAPITOLO.DACONSOLIDARE)
                 .from(Tables.CAPITOLO).innerJoin(Tables.COMPETENZA).on(Tables.CAPITOLO.ID.eq(Tables.COMPETENZA.ID_CAPITOLO))
-                .where(Tables.COMPETENZA.CHIUSO.eq((byte) 0))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.COMPETENZA.CHIUSO.eq((byte) 0))
                 .orderBy(Tables.CAPITOLO.DESCRIZIONE, Tables.COMPETENZA.ANNO.desc())
                 .fetch().into(CapitoloCompetenza.class);
     }
 
-    public List<CapitoloCompetenza> getCapitoliCompetenzeApertiNonFuturi() {
+    public List<CapitoloCompetenza> getCapitoliCompetenzeApertiNonFuturi(ContabilitaRecord contabilita) {
         return ctx.select(Tables.COMPETENZA.ID, Tables.COMPETENZA.ID_CAPITOLO, Tables.CAPITOLO.DESCRIZIONE, Tables.CAPITOLO.STANZIAMENTO, Tables.CAPITOLO.NUOVOANNO, Tables.COMPETENZA.ANNO, Tables.COMPETENZA.CHIUSO, Tables.CAPITOLO.DACONSOLIDARE)
                 .from(Tables.CAPITOLO).innerJoin(Tables.COMPETENZA).on(Tables.CAPITOLO.ID.eq(Tables.COMPETENZA.ID_CAPITOLO))
-                .where(Tables.COMPETENZA.CHIUSO.eq((byte) 0)).and(Tables.COMPETENZA.ANNO.lessOrEqual(LocalDate.now().getYear()))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.COMPETENZA.CHIUSO.eq((byte) 0)).and(Tables.COMPETENZA.ANNO.lessOrEqual(LocalDate.now().getYear()))
                 .orderBy(Tables.CAPITOLO.DESCRIZIONE, Tables.COMPETENZA.ANNO.desc())
                 .fetch().into(CapitoloCompetenza.class);
     }
 
-    public List<CapitoloCompetenza> getCapitoliCompetenze(int anno) {
+    public List<CapitoloCompetenza> getCapitoliCompetenze(ContabilitaRecord contabilita, int anno) {
         return ctx.select(Tables.COMPETENZA.ID, Tables.COMPETENZA.ID_CAPITOLO, Tables.CAPITOLO.DESCRIZIONE, Tables.CAPITOLO.STANZIAMENTO, Tables.CAPITOLO.NUOVOANNO, Tables.COMPETENZA.ANNO, Tables.COMPETENZA.CHIUSO, Tables.CAPITOLO.DACONSOLIDARE)
                 .from(Tables.CAPITOLO).innerJoin(Tables.COMPETENZA).on(Tables.CAPITOLO.ID.eq(Tables.COMPETENZA.ID_CAPITOLO))
-                .where(Tables.COMPETENZA.ANNO.eq(anno))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.COMPETENZA.ANNO.eq(anno))
                 .orderBy(Tables.CAPITOLO.DESCRIZIONE, Tables.COMPETENZA.ANNO.desc())
                 .fetch().into(CapitoloCompetenza.class);
     }
 
-    public List<CapitoloCompetenza> getCapitoliCompetenze(boolean nuovoAnno, int anno) {
+    public List<CapitoloCompetenza> getCapitoliCompetenze(ContabilitaRecord contabilita, boolean nuovoAnno, int anno) {
         byte na = (byte) (nuovoAnno ? 1 : 0);
         return ctx.select(Tables.COMPETENZA.ID, Tables.COMPETENZA.ID_CAPITOLO, Tables.CAPITOLO.DESCRIZIONE, Tables.CAPITOLO.STANZIAMENTO, Tables.CAPITOLO.NUOVOANNO, Tables.COMPETENZA.ANNO, Tables.COMPETENZA.CHIUSO, Tables.CAPITOLO.DACONSOLIDARE)
                 .from(Tables.CAPITOLO).innerJoin(Tables.COMPETENZA).on(Tables.CAPITOLO.ID.eq(Tables.COMPETENZA.ID_CAPITOLO))
-                .where(Tables.COMPETENZA.ANNO.eq(anno)).and(Tables.CAPITOLO.NUOVOANNO.eq(na))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.COMPETENZA.ANNO.eq(anno)).and(Tables.CAPITOLO.NUOVOANNO.eq(na))
                 .orderBy(Tables.CAPITOLO.DESCRIZIONE, Tables.COMPETENZA.ANNO.desc())
                 .fetch().into(CapitoloCompetenza.class);
     }
 
-    public List<CapitoloCompetenza> getCapitoliCompetenze(int anno, boolean chiusi) {
+    public List<CapitoloCompetenza> getCapitoliCompetenze(ContabilitaRecord contabilita, int anno, boolean chiusi) {
         return ctx.select(Tables.COMPETENZA.ID, Tables.COMPETENZA.ID_CAPITOLO, Tables.CAPITOLO.DESCRIZIONE, Tables.CAPITOLO.STANZIAMENTO, Tables.CAPITOLO.NUOVOANNO, Tables.COMPETENZA.ANNO, Tables.COMPETENZA.CHIUSO, Tables.CAPITOLO.DACONSOLIDARE)
                 .from(Tables.CAPITOLO).innerJoin(Tables.COMPETENZA).on(Tables.CAPITOLO.ID.eq(Tables.COMPETENZA.ID_CAPITOLO))
-                .where(Tables.COMPETENZA.ANNO.eq(anno).and(Tables.COMPETENZA.CHIUSO.eq((byte) (chiusi ? 1 : 0))))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.COMPETENZA.ANNO.eq(anno).and(Tables.COMPETENZA.CHIUSO.eq((byte) (chiusi ? 1 : 0))))
                 .orderBy(Tables.CAPITOLO.DESCRIZIONE, Tables.COMPETENZA.ANNO.desc())
                 .fetch().into(CapitoloCompetenza.class);
     }
@@ -189,55 +196,73 @@ public class CompetenzaService {
         return out.get(0, BigDecimal.class).doubleValue();
     }
 
-    public List<StatoCapitolo> getSituazione(Integer anno) {
-        String sql = "select comp.id, cap.descrizione, comp.anno, comp.chiuso, "
-                + "ifnull((select sum(o.importo) from ordinativo o where o.id_competenza = comp.id), 0) as importo_ordinativi, "
-                + "ifnull((select sum(q.importo) from quietanza q where q.id_competenza = comp.id), 0) as importo_quietanze, "
-                + "ifnull((select sum(mv.importo) from movimenti_virtuali mv where mv.id_competenza = comp.id), 0) as importo_virtuale "
-                + "from competenza as comp inner join capitolo cap on comp.id_capitolo = cap.id "
-                + ((anno != null) ? "where comp.anno = " + anno + " " : "")
-                + "order by comp.anno, cap.descrizione";
-        return ctx.fetch(sql).into(StatoCapitolo.class);
+    public List<StatoCapitolo> getSituazione(ContabilitaRecord contabilita, Integer anno) {
+        String sql = """
+                    select comp.id, cap.descrizione, comp.anno, comp.chiuso, "
+                            ifnull((select sum(o.importo) from ordinativo o where o.id_competenza = comp.id), 0) as importo_ordinativi, 
+                            ifnull((select sum(q.importo) from quietanza q where q.id_competenza = comp.id), 0) as importo_quietanze, 
+                            ifnull((select sum(mv.importo) from movimenti_virtuali mv where mv.id_competenza = comp.id), 0) as importo_virtuale 
+                    from competenza as comp inner join capitolo cap on comp.id_capitolo = cap.id 
+                    where cap.id_contabilita = {0}
+                    """;
+        sql+=((anno != null) ? " and comp.anno = " + anno + " " : "");
+        sql+="order by comp.anno, cap.descrizione";                     
+        return ctx.fetch(sql, contabilita.getId()).into(StatoCapitolo.class);
     }
 
-    public BigDecimal getSaldoVirtualeChiusi() {
-        String sql = "select sum(ifnull((select sum(q.importo) from quietanza q where q.id_competenza = comp.id), 0)) - "
-                + "sum(ifnull((select sum(o.importo) from ordinativo o where o.id_competenza = comp.id), 0)) + "
-                + "sum(ifnull((select sum(mv.importo) from movimenti_virtuali mv where mv.id_competenza = comp.id), 0)) as saldo_virtuale_chiusi "
-                + "from competenza as comp inner join capitolo cap on comp.id_capitolo = cap.id "
-                + "where comp.chiuso = 1";
-        return ctx.fetchSingle(sql).into(BigDecimal.class);
+    public BigDecimal getSaldoVirtualeChiusi(ContabilitaRecord contabilita) {
+        String sql = """
+                    select sum(ifnull((select sum(q.importo) from quietanza q where q.id_competenza = comp.id), 0)) - 
+                            sum(ifnull((select sum(o.importo) from ordinativo o where o.id_competenza = comp.id), 0)) + 
+                            sum(ifnull((select sum(mv.importo) from movimenti_virtuali mv where mv.id_competenza = comp.id), 0)) as saldo_virtuale_chiusi 
+                    from competenza as comp inner join capitolo cap on comp.id_capitolo = cap.id 
+                    where cap.id_contabilita = {0} and comp.chiuso = 1
+                    """;
+        return ctx.fetchSingle(sql, contabilita.getId()).into(BigDecimal.class);
     }
 
-    public List<StatoCapitolo> getSituazioneAperti() {
-        String sql = "select comp.id, cap.descrizione, comp.anno, comp.chiuso, "
-                + "ifnull((select sum(o.importo) from ordinativo o where o.id_competenza = comp.id), 0) as importo_ordinativi, "
-                + "ifnull((select sum(q.importo) from quietanza q where q.id_competenza = comp.id), 0) as importo_quietanze, "
-                + "ifnull((select sum(mv.importo) from movimenti_virtuali mv where mv.id_competenza = comp.id), 0) as importo_virtuale "
-                + "from competenza as comp inner join capitolo cap on comp.id_capitolo = cap.id "
-                + "where comp.chiuso in (0,2) "
-                + "order by comp.anno, cap.descrizione";
-        return ctx.fetch(sql).into(StatoCapitolo.class);
+    public List<StatoCapitolo> getSituazioneAperti(ContabilitaRecord contabilita) {
+        String sql = """
+                    select comp.id, cap.descrizione, comp.anno, comp.chiuso, 
+                        ifnull((select sum(o.importo) from ordinativo o where o.id_competenza = comp.id), 0) as importo_ordinativi, 
+                        ifnull((select sum(q.importo) from quietanza q where q.id_competenza = comp.id), 0) as importo_quietanze, 
+                        ifnull((select sum(mv.importo) from movimenti_virtuali mv where mv.id_competenza = comp.id), 0) as importo_virtuale 
+                    from competenza as comp inner join capitolo cap on comp.id_capitolo = cap.id 
+                    where cap.id_contabilita = {0} and comp.chiuso in (0,2) 
+                    order by comp.anno, cap.descrizione                           
+                    """;
+        return ctx.fetch(sql, contabilita.getId()).into(StatoCapitolo.class);
     }
 
-    public BigDecimal getSaldoGeocos(LocalDate dataSaldo) {
-        String sql = "select (select sum(q.importo) from quietanza q where q.data_pagamento <= {0})-(select sum(o.importo) from ordinativo o where o.data_pagamento <= {0}) as saldo";
-        return ctx.fetchSingle(sql, dataSaldo).into(BigDecimal.class);
+    public BigDecimal getSaldoGeocos(ContabilitaRecord contabilita, LocalDate dataSaldo) { 
+        String sql = """
+                        select 
+                           (select coalesce(sum(q.importo), 0) from quietanza q join competenza comp on q.id_competenza = comp.id join capitolo cap on comp.id_capitolo = cap.id 
+                                where cap.id_contabilita = {0} and q.data_pagamento <= {1}) - 
+                           (select coalesce(sum(o.importo), 0) from ordinativo o join competenza comp on o.id_competenza = comp.id join capitolo cap on comp.id_capitolo = cap.id
+                                where cap.id_contabilita = {0} and o.data_pagamento <= {1}) as saldo 
+                     """; 
+        return ctx.fetchSingle(sql, contabilita.getId(), dataSaldo).into(BigDecimal.class);
     }
 
-    public BigDecimal getSaldoLR8() {
-        String sql = "select "
-                + "(select coalesce(sum(q.importo), 0) as quietanze from quietanza q where q.id_codice in (select id from codice where c02 = 'LR8'))-"
-                + "(select coalesce(sum(o.importo), 0) as ordinativi from ordinativo o where o.id_codice in (select id from codice where c02 = 'LR8'))+"
-                + "(select coalesce(sum(mv.importo), 0) as virtuali from movimenti_virtuali mv where mv.id_codice in (select id from codice where c02 = 'LR8')) as lr8";
-        return ctx.fetchSingle(sql).into(BigDecimal.class);
+    public BigDecimal getSaldoLR8(ContabilitaRecord contabilita) {
+        String sql = """
+                       select 
+                            (select coalesce(sum(q.importo), 0) as quietanze from quietanza q join competenza comp on q.id_competenza = comp.id join capitolo cap on comp.id_capitolo = cap.id 
+                                where cap.id_contabilita = {0} and q.id_codice in (select id from codice where c02 = 'LR8'))-
+                            (select coalesce(sum(o.importo), 0) as ordinativi from ordinativo o join competenza comp on o.id_competenza = comp.id join capitolo cap on comp.id_capitolo = cap.id 
+                                where cap.id_contabilita = {0} and o.id_codice in (select id from codice where c02 = 'LR8'))+
+                            (select coalesce(sum(mv.importo), 0) as virtuali from movimenti_virtuali mv join competenza comp on mv.id_competenza = comp.id join capitolo cap on comp.id_capitolo = cap.id
+                                where cap.id_contabilita = {0} and mv.id_codice in (select id from codice where c02 = 'LR8')) as lr8
+                     """;
+        return ctx.fetchSingle(sql, contabilita.getId()).into(BigDecimal.class);
     }
 
-    public int generaCompetenze(int annoAttuale) {
+    public int generaCompetenze(ContabilitaRecord contabilita, int annoAttuale) {
         Mutables.MutableInteger total = new Mutables.MutableInteger();
         ctx.transaction(tx -> {
-            final List<CapitoloCompetenza> lCapCompAttuali = getCapitoliCompetenze(annoAttuale);
-            final List<CapitoloCompetenza> lCapCompPrec = getCapitoliCompetenze(true, annoAttuale - 1);
+            final List<CapitoloCompetenza> lCapCompAttuali = getCapitoliCompetenze(contabilita, annoAttuale);
+            final List<CapitoloCompetenza> lCapCompPrec = getCapitoliCompetenze(contabilita, true, annoAttuale - 1);
 
             final List<CompetenzaRecord> lNew = new ArrayList<>();
             lCapCompPrec.forEach(ccp -> {
@@ -304,22 +329,23 @@ public class CompetenzaService {
         return false;
     }
 
-    public List<CapitoloCompetenza> getCapitoliCompetenzeConStanziamento(Integer anno) {
+    public List<CapitoloCompetenza> getCapitoliCompetenzeConStanziamento(ContabilitaRecord contabilita, Integer anno) {
         Condition cond = anno != null ? DSL.and(Tables.COMPETENZA.ANNO.between(anno - 1, anno)) : DSL.noCondition();
         return ctx.select(Tables.COMPETENZA.ID, Tables.COMPETENZA.ID_CAPITOLO, Tables.CAPITOLO.DESCRIZIONE, DSL.ifnull(Tables.CAPITOLO.STANZIAMENTO, Tables.COMPETENZA.STANZIAMENTO).as(Tables.COMPETENZA.STANZIAMENTO), Tables.CAPITOLO.NUOVOANNO, Tables.COMPETENZA.ANNO, Tables.COMPETENZA.CHIUSO)
                 .from(Tables.CAPITOLO).innerJoin(Tables.COMPETENZA).on(Tables.CAPITOLO.ID.eq(Tables.COMPETENZA.ID_CAPITOLO))
-                .where(Tables.CAPITOLO.STANZIAMENTO.isNotNull().or(Tables.CAPITOLO.MOSTRASITUAZIONE.eq((byte) 1))).and(cond)
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.CAPITOLO.STANZIAMENTO.isNotNull().or(Tables.CAPITOLO.MOSTRASITUAZIONE.eq((byte) 1))).and(cond)
                 .orderBy(Tables.CAPITOLO.DESCRIZIONE, Tables.COMPETENZA.ANNO.desc()) 
                 .fetch().into(CapitoloCompetenza.class);
     }
 
-    public List<Integer> getAnnualita(boolean soloCorrenti) {
+    /*public List<Integer> getAnnualita(boolean soloCorrenti) {
         Condition cond = DSL.noCondition();
         if (soloCorrenti) {
             cond = cond.and(Tables.COMPETENZA.ANNO.le(LocalDate.now().getYear()));
         }
         return ctx.selectDistinct(Tables.COMPETENZA.ANNO).from(Tables.COMPETENZA).where(cond).orderBy(Tables.COMPETENZA.ANNO.desc()).fetchInto(Integer.class);
-    }
+    }*/
 
     public List<RichiestaRecord> getRichieste(int idCapComp) {
         return ctx.selectFrom(Tables.RICHIESTA).where(Tables.RICHIESTA.ID_COMPETENZA.eq(idCapComp)).orderBy(Tables.RICHIESTA.DATA_PROTOCOLLO.desc()).fetch();

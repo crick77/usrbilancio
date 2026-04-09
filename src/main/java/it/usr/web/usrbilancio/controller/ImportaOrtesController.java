@@ -6,9 +6,10 @@ package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
 import static it.usr.web.controller.BaseController.DATE_PATTERN_LONG;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
-import static it.usr.web.usrbilancio.controller.IvaController.extract;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -64,11 +65,15 @@ public class ImportaOrtesController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<ImportaOrtesController.Result> result;
     UploadedFiles documenti;
     String gruppo;
     
     public void init() {
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
         result = null;
         documenti = null;
         gruppo = null;
@@ -356,7 +361,7 @@ public class ImportaOrtesController extends BaseController {
             TipoRtsRecord trr = codServ.getTipoRtsByCodice(cod.substring(0, 1).toUpperCase());
             dd.idTipoRts = (trr!=null) ? trr.getId() : null;
             
-            CodiceRecord cr = codServ.getCodiceByCodiceComposto(cod.substring(1));
+            CodiceRecord cr = codServ.getCodiceByCodiceComposto(contabilita, cod.substring(1));
             dd.idCodice = (cr!=null) ? cr.getId() : null;
         }
         

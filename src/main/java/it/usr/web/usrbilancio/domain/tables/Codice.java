@@ -4,9 +4,11 @@
 package it.usr.web.usrbilancio.domain.tables;
 
 
+import it.usr.web.usrbilancio.domain.Indexes;
 import it.usr.web.usrbilancio.domain.Keys;
 import it.usr.web.usrbilancio.domain.Usrbilancio;
 import it.usr.web.usrbilancio.domain.tables.AllegatoCodice.AllegatoCodicePath;
+import it.usr.web.usrbilancio.domain.tables.Contabilita.ContabilitaPath;
 import it.usr.web.usrbilancio.domain.tables.MovimentiVirtuali.MovimentiVirtualiPath;
 import it.usr.web.usrbilancio.domain.tables.Ordinativo.OrdinativoPath;
 import it.usr.web.usrbilancio.domain.tables.OrdinativoAppoggio.OrdinativoAppoggioPath;
@@ -22,6 +24,7 @@ import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
 import org.jooq.Identity;
+import org.jooq.Index;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
 import org.jooq.Path;
@@ -66,6 +69,11 @@ public class Codice extends TableImpl<CodiceRecord> {
      * The column <code>usrbilancio.codice.id</code>.
      */
     public final TableField<CodiceRecord, Integer> ID = createField(DSL.name("id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "");
+
+    /**
+     * The column <code>usrbilancio.codice.id_contabilita</code>.
+     */
+    public final TableField<CodiceRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.inline("1", SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>usrbilancio.codice.codice</code>.
@@ -225,6 +233,11 @@ public class Codice extends TableImpl<CodiceRecord> {
     }
 
     @Override
+    public List<Index> getIndexes() {
+        return Arrays.asList(Indexes.CODICE_FK_CODICE_CONTABILITA_IDX);
+    }
+
+    @Override
     public Identity<CodiceRecord, Integer> getIdentity() {
         return (Identity<CodiceRecord, Integer>) super.getIdentity();
     }
@@ -237,6 +250,24 @@ public class Codice extends TableImpl<CodiceRecord> {
     @Override
     public List<UniqueKey<CodiceRecord>> getUniqueKeys() {
         return Arrays.asList(Keys.KEY_CODICE_CODICE_CXX_UNQ);
+    }
+
+    @Override
+    public List<ForeignKey<CodiceRecord, ?>> getReferences() {
+        return Arrays.asList(Keys.FK_CODICE_CONTABILITA);
+    }
+
+    private transient ContabilitaPath _contabilita;
+
+    /**
+     * Get the implicit join path to the <code>usrbilancio.contabilita</code>
+     * table.
+     */
+    public ContabilitaPath contabilita() {
+        if (_contabilita == null)
+            _contabilita = new ContabilitaPath(this, Keys.FK_CODICE_CONTABILITA, null);
+
+        return _contabilita;
     }
 
     private transient AllegatoCodicePath _allegatoCodice;

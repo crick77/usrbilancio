@@ -20,7 +20,7 @@
 
                 <a href="#" id="user-display">
                     <span class="username">#{activeUser.currentUser.username}</span>
-                    <span class="userrole">#{activeUser.currentUser.attributes.admin eq 1 ? 'Admin' : 'Utente'}</span>
+                    <span class="userrole">#{activeUser.currentUser.attributes.admin eq 1 ? 'Admin' : 'Utente'} - #{activeUser.attributes.contabilita.descrizione}</span>
                     <p:graphicImage name="images/avatar/#{activeUser.currentUser.attributes.gender.toLowerCase()}.svg" library="verona-layout" />
                 </a>
 

@@ -6,6 +6,7 @@ package it.usr.web.usrbilancio.service;
 
 import it.usr.web.usrbilancio.domain.Tables;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoAppoggioRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
 import it.usr.web.usrbilancio.interceptor.LogDatabaseOperation;
@@ -35,7 +36,6 @@ import org.jooq.exception.DataAccessException;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class OrdinativoAppoggioService {
-
     @DSLBilancio
     @Inject
     DSLContext ctx;
@@ -43,16 +43,29 @@ public class OrdinativoAppoggioService {
     @Inject
     String documentFolder;
 
-    public List<OrdinativoAppoggioRecord> getOrdinativi() {
-        return ctx.selectFrom(Tables.ORDINATIVO_APPOGGIO).orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc()).fetch();
+    public List<OrdinativoAppoggioRecord> getOrdinativi(ContabilitaRecord contabilita) {
+        return ctx.select(Tables.ORDINATIVO_APPOGGIO)
+                .from(Tables.ORDINATIVO_APPOGGIO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO_APPOGGIO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc()).fetchInto(OrdinativoAppoggioRecord.class);
     }
 
-    public List<OrdinativoAppoggioRecord> getOrdinativiUtente(String userName) {
-        return ctx.selectFrom(Tables.ORDINATIVO_APPOGGIO).where(Tables.ORDINATIVO_APPOGGIO.PROPRIETARIO.eq(userName)).orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc()).fetch();
+    public List<OrdinativoAppoggioRecord> getOrdinativiUtente(ContabilitaRecord contabilita, String userName) {
+        return ctx.select(Tables.ORDINATIVO_APPOGGIO)
+                .from(Tables.ORDINATIVO_APPOGGIO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO_APPOGGIO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO_APPOGGIO.PROPRIETARIO.eq(userName))
+                .orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc())
+                .fetchInto(OrdinativoAppoggioRecord.class);
     }
 
-    public List<OrdinativoAppoggioRecord> getOrdinativiDataUtente(LocalDate d, String userName) {
-        return ctx.selectFrom(Tables.ORDINATIVO_APPOGGIO).where(Tables.ORDINATIVO_APPOGGIO.PROPRIETARIO.eq(userName).and(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.eq(d))).orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc()).fetch();
+    public List<OrdinativoAppoggioRecord> getOrdinativiDataUtente(ContabilitaRecord contabilita, LocalDate d, String userName) {
+        return ctx.select(Tables.ORDINATIVO_APPOGGIO)
+                .from(Tables.ORDINATIVO_APPOGGIO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO_APPOGGIO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO_APPOGGIO.PROPRIETARIO.eq(userName).and(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.eq(d)))
+                .orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc())
+                .fetchInto(OrdinativoAppoggioRecord.class);
     }
     
     public List<AllegatoAppoggioRecord> getAllegatiOrdinativoAppoggio(int idOrdinativoAppoggio) {

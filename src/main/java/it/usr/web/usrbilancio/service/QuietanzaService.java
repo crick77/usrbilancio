@@ -7,6 +7,7 @@ package it.usr.web.usrbilancio.service;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.Tables;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -54,11 +55,24 @@ public class QuietanzaService {
     @Inject
     String documentFolder;
 
-    public List<QuietanzaRecord> getQuietanze() {
-        return ctx.selectFrom(Tables.QUIETANZA).orderBy(Tables.QUIETANZA.DATA_PAGAMENTO.desc()).fetch();
+    public List<QuietanzaRecord> getQuietanze(ContabilitaRecord contabilita) {
+        return ctx.select()
+                .from(Tables.QUIETANZA).join(Tables.COMPETENZA).on(Tables.QUIETANZA.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .orderBy(Tables.QUIETANZA.DATA_PAGAMENTO.desc())
+                .fetchInto(Tables.QUIETANZA);
     }
-
-    public QuietanzaRecord getQuietanzaById(int id) {
+ 
+    public List<QuietanzaRecord> getQuietanzePeriodo(ContabilitaRecord contabilita, LocalDate from, LocalDate to) {
+        return ctx.select()
+                .from(Tables.QUIETANZA).join(Tables.COMPETENZA).on(Tables.QUIETANZA.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.QUIETANZA.DATA_PAGAMENTO.between(from, to))
+                .orderBy(Tables.QUIETANZA.DATA_PAGAMENTO.desc())
+                .fetchInto(Tables.QUIETANZA);
+    }
+    
+    public QuietanzaRecord getQuietanzaById(int id) { 
         return ctx.selectFrom(Tables.QUIETANZA).where(Tables.QUIETANZA.ID.eq(id)).fetchOne();
     }
 
@@ -194,8 +208,8 @@ public class QuietanzaService {
         }
     }
 
-    public List<QuietanzaRecord> cerca(SearchCriteria sc) {
-                Condition cond = DSL.noCondition();
+    public List<QuietanzaRecord> cerca(ContabilitaRecord contabilita, SearchCriteria sc) {
+        Condition cond = DSL.noCondition();
         
         if(notEmpty(sc.testo)) {
             sc.testo = "%"+sc.testo+"%";
@@ -318,10 +332,14 @@ public class QuietanzaService {
             return ctx.select().from(Tables.QUIETANZA).join(Tables.COMPETENZA).on(Tables.QUIETANZA.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.QUIETANZA);
         }
         else {
-            return ctx.selectFrom(Tables.QUIETANZA).where(cond).fetch();
+            return ctx.select(Tables.QUIETANZA)
+                .from(Tables.QUIETANZA).join(Tables.COMPETENZA).on(Tables.QUIETANZA.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))                           
+                .and(cond)
+                .fetchInto(Tables.QUIETANZA);
         }
     }
-    
+     
     private boolean notEmpty(String s) {
         return (s==null) ? false : s.trim().length()>0;
     }
@@ -330,9 +348,9 @@ public class QuietanzaService {
         return (o == null) ? false : o.length > 0;
     }
     
-    public BigDecimal getTotaleQuietanzePeriodo(LocalDate min, LocalDate max) {
-        String sql = "SELECT sum(importo) as tot from quietanza q where (q.data_pagamento between {0} and {1})";
-        return ctx.fetchSingle(sql, min, max).into(BigDecimal.class);
+    public BigDecimal getTotaleQuietanzePeriodo(ContabilitaRecord contabilita, LocalDate min, LocalDate max) {
+        String sql = "SELECT coalesce(sum(importo), 0) as tot from quietanza q join competenza co on q.id_competenza = co.id join capitolo ca on co.id_capitolo = ca.id where (ca.id_contabilita = {2}) and (q.data_pagamento between {0} and {1})";
+        return ctx.fetchSingle(sql, min, max, contabilita.getId()).into(BigDecimal.class);
     }
     
     @LogDatabaseOperation

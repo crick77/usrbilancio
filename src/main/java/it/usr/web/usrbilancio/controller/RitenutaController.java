@@ -5,10 +5,12 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AnagraficaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiciTributoRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.RitenutaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
@@ -59,7 +61,6 @@ import org.slf4j.Logger;
 @Named
 @ViewScoped
 public class RitenutaController extends BaseController {
-
     private final static String[] DATA_CONTABILE = {"Data contabile:", "Data di riferimento:"};
     private final static String[] IMPORTO = {"Importo:", "Data contabile:"};
     private final static String[] TIPOLOGIA = {"Tipologia:", "Ordinante:"};
@@ -88,6 +89,9 @@ public class RitenutaController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     Map<Integer, CapitoloCompetenza> mCampComp;
     Map<Integer, CodiceRecord> codici;
     Map<Integer, TipoRtsRecord> tipiRts;
@@ -118,7 +122,8 @@ public class RitenutaController extends BaseController {
     UploadedFile ordinativoCaricato;
 
     public void init() {
-        codici = codServ.getCodiciAsMap();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = codServ.getCodiciAsMap(contabilita);
         tipiRtsList = codServ.getTipiRts(CodiceService.GruppoRts.RTS_ORDINATIVO);
         tipiRts = new HashMap<>();
         tipiRtsList.forEach(t -> {
@@ -129,7 +134,7 @@ public class RitenutaController extends BaseController {
         });
         tipiDocumento = codServ.getTipiDocumentoAsMap();
         mCampComp = new HashMap<>();
-        cs.getCapitoliCompetenze().forEach(cc -> {
+        cs.getCapitoliCompetenze(contabilita).forEach(cc -> {
             mCampComp.put(cc.getId(), cc);
         });
 
@@ -420,14 +425,14 @@ public class RitenutaController extends BaseController {
             return;
         }
 
-        ordinativiAggancio = os.getOrdinativiPagamento(LocalDate.now());
+        ordinativiAggancio = os.getOrdinativiPagamento(contabilita, LocalDate.now());
         ordinativoAggancioSelezionato = null;
 
         //PrimeFaces.current().executeScript("PF('ordinativoTargetDialog').show();");
     }
 
     public void agganciaSingolo(OrdinativoRecord o) {
-        ordinativiAggancio = os.getOrdinativiPagamento(o.getDataPagamento());
+        ordinativiAggancio = os.getOrdinativiPagamento(contabilita, o.getDataPagamento());
         ordinativoAggancioSelezionato = (o.getOrdinativoRitenuta() != null) ? os.getOrdinativoById(o.getOrdinativoRitenuta()) : null;
         ordinativiRitenutaSelezionati = new ArrayList<>();
         ordinativiRitenutaSelezionati.add(o);
@@ -766,7 +771,7 @@ public class RitenutaController extends BaseController {
             TipoRtsRecord trr = codServ.getTipoRtsByCodice(cod.substring(0, 1).toUpperCase());
             dd.idTipoRts = (trr != null) ? trr.getId() : null;
 
-            CodiceRecord cr = codServ.getCodiceByCodiceComposto(cod.substring(1));
+            CodiceRecord cr = codServ.getCodiceByCodiceComposto(contabilita, cod.substring(1));
             dd.idCodice = (cr != null) ? cr.getId() : null;
         }
 

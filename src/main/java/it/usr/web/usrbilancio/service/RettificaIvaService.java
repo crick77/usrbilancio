@@ -6,6 +6,7 @@ package it.usr.web.usrbilancio.service;
 
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.Tables;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.RettificaIvaRecord;
 import it.usr.web.usrbilancio.interceptor.LogDatabaseOperation;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
@@ -33,12 +34,12 @@ public class RettificaIvaService {
     @Inject
     Logger logger;
     
-    public List<RettificaIvaRecord> getRettificheIVA() {
-        return ctx.selectFrom(Tables.RETTIFICA_IVA).orderBy(Tables.RETTIFICA_IVA.ANNO).fetch();
+    public List<RettificaIvaRecord> getRettificheIVA(ContabilitaRecord contabilita) {
+        return ctx.selectFrom(Tables.RETTIFICA_IVA).where(Tables.RETTIFICA_IVA.ID_CONTABILITA.eq(contabilita.getId())).orderBy(Tables.RETTIFICA_IVA.ANNO).fetch();
     }
     
-    public RettificaIvaRecord getRettificaIVAAnno(int anno) {
-        return ctx.selectFrom(Tables.RETTIFICA_IVA).where(Tables.RETTIFICA_IVA.ANNO.eq(anno)).fetchOne();
+    public RettificaIvaRecord getRettificaIVAAnno(ContabilitaRecord contabilita, int anno) {
+        return ctx.selectFrom(Tables.RETTIFICA_IVA).where(Tables.RETTIFICA_IVA.ID_CONTABILITA.eq(contabilita.getId())).and(Tables.RETTIFICA_IVA.ANNO.eq(anno)).fetchOne();
     }
     
     @LogDatabaseOperation

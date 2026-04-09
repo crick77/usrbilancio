@@ -9,6 +9,7 @@ import it.usr.web.usrbilancio.domain.Tables;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoCodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiciTributoRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MimeTypeRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -60,12 +61,12 @@ public class CodiceService {
     @Inject
     String documentFolder;
 
-    public List<CodiceRecord> getCodici() {
-        return ctx.selectFrom(Tables.CODICE).orderBy(Tables.CODICE.CODICE_, Tables.CODICE.C01, Tables.CODICE.C02, Tables.CODICE.C03, Tables.CODICE.C04, Tables.CODICE.C05).fetch();
+    public List<CodiceRecord> getCodici(ContabilitaRecord contabilita) {
+        return ctx.selectFrom(Tables.CODICE).where(Tables.CODICE.ID_CONTABILITA.eq(contabilita.getId())).orderBy(Tables.CODICE.CODICE_, Tables.CODICE.C01, Tables.CODICE.C02, Tables.CODICE.C03, Tables.CODICE.C04, Tables.CODICE.C05).fetch();
     }
 
-    public Map<Integer, CodiceRecord> getCodiciAsMap() {
-        List<CodiceRecord> codici = getCodici();
+    public Map<Integer, CodiceRecord> getCodiciAsMap(ContabilitaRecord contabilita) {
+        List<CodiceRecord> codici = getCodici(contabilita);
         Map<Integer, CodiceRecord> cMap = new HashMap<>();
         codici.forEach(c -> {
             cMap.put(c.getId(), c);
@@ -77,14 +78,16 @@ public class CodiceService {
         return ctx.selectFrom(Tables.CODICE).where(Tables.CODICE.ID.eq(id)).fetchOne();
     }
 
-    public CodiceRecord getCodiceByCodiceComposto(String cc) {
-        return ctx.selectFrom(Tables.CODICE).where(DSL.concat(Tables.CODICE.CODICE_,
+    public CodiceRecord getCodiceByCodiceComposto(ContabilitaRecord contabilita, String cc) {
+        return ctx.selectFrom(Tables.CODICE).where(
+                Tables.CODICE.ID_CONTABILITA.eq(contabilita.getId()).and(
+                DSL.concat(Tables.CODICE.CODICE_,
                 DSL.coalesce(Tables.CODICE.C01, ""),
                 DSL.coalesce(Tables.CODICE.C02, ""),
                 DSL.coalesce(Tables.CODICE.C03, ""),
                 DSL.coalesce(Tables.CODICE.C04, ""),
                 DSL.coalesce(Tables.CODICE.C05, "")
-        ).eq(cc)).fetchOne();
+                ).eq(cc))).fetchOne();
     }
 
     public List<TipoRtsRecord> getTipiRts(GruppoRts tipoRts) {
@@ -167,6 +170,7 @@ public class CodiceService {
         try {
             ctx.transaction(trx -> {
                 Condition cond = DSL.noCondition();
+                cond = cond.and(Tables.CODICE.ID_CONTABILITA.eq(cr.getIdContabilita()));
                 cond = cond.and(Tables.CODICE.CODICE_.eq(cr.getCodice())).and(Tables.CODICE.ID.notEqual(cr.getId()));
                 if(cr.getC01()!=null) cond = cond.and(Tables.CODICE.C01.eq(cr.getC01())); else cond = cond.and(Tables.CODICE.C01.isNull());
                 if(cr.getC02()!=null) cond = cond.and(Tables.CODICE.C02.eq(cr.getC02())); else cond = cond.and(Tables.CODICE.C02.isNull());
@@ -268,6 +272,7 @@ public class CodiceService {
     public CodiceRecord cercaUltimo(CodiceRecord cod) {
         BigDecimal limitOOPP = new BigDecimal(5000);
         Condition cond = DSL.noCondition();
+        cond = cond.and(Tables.CODICE.ID_CONTABILITA.eq(cod.getIdContabilita()));
         cond = cond.and(Tables.CODICE.CODICE_.eq(cod.getCodice()));
         // chiese
         if("PUB".equalsIgnoreCase(cod.getCodice()) && cod.getC01()==null) {

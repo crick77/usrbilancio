@@ -35,255 +35,269 @@ public class CodiceRecord extends UpdatableRecordImpl<CodiceRecord> {
     }
 
     /**
+     * Setter for <code>usrbilancio.codice.id_contabilita</code>.
+     */
+    public void setIdContabilita(Integer value) {
+        set(1, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.codice.id_contabilita</code>.
+     */
+    public Integer getIdContabilita() {
+        return (Integer) get(1);
+    }
+
+    /**
      * Setter for <code>usrbilancio.codice.codice</code>.
      */
     public void setCodice(String value) {
-        set(1, value);
+        set(2, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.codice</code>.
      */
     public String getCodice() {
-        return (String) get(1);
+        return (String) get(2);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.c01</code>.
      */
     public void setC01(String value) {
-        set(2, value);
+        set(3, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.c01</code>.
      */
     public String getC01() {
-        return (String) get(2);
+        return (String) get(3);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.c02</code>.
      */
     public void setC02(String value) {
-        set(3, value);
+        set(4, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.c02</code>.
      */
     public String getC02() {
-        return (String) get(3);
+        return (String) get(4);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.c03</code>.
      */
     public void setC03(String value) {
-        set(4, value);
+        set(5, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.c03</code>.
      */
     public String getC03() {
-        return (String) get(4);
+        return (String) get(5);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.c04</code>.
      */
     public void setC04(String value) {
-        set(5, value);
+        set(6, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.c04</code>.
      */
     public String getC04() {
-        return (String) get(5);
+        return (String) get(6);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.c05</code>.
      */
     public void setC05(String value) {
-        set(6, value);
+        set(7, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.c05</code>.
      */
     public String getC05() {
-        return (String) get(6);
+        return (String) get(7);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.ordinanza</code>.
      */
     public void setOrdinanza(String value) {
-        set(7, value);
+        set(8, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.ordinanza</code>.
      */
     public String getOrdinanza() {
-        return (String) get(7);
+        return (String) get(8);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.descrizione</code>.
      */
     public void setDescrizione(String value) {
-        set(8, value);
+        set(9, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.descrizione</code>.
      */
     public String getDescrizione() {
-        return (String) get(8);
+        return (String) get(9);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.note</code>.
      */
     public void setNote(String value) {
-        set(9, value);
+        set(10, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.note</code>.
      */
     public String getNote() {
-        return (String) get(9);
+        return (String) get(10);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.ente_diocesi</code>.
      */
     public void setEnteDiocesi(String value) {
-        set(10, value);
+        set(11, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.ente_diocesi</code>.
      */
     public String getEnteDiocesi() {
-        return (String) get(10);
+        return (String) get(11);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.provincia</code>.
      */
     public void setProvincia(String value) {
-        set(11, value);
+        set(12, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.provincia</code>.
      */
     public String getProvincia() {
-        return (String) get(11);
+        return (String) get(12);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.id_intervento</code>.
      */
     public void setIdIntervento(String value) {
-        set(12, value);
+        set(13, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.id_intervento</code>.
      */
     public String getIdIntervento() {
-        return (String) get(12);
+        return (String) get(13);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.categoria</code>.
      */
     public void setCategoria(String value) {
-        set(13, value);
+        set(14, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.categoria</code>.
      */
     public String getCategoria() {
-        return (String) get(13);
+        return (String) get(14);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.importo_fin_comm</code>.
      */
     public void setImportoFinComm(BigDecimal value) {
-        set(14, value);
+        set(15, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.importo_fin_comm</code>.
      */
     public BigDecimal getImportoFinComm() {
-        return (BigDecimal) get(14);
+        return (BigDecimal) get(15);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.importo_definitivo</code>.
      */
     public void setImportoDefinitivo(BigDecimal value) {
-        set(15, value);
+        set(16, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.importo_definitivo</code>.
      */
     public BigDecimal getImportoDefinitivo() {
-        return (BigDecimal) get(15);
+        return (BigDecimal) get(16);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.importo_cofinanziamento</code>.
      */
     public void setImportoCofinanziamento(BigDecimal value) {
-        set(16, value);
+        set(17, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.importo_cofinanziamento</code>.
      */
     public BigDecimal getImportoCofinanziamento() {
-        return (BigDecimal) get(16);
+        return (BigDecimal) get(17);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.importo_contotermico</code>.
      */
     public void setImportoContotermico(BigDecimal value) {
-        set(17, value);
+        set(18, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.importo_contotermico</code>.
      */
     public BigDecimal getImportoContotermico() {
-        return (BigDecimal) get(17);
+        return (BigDecimal) get(18);
     }
 
     /**
      * Setter for <code>usrbilancio.codice.concluso</code>.
      */
     public void setConcluso(Boolean value) {
-        set(18, value);
+        set(19, value);
     }
 
     /**
      * Getter for <code>usrbilancio.codice.concluso</code>.
      */
     public Boolean getConcluso() {
-        return (Boolean) get(18);
+        return (Boolean) get(19);
     }
 
     // -------------------------------------------------------------------------
@@ -309,10 +323,11 @@ public class CodiceRecord extends UpdatableRecordImpl<CodiceRecord> {
     /**
      * Create a detached, initialised CodiceRecord
      */
-    public CodiceRecord(Integer id, String codice, String c01, String c02, String c03, String c04, String c05, String ordinanza, String descrizione, String note, String enteDiocesi, String provincia, String idIntervento, String categoria, BigDecimal importoFinComm, BigDecimal importoDefinitivo, BigDecimal importoCofinanziamento, BigDecimal importoContotermico, Boolean concluso) {
+    public CodiceRecord(Integer id, Integer idContabilita, String codice, String c01, String c02, String c03, String c04, String c05, String ordinanza, String descrizione, String note, String enteDiocesi, String provincia, String idIntervento, String categoria, BigDecimal importoFinComm, BigDecimal importoDefinitivo, BigDecimal importoCofinanziamento, BigDecimal importoContotermico, Boolean concluso) {
         super(Codice.CODICE);
 
         setId(id);
+        setIdContabilita(idContabilita);
         setCodice(codice);
         setC01(c01);
         setC02(c02);

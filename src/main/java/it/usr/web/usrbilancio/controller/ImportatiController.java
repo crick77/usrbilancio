@@ -5,9 +5,11 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -58,6 +60,9 @@ public class ImportatiController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;    
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<OrdinativoAppoggioRecord> ordinativi;
     List<OrdinativoAppoggioRecord> ordinativiFiltrati;
     List<AllegatoAppoggioRecord> allegati;
@@ -88,18 +93,19 @@ public class ImportatiController extends BaseController {
     String gruppo;
     
     public void init() {
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
         mostraTutti = false;
-        codici = codServ.getCodiciAsMap();
+        codici = codServ.getCodiciAsMap(contabilita);
         tipiRtsList = codServ.getTipiRts(CodiceService.GruppoRts.RTS_ORDINATIVO);
         tipiRts = new HashMap<>();
         tipiRtsList.forEach(t -> tipiRts.put(t.getId(), t));
         List<TipoDocumentoRecord> lTipoDoc = codServ.getTipiDocumentoNuovi();
         tipiDocumento = new HashMap<>();
         lTipoDoc.forEach(d -> tipiDocumento.put(d.getId(), d));
-        capComp = cs.getCapitoliCompetenzeApertiNonFuturi();  
+        capComp = cs.getCapitoliCompetenzeApertiNonFuturi(contabilita);  
         mCampComp = new HashMap<>();
         capComp.forEach(cc -> mCampComp.put(cc.getId(), cc));
-        capCompAperti = cs.getCapitoliCompetenzeApertiNonFuturi();
+        capCompAperti = cs.getCapitoliCompetenzeApertiNonFuturi(contabilita);
                 
         aggiornaOrdinativi();
     }
@@ -375,11 +381,11 @@ public class ImportatiController extends BaseController {
     
     public void aggiornaOrdinativi() {                        
         if(isEmpty(dataCaricamento)) {
-            ordinativi = (mostraTutti) ? oas.getOrdinativi() : oas.getOrdinativiUtente(getUtente().getUsername());
+            ordinativi = (mostraTutti) ? oas.getOrdinativi(contabilita) : oas.getOrdinativiUtente(contabilita, getUtente().getUsername());
         }
         else {
             LocalDate d = LocalDate.parse(dataCaricamento, DateTimeFormatter.ofPattern("yyyyMMdd"));
-            ordinativi = oas.getOrdinativiDataUtente(d, getUtente().getUsername());
+            ordinativi = oas.getOrdinativiDataUtente(contabilita, d, getUtente().getUsername());
         }
         totale = BigDecimal.ZERO;
         totaleIVA = BigDecimal.ZERO;

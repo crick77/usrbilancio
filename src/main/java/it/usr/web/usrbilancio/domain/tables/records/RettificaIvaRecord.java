@@ -35,31 +35,45 @@ public class RettificaIvaRecord extends UpdatableRecordImpl<RettificaIvaRecord> 
     }
 
     /**
+     * Setter for <code>usrbilancio.rettifica_iva.id_contabilita</code>.
+     */
+    public void setIdContabilita(Integer value) {
+        set(1, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.rettifica_iva.id_contabilita</code>.
+     */
+    public Integer getIdContabilita() {
+        return (Integer) get(1);
+    }
+
+    /**
      * Setter for <code>usrbilancio.rettifica_iva.iva_anagrafica</code>.
      */
     public void setIvaAnagrafica(BigDecimal value) {
-        set(1, value);
+        set(2, value);
     }
 
     /**
      * Getter for <code>usrbilancio.rettifica_iva.iva_anagrafica</code>.
      */
     public BigDecimal getIvaAnagrafica() {
-        return (BigDecimal) get(1);
+        return (BigDecimal) get(2);
     }
 
     /**
      * Setter for <code>usrbilancio.rettifica_iva.iva_pagata</code>.
      */
     public void setIvaPagata(BigDecimal value) {
-        set(2, value);
+        set(3, value);
     }
 
     /**
      * Getter for <code>usrbilancio.rettifica_iva.iva_pagata</code>.
      */
     public BigDecimal getIvaPagata() {
-        return (BigDecimal) get(2);
+        return (BigDecimal) get(3);
     }
 
     // -------------------------------------------------------------------------
@@ -85,10 +99,11 @@ public class RettificaIvaRecord extends UpdatableRecordImpl<RettificaIvaRecord> 
     /**
      * Create a detached, initialised RettificaIvaRecord
      */
-    public RettificaIvaRecord(Integer anno, BigDecimal ivaAnagrafica, BigDecimal ivaPagata) {
+    public RettificaIvaRecord(Integer anno, Integer idContabilita, BigDecimal ivaAnagrafica, BigDecimal ivaPagata) {
         super(RettificaIva.RETTIFICA_IVA);
 
         setAnno(anno);
+        setIdContabilita(idContabilita);
         setIvaAnagrafica(ivaAnagrafica);
         setIvaPagata(ivaPagata);
         resetChangedOnNotNull();

@@ -14,6 +14,7 @@ import it.usr.web.producer.AppLogger;
 import it.usr.web.service.AuthService;
 import static it.usr.web.usrbilancio.domain.Tables.*;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.ModelliRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.model.AccessInfo;
@@ -22,6 +23,7 @@ import it.usr.web.usrbilancio.model.OperaPubblica;
 import it.usr.web.usrbilancio.model.RiepilogoRGS;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
 import it.usr.web.usrbilancio.producer.DocumentFolder;
+import it.usr.web.usrbilancio.service.CapitoloService;
 import it.usr.web.usrbilancio.service.CompetenzaService;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -70,6 +72,8 @@ public class WebServices {
     @Inject
     CompetenzaService cs;
     @Inject
+    CapitoloService capServ;
+    @Inject
     @DSLBilancio
     DSLContext ctx;
     @DocumentFolder
@@ -78,6 +82,7 @@ public class WebServices {
     @AppLogger
     @Inject
     Logger log;
+    final JWTVerifier verifier = JWT.require(Algorithm.HMAC512(SECRET.getBytes())).withIssuer(ISSUER).build();
     
     public String createToken(String id, long expiration) {
         JWTCreator.Builder token = JWT.create().withSubject(id).withIssuer(ISSUER);
@@ -88,27 +93,22 @@ public class WebServices {
     }
 
     /**
+     * Decodifica il token JWT
      * 
      * @param token
-     * @return 
+     * @return il token decodificato o null in caso di errore
      */
     public DecodedJWT decodeToken(String token) {
         try {
-            JWTVerifier verifier = JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
-                    .withIssuer(ISSUER)
-                    .build(); //Reusable verifier instance
             return verifier.verify(token);
         } catch (JWTVerificationException jwte) {
-            return null;
-        }
-        catch(IllegalArgumentException iae) {
-            System.err.println("Decoding JWT error IllegalArgument: "+iae);
-            return null;
-        }
+            log.error("Non è stato possibile verificare il token JWT: {}", jwte);            
+        }        
         catch(Exception e) {
-            System.err.println("Decoding JWT error Exception: "+e);
-            return null;
+            log.error("Errore nella decodifica token JWT: {}", e);            
         }
+        
+        return null;
     }
  
     @POST
@@ -142,6 +142,15 @@ public class WebServices {
     }
     
     @GET
+    @Path("contabilita")
+    @Produces(MediaType.APPLICATION_JSON)
+    //@JWTVerify
+    public Response getContabilita() {
+        String sContab = ctx.selectFrom(CONTABILITA).fetch().formatJSON();        
+        return Response.ok(sContab).build();         
+    }
+    
+    @GET
     @Path("tipirts")
     @Produces(MediaType.APPLICATION_JSON)
     //@JWTVerify
@@ -151,18 +160,21 @@ public class WebServices {
     }
     
     @GET
-    @Path("ordinativo/{from}/{to}")
+    @Path("ordinativo/{contab: [0-9]+}/{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
     //@JWTVerify
-    public Response getOrdinativi(@PathParam("from") String from, @PathParam("to") String to) {
+    public Response getOrdinativi(@PathParam("contab") int idContabilita, @PathParam("from") String from, @PathParam("to") String to) {
         try {
             LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
         
             int id99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
             int id98 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("98")).fetchSingleInto(Integer.class);
-            String sOrd = ctx.selectFrom(ORDINATIVO)
-                            .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%").and(ORDINATIVO.ID_TIPO_RTS.notIn(id98, id99))))
+            String sOrd = ctx.select().from(ORDINATIVO)
+                            .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                            .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                            .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                            .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%").and(ORDINATIVO.ID_TIPO_RTS.notIn(id98, id99))))
                             .orderBy(ORDINATIVO.DATA_PAGAMENTO, ORDINATIVO.NUMERO_PAGAMENTO)
                             .fetch()
                             .formatJSON();        
@@ -177,18 +189,21 @@ public class WebServices {
     }
     
     @GET
-    @Path("quietanza/{from}/{to}")
+    @Path("quietanza/{contab: [0-9]+}/{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
     //@JWTVerify
-    public Response getQuietanze(@PathParam("from") String from, @PathParam("to") String to) {
+    public Response getQuietanze(@PathParam("contab") int idContabilita, @PathParam("from") String from, @PathParam("to") String to) {
         try {
             LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
         
             int id99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
             int id98 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("98")).fetchSingleInto(Integer.class);
-            String sQui = ctx.selectFrom(QUIETANZA)
-                            .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%").and(QUIETANZA.ID_TIPO_RTS.notIn(id98, id99))))
+            String sQui = ctx.select().from(QUIETANZA)
+                            .join(COMPETENZA).on(QUIETANZA.ID_COMPETENZA.eq(COMPETENZA.ID))
+                            .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                            .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                            .and(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%").and(QUIETANZA.ID_TIPO_RTS.notIn(id98, id99))))
                             .orderBy(QUIETANZA.DATA_PAGAMENTO, QUIETANZA.NUMERO_PAGAMENTO)
                             .fetch()
                             .formatJSON();        
@@ -225,10 +240,10 @@ public class WebServices {
     }
     
     @GET
-    @Path("ordinativo/{from}/{to}/countfiles")
+    @Path("ordinativo/{contab: [0-9]+}/{from}/{to}/countfiles")
     @Produces(MediaType.APPLICATION_JSON)
     //@JWTVerify
-    public Response getConteggioFileOrdinativi(@PathParam("from") String from, @PathParam("to") String to) {
+    public Response getConteggioFileOrdinativi(@PathParam("contab") int idContabilita, @PathParam("from") String from, @PathParam("to") String to) {
         try {             
             LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -236,7 +251,10 @@ public class WebServices {
             int id99 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("99")).fetchSingleInto(Integer.class);
             int count = ctx.select(DSL.count(ALLEGATO.ID))
                     .from(ALLEGATO.join(ORDINATIVO).on(ALLEGATO.ID_ORDINATIVO.eq(ORDINATIVO.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%").and(ORDINATIVO.ID_TIPO_RTS.ne(id99))))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%").and(ORDINATIVO.ID_TIPO_RTS.ne(id99))))
                     .fetchOneInto(Integer.class);
                                     
             return Response.ok(count).build(); 
@@ -300,10 +318,10 @@ public class WebServices {
     }
     
     @GET
-    @Path("riepilogo/{from}/{to}")
+    @Path("riepilogo/{idcontab: [0-9]+}/{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
     //@JWTVerify
-    public Response getRiepilogo(@PathParam("from") String from, @PathParam("to") String to) {
+    public Response getRiepilogo(@PathParam("idcontab") int idContabilita, @PathParam("from") String from, @PathParam("to") String to) {
         try {
             LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
@@ -315,48 +333,72 @@ public class WebServices {
                         
             // Compilazione ENTRATE
             
-            BigDecimal i = cs.getSaldoGeocos(ldFrom);                        
+            ContabilitaRecord cr = capServ.getContabilitaById(idContabilita);
+            if(cr==null) return Response.serverError().entity("Contabilita non trovata.").build();
+            
+            BigDecimal i = cs.getSaldoGeocos(cr, ldFrom);                        
             r.getEntrate().setGiacenzaCassaInizioAnno(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
                     .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("1")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(QUIETANZA.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("1")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);
             r.getEntrate().setFondiComunitari(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
                     .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("2")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(QUIETANZA.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("2")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);
             r.getEntrate().setFondiStatali(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
                     .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("3")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(QUIETANZA.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("3")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);
             r.getEntrate().setFondiRegionali(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
                     .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("4")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(QUIETANZA.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("4")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class); 
             r.getEntrate().setFondiEntiLocali(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
                     .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("5")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(QUIETANZA.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("5")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);
             r.getEntrate().setTariffeServizi(i!=null ? i : BigDecimal.ZERO);
                         
             i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
                     .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("6")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(QUIETANZA.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("6")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);
             r.getEntrate().setAccensionePrestiti(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(QUIETANZA.IMPORTO))
                     .from(QUIETANZA.join(TIPO_RTS).on(QUIETANZA.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.in("7", "7GSE")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(QUIETANZA.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(QUIETANZA.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.in("7", "7GSE")).and(DSL.upper(QUIETANZA.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);
             r.getEntrate().setAltro(i!=null ? i : BigDecimal.ZERO);
             
@@ -364,67 +406,100 @@ public class WebServices {
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("A")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("A")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setRedditiDaLD(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("B")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("B")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setConsumiItermedi(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("C")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("C")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setInteressiPassivi(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("D")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("D")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setTrasferimentiARegioni(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("E")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("E")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setTrasferimentiaEL(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("F")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("F")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setInvestimentiDiretti(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("G")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("G")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setTrasferimentiContoCapitale(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("H")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("H")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setRimborsiPrestiti(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("I")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("I")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setVersamentiErariali(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("L")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("L")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setVersamentiPrevidenziali(i!=null ? i : BigDecimal.ZERO);
             
             i = ctx.select(DSL.sum(ORDINATIVO.IMPORTO))
                     .from(ORDINATIVO.join(TIPO_RTS).on(ORDINATIVO.ID_TIPO_RTS.eq(TIPO_RTS.ID)))
-                    .where(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("M")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
+                    .join(COMPETENZA).on(ORDINATIVO.ID_COMPETENZA.eq(COMPETENZA.ID))
+                    .join(CAPITOLO).on(COMPETENZA.ID_CAPITOLO.eq(CAPITOLO.ID))
+                    .where(CAPITOLO.ID_CONTABILITA.eq(idContabilita))
+                    .and(ORDINATIVO.DATA_PAGAMENTO.between(ldFrom, ldTo)).and(TIPO_RTS.CODICE.eq("M")).and(DSL.upper(ORDINATIVO.NUMERO_PAGAMENTO).notLike("NO RAG%"))
                     .fetchOneInto(BigDecimal.class);                        
             r.getUscite().setAltro(i!=null ? i : BigDecimal.ZERO);
                         
@@ -442,7 +517,7 @@ public class WebServices {
         }
     } 
     
-    private List<OperaPubblica> getTotaliOOPP(String tipo, LocalDate from, LocalDate to, LocalDate toAp) {
+    private List<OperaPubblica> getTotaliOOPP(int idContabilita, String tipo, LocalDate from, LocalDate to, LocalDate toAp) {
         //int codice2 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("2")).fetchSingleInto(Integer.class);
         //int codice7 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("7")).fetchSingleInto(Integer.class);
         int codice2 = ctx.select(TIPO_RTS.ID).from(TIPO_RTS).where(TIPO_RTS.CODICE.eq("2")).fetchSingleInto(Integer.class);
@@ -484,32 +559,36 @@ public class WebServices {
                             ifnull(c.ente_diocesi, '') as ente, 
                             ifnull(c.provincia, '') as provincia,  
                             ifnull(c.descrizione, '') as intervento,
-                            ifnull((select sum(q.importo) from quietanza q where q.id_codice = c.id and q.id_tipo_rts <> {4} and q.data_pagamento between {0} and {1}), 0) as trasferito,
-                            ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {1}), 0) as liquidato,
+                            ifnull((select sum(q.importo) from quietanza q join competenza comp on q.id_competenza = comp.id join capitolo cap on cap.id_capitolo = cap.id where cap.id_contabilita = {8} and q.id_codice = c.id and q.id_tipo_rts <> {4} and q.data_pagamento between {0} and {1}), 0) as trasferito,
+                            ifnull((select sum(o.importo) from ordinativo o join competenza comp on o.id_competenza = comp.id join capitolo cap on cap.id_capitolo = cap.id where cap.id_contabilita = {8} and o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {1}), 0) as liquidato,
                             0 as stornato,
-                            ifnull((select sum(o.importo) from ordinativo o where o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {2}), 0) as liquidato_ap,
+                            ifnull((select sum(o.importo) from ordinativo o join competenza comp on o.id_competenza = comp.id join capitolo cap on cap.id_capitolo = cap.id where cap.id_contabilita = {8} and o.id_codice = c.id and o.id_tipo_rts <> {4} and o.data_pagamento between {0} and {2}), 0) as liquidato_ap,
                             0 as stornato_ap
                      FROM usrbilancio.codice c where c.codice = {3} and c03 is not null
                      """;
         
         //return ctx.fetch(sql, from, to, toAp, tipo, codice2, codice7).into(OperaPubblica.class);
-        //                      0    1   2     3       4        5         6           7
-        return ctx.fetch(sql, from, to, toAp, tipo, codice99, codice2, codice7GSE, codice98).into(OperaPubblica.class);
+        //                      0    1   2     3       4        5         6           7             8
+        return ctx.fetch(sql, from, to, toAp, tipo, codice99, codice2, codice7GSE, codice98, idContabilita).into(OperaPubblica.class);
     }
      
     @GET
-    @Path("oopp/{from}/{to}")
+    @Path("oopp/{idcontab}/{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
     //@JWTVerify
-    public Response getOperePubbliche(@PathParam("from") String from, @PathParam("to") String to) {    
+    public Response getOperePubbliche(@PathParam("idcontab") String idContab, @PathParam("from") String from, @PathParam("to") String to) {    
         LocalDate ldToAp = null;
         try {
+            int idContabilita = Integer.parseInt(idContab);
             LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
             ldToAp = ldTo.minusYears(1);
             if(ldToAp.isBefore(ldFrom)) ldToAp = ldTo;
             
-            List<OperaPubblica> lOp = getTotaliOOPP("POP", ldFrom, ldTo, ldToAp);
+            ContabilitaRecord cr = capServ.getContabilitaById(idContabilita);
+            if(cr==null) return Response.serverError().entity("Contabilita non trovata.").build();
+            
+            List<OperaPubblica> lOp = getTotaliOOPP(cr.getId(), "POP", ldFrom, ldTo, ldToAp);
             
             return Response.ok(lOp).build();
         }
@@ -526,18 +605,22 @@ public class WebServices {
     }
     
     @GET
-    @Path("chiese/{from}/{to}")
+    @Path("chiese/{idcontab}/{from}/{to}")
     @Produces(MediaType.APPLICATION_JSON)
     //@JWTVerify
-    public Response getChiese(@PathParam("from") String from, @PathParam("to") String to) {    
+    public Response getChiese(@PathParam("idcontab") String idContab, @PathParam("from") String from, @PathParam("to") String to) {    
         LocalDate ldToAp = null;
         try {
+            int idContabilita = Integer.parseInt(idContab);
             LocalDate ldFrom = LocalDate.parse(from, DateTimeFormatter.ofPattern("yyyyMMdd"));
             LocalDate ldTo = LocalDate.parse(to, DateTimeFormatter.ofPattern("yyyyMMdd"));
             ldToAp = ldTo.minusYears(1);
             if(ldToAp.isBefore(ldFrom)) ldToAp = ldTo;
             
-            List<OperaPubblica> lOp = getTotaliOOPP("PCH", ldFrom, ldTo, ldToAp);
+            ContabilitaRecord cr = capServ.getContabilitaById(idContabilita);
+            if(cr==null) return Response.serverError().entity("Contabilita non trovata.").build();
+            
+            List<OperaPubblica> lOp = getTotaliOOPP(cr.getId(), "PCH", ldFrom, ldTo, ldToAp);
             
             return Response.ok(lOp).build();
         }

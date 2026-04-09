@@ -5,10 +5,11 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoCodiceRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
-import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.model.Documento;
 import it.usr.web.usrbilancio.service.CodiceService;
 import it.usr.web.usrbilancio.service.DocumentService;
@@ -43,6 +44,9 @@ public class CodiciController extends BaseController {
     Logger logger;
     @Inject 
     DocumentService ds;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<CodiceRecord> codici;
     List<AllegatoCodiceRecord> allegati;
     AllegatoCodiceRecord allegato;
@@ -53,7 +57,8 @@ public class CodiciController extends BaseController {
     String azione;
     
     public void init() {
-        codici = cs.getCodici();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = cs.getCodici(contabilita);
         codice = null;
         azione = null;
         allegati = null;
@@ -117,6 +122,7 @@ public class CodiciController extends BaseController {
                            
     public void nuovo() {
         codice = new CodiceRecord();
+        codice.setIdContabilita(contabilita.getId());
         codiceComposto = null;
         azione = "Nuovo";
     }

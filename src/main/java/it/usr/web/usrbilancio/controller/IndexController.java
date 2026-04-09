@@ -5,7 +5,9 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.UtenteRecord;
 import it.usr.web.usrbilancio.model.StatoCapitolo;
 import it.usr.web.usrbilancio.service.CompetenzaService;
@@ -41,7 +43,10 @@ public class IndexController extends BaseController {
     QuietanzaService qs;
     @Inject
     @AppLogger
-    Logger logger;    
+    Logger logger;   
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<StatoCapitolo> statoCapitoli;
     List<StatoCapitolo> statoCapitoliFiltrato;
     List<StatoCapitolo> statoCapitoliAnnoCorrente;    
@@ -69,7 +74,8 @@ public class IndexController extends BaseController {
     LocalDate dataSaldo;
     LocalDate dataOrdQui;
     
-    public String init() {       
+    public String init() {
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
         UtenteRecord u = (UtenteRecord)getUtente().getAttributes();
         if(u.getPubblica()==1) return "pubblica/index";
         
@@ -248,7 +254,7 @@ public class IndexController extends BaseController {
     
     public void aggiornaAnnoCorrente() {
         //statoCapitoliAnnoCorrente = compServ.getSituazione(getAnnoAttuale());
-        statoCapitoliAnnoCorrente = compServ.getSituazioneAperti();
+        statoCapitoliAnnoCorrente = compServ.getSituazioneAperti(contabilita);
         aggiornaTotaliAnnoCorrente();
         capitoloAnnoCorrenteSelezionato = null;
         
@@ -260,7 +266,7 @@ public class IndexController extends BaseController {
     }
     
     public void aggiornaStatoCapitoli() {
-        statoCapitoli = compServ.getSituazione(null);
+        statoCapitoli = compServ.getSituazione(contabilita, null);
         statoCapitoliFiltrato = statoCapitoli;
         aggiornaTotaliComplessivi();
         
@@ -278,49 +284,48 @@ public class IndexController extends BaseController {
     }
     
     public void aggiornaSaldo() {
-        saldo = compServ.getSaldoGeocos(dataSaldo);
+        saldo = compServ.getSaldoGeocos(contabilita, dataSaldo);
     }
     
     public void aggiornaSaldoLR8() {
-        saldoLR8 = compServ.getSaldoLR8();
+        saldoLR8 = compServ.getSaldoLR8(contabilita);
     }
     
     public void aggiornaOrdinativiMese() {
         LocalDate initial = LocalDate.now().minusMonths(1);
         LocalDate start = initial.withDayOfMonth(1);
         LocalDate end = initial.withDayOfMonth(initial.getMonth().length(initial.isLeapYear()));
-        numeroOrdinativiMesePrec = os.getNumeroOrdinativiPeriodo(start, end);
+        numeroOrdinativiMesePrec = os.getNumeroOrdinativiPeriodo(contabilita, start, end);
         
         LocalDate now = LocalDate.now();
         start = now.withDayOfMonth(1);        
-        numeroOrdinativiMeseCorr = os.getNumeroOrdinativiPeriodo(start, now);
+        numeroOrdinativiMeseCorr = os.getNumeroOrdinativiPeriodo(contabilita, start, now);
     }
     
     public void aggiornaOrdinativiAnno() {
         int annoCorr = LocalDate.now().getYear();
-        numeroOrdinativiAnnoCorr = os.getNumeroOrdinativiAnno(annoCorr);
-        numeroOrdinativiAnnoPrec = os.getNumeroOrdinativiAnno(annoCorr-1);
+        numeroOrdinativiAnnoCorr = os.getNumeroOrdinativiAnno(contabilita, annoCorr);
+        numeroOrdinativiAnnoPrec = os.getNumeroOrdinativiAnno(contabilita, annoCorr-1);
     }
              
     public void aggiornaUltimoNumeroOrdinativo() {
-        ultimoNumeroOrdinativo = os.getUltimoNumeroOrdinativo(getAnnoAttuale());
+        ultimoNumeroOrdinativo = os.getUltimoNumeroOrdinativo(contabilita, getAnnoAttuale());
     }
     
     public void aggiornaTotaliQuietanzeOrdintivi() {
-        //LocalDate min = dataOrdQui.withMonth(1).withDayOfMonth(1);
-        LocalDate min = dataOrdQui;
-        BigDecimal to = os.getTotaleOrdinativiPeriodo(min, dataOrdQui);
-        BigDecimal tq = qs.getTotaleQuietanzePeriodo(min, dataOrdQui);
+        LocalDate min = dataOrdQui.withMonth(1).withDayOfMonth(1);        
+        BigDecimal to = os.getTotaleOrdinativiPeriodo(contabilita, min, dataOrdQui);
+        BigDecimal tq = qs.getTotaleQuietanzePeriodo(contabilita, min, dataOrdQui);
         totaleOrdinativi = (to!=null) ? to : BigDecimal.ZERO;
         totaleQuietanze = (tq!=null) ? tq : BigDecimal.ZERO;
     }
     
     public void aggiornaIVA() {
-        ivaDaPagare = os.getImportoIVADaPagare(getAnnoAttuale());
+        ivaDaPagare = os.getImportoIVADaPagare(contabilita, getAnnoAttuale());
         if(ivaDaPagare==null) ivaDaPagare = BigDecimal.ZERO;
-        ivaPagata = os.getImportoIVAPagata(getAnnoAttuale());
+        ivaPagata = os.getImportoIVAPagata(contabilita, getAnnoAttuale());
         if(ivaPagata==null) ivaPagata = BigDecimal.ZERO;
-        ivaAnagrafica = os.getImportoIVAAnagrafica(getAnnoAttuale());
+        ivaAnagrafica = os.getImportoIVAAnagrafica(contabilita, getAnnoAttuale());
         if(ivaAnagrafica==null) ivaAnagrafica = BigDecimal.ZERO;
     }
     
@@ -356,7 +361,7 @@ public class IndexController extends BaseController {
     }
 
     public boolean isSaldoLR8ChiusiDifferente() {
-        return !saldoLR8.equals(compServ.getSaldoVirtualeChiusi());
+        return !saldoLR8.equals(compServ.getSaldoVirtualeChiusi(contabilita));
     }
     
     public void aggiornaTotaliComplessivi() {

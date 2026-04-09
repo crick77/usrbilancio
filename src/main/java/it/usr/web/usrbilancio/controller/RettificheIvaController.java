@@ -5,7 +5,9 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.RettificaIvaRecord;
 import it.usr.web.usrbilancio.service.DuplicationException;
 import it.usr.web.usrbilancio.service.RettificaIvaService;
@@ -32,11 +34,15 @@ public class RettificheIvaController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<RettificaIvaRecord> rettifiche;
     Integer anno;    
     
     public void init() {
-        rettifiche = ris.getRettificheIVA();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        rettifiche = ris.getRettificheIVA(contabilita);
         anno = null;
     }
 
@@ -52,6 +58,7 @@ public class RettificheIvaController extends BaseController {
         OptionalInt max = rettifiche.stream().map(r -> r.getAnno()).mapToInt(Integer::intValue).max();
         int nuovo = max.isPresent() ? max.getAsInt()+1 : getAnnoAttuale();
         RettificaIvaRecord ri = new RettificaIvaRecord();
+        ri.setIdContabilita(contabilita.getId());
         ri.setAnno(nuovo);
         ri.setIvaPagata(BigDecimal.ZERO);
         ri.setIvaAnagrafica(BigDecimal.ZERO);

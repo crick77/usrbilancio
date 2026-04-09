@@ -7,6 +7,8 @@ package it.usr.web.domain;
 import java.io.Serializable;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.inject.Named;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -16,6 +18,7 @@ import jakarta.inject.Named;
 @Named
 public class ActiveUser implements Serializable {
     private AppUser currentUser;
+    private final Map<String, Object> attributes = new HashMap<>();
 
     public AppUser getCurrentUser() {
         return currentUser;
@@ -24,4 +27,8 @@ public class ActiveUser implements Serializable {
     public void setCurrentUser(AppUser currentUser) {
         this.currentUser = currentUser;
     }            
+
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }        
 }

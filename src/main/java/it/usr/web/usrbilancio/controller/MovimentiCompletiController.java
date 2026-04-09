@@ -6,8 +6,10 @@ package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
 import static it.usr.web.controller.BaseController.DATE_PATTERN_LONG;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
@@ -32,6 +34,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.io.IOException;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -66,6 +69,9 @@ public class MovimentiCompletiController extends BaseController {
     CompetenzaService cs;
     @Inject
     CodiceService codServ;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     //@Inject
     //OrdinativoAppoggioService oas;
     @Inject
@@ -96,18 +102,20 @@ public class MovimentiCompletiController extends BaseController {
     Integer movimentoCodiceFiltro;
     boolean usaDescrizioneDocumento;
     boolean usaOrdinanteDocumento;
-    int statoCapitoloFilter;    
+    int statoCapitoloFilter;  
+    boolean soloAnnoAttuale;
 
     public void init() {
-        codici = codServ.getCodici();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = codServ.getCodici(contabilita);
         codiciMap = new HashMap<>();
         codici.forEach(c -> codiciMap.put(c.getId(), c));
-        capComp = cs.getCapitoliCompetenze();
+        capComp = cs.getCapitoliCompetenze(contabilita);
         mCampComp = new HashMap<>();
         capComp.forEach(cc -> {
             mCampComp.put(cc.getId(), cc);
         });
-        capCompAperti = cs.getCapitoliCompetenzeAperti();
+        capCompAperti = cs.getCapitoliCompetenzeAperti(contabilita);
         tipiDocumento = codServ.getTipiDocumentoAsMap();
         tipiRts = codServ.getTipiRts(CodiceService.GruppoRts.RTS_QUIETANZA);
         
@@ -124,11 +132,20 @@ public class MovimentiCompletiController extends BaseController {
         usaDescrizioneDocumento = false;
         usaOrdinanteDocumento = false;
         movimentoCodiceFiltro = null;
+        soloAnnoAttuale = true;
 
         aggiornaMovimenti();
         clearFilters(false);
     }
 
+    public boolean isSoloAnnoAttuale() {
+        return soloAnnoAttuale;
+    }
+
+    public void setSoloAnnoAttuale(boolean soloAnnoAttuale) {
+        this.soloAnnoAttuale = soloAnnoAttuale;
+    }
+        
     public Integer getMovimentoCodiceFiltro() {
         return movimentoCodiceFiltro;
     }
@@ -318,11 +335,13 @@ public class MovimentiCompletiController extends BaseController {
     }
 
     public String getAzione() {
-        return azione;
+        return azione; 
     }
     
     public void aggiornaMovimenti() {
-        movimenti = mvs.getMovimentiVirtuali(statoCapitoloFilter);
+        LocalDate from = LocalDate.of(LocalDate.now().getYear(), Month.JANUARY, 1);
+        LocalDate to = from.plusYears(1).minusDays(1);
+        movimenti = soloAnnoAttuale ? mvs.getMovimentiVirtualiPeriodo(contabilita, statoCapitoloFilter, from, to) : mvs.getMovimentiVirtuali(contabilita, statoCapitoloFilter);
         totale = BigDecimal.ZERO;
         movimenti.forEach(m -> {
             totale = totale.add(m.getImporto());
@@ -748,7 +767,7 @@ public class MovimentiCompletiController extends BaseController {
         if (descrCausale != null && descrCausale.contains(",")) {
             String[] parts = descrCausale.split("\\,");
             String cod = parts[parts.length - 1].trim().replace(".", "").replace(" ", "");
-            return codServ.getCodiceByCodiceComposto(cod);
+            return codServ.getCodiceByCodiceComposto(contabilita, cod);
         }
 
         return null;
@@ -787,7 +806,7 @@ public class MovimentiCompletiController extends BaseController {
             TipoRtsRecord trr = codServ.getTipoRtsByCodice(cod.substring(0, 1).toUpperCase());
             dd.idTipoRts = (trr != null) ? trr.getId() : null;
 
-            CodiceRecord cr = codServ.getCodiceByCodiceComposto(cod.substring(1));
+            CodiceRecord cr = codServ.getCodiceByCodiceComposto(contabilita, cod.substring(1));
             dd.idCodice = (cr != null) ? cr.getId() : null;
         }
 

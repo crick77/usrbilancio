@@ -5,8 +5,10 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -28,6 +30,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.math.BigDecimal;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import org.primefaces.PrimeFaces;
 import org.primefaces.model.FilterMeta;
@@ -51,6 +54,9 @@ public class ElencoQuietanzeController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;    
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<QuietanzaRecord> quietanze;   
     List<QuietanzaRecord> quietanzeFiltrate;
     List<CapitoloCompetenza> capComp;
@@ -72,9 +78,11 @@ public class ElencoQuietanzeController extends BaseController {
     BigDecimal totale;
     boolean dialogShow;
     UploadedFile documento;
+    boolean soloAnnoAttuale;
     
-    public void init() {        
-        codici = codServ.getCodici();    
+    public void init() {    
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = codServ.getCodici(contabilita);    
         codiciMap = new HashMap<>();
         codici.forEach(c -> codiciMap.put(c.getId(), c));
         tipiRtsList = codServ.getTipiRts(CodiceService.GruppoRts.RTS_QUIETANZA);
@@ -83,7 +91,7 @@ public class ElencoQuietanzeController extends BaseController {
             tipiRts.put(t.getId(), t);
         });
         tipiDocumento = codServ.getTipiDocumentoAsMap();
-        capComp = cs.getCapitoliCompetenze();  
+        capComp = cs.getCapitoliCompetenze(contabilita);  
         
         mCampComp = new HashMap<>();
         capComp.forEach(cc -> {
@@ -96,6 +104,7 @@ public class ElencoQuietanzeController extends BaseController {
         quietanzaTipoRts = null;     
         selectedCapitoli = null;
         quietanzaCodiceFiltro = null;
+        soloAnnoAttuale = true;
         
         filterBy = new ArrayList<>();
         
@@ -103,6 +112,14 @@ public class ElencoQuietanzeController extends BaseController {
         clearFilters(false);
     }
 
+    public boolean isSoloAnnoAttuale() {
+        return soloAnnoAttuale;
+    }
+
+    public void setSoloAnnoAttuale(boolean soloAnnoAttuale) {
+        this.soloAnnoAttuale = soloAnnoAttuale;
+    }
+        
     public Integer getQuietanzaCodiceFiltro() {
         return quietanzaCodiceFiltro;
     }
@@ -241,7 +258,9 @@ public class ElencoQuietanzeController extends BaseController {
     }
                     
     public void aggiornaQuietanze() {
-        quietanze = qs.getQuietanze();
+        LocalDate from = LocalDate.of(LocalDate.now().getYear(), Month.JANUARY, 1);
+        LocalDate to = from.plusYears(1).minusDays(1);
+        quietanze = soloAnnoAttuale ? qs.getQuietanzePeriodo(contabilita, from, to) : qs.getQuietanze(contabilita);
         totale = BigDecimal.ZERO;
         if(!isEmpty(quietanze)) {
             quietanze.forEach(qf -> totale = totale.add(qf.getImporto()));

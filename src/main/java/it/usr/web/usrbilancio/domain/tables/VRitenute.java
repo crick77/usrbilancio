@@ -7,6 +7,8 @@ package it.usr.web.usrbilancio.domain.tables;
 import it.usr.web.usrbilancio.domain.Usrbilancio;
 import it.usr.web.usrbilancio.domain.tables.records.VRitenuteRecord;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collection;
 
 import org.jooq.Condition;
@@ -19,14 +21,15 @@ import org.jooq.Schema;
 import org.jooq.Select;
 import org.jooq.Stringly;
 import org.jooq.Table;
+import org.jooq.TableField;
 import org.jooq.TableOptions;
 import org.jooq.impl.DSL;
+import org.jooq.impl.SQLDataType;
 import org.jooq.impl.TableImpl;
 
 
 /**
- * View 'usrbilancio.v_ritenute' references invalid table(s) or column(s) or
- * function(s) or definer/invoker of view lack rights to use them
+ * VIEW
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class VRitenute extends TableImpl<VRitenuteRecord> {
@@ -46,12 +49,172 @@ public class VRitenute extends TableImpl<VRitenuteRecord> {
         return VRitenuteRecord.class;
     }
 
+    /**
+     * The column <code>usrbilancio.v_ritenute.cf</code>.
+     */
+    public final TableField<VRitenuteRecord, String> CF = createField(DSL.name("cf"), SQLDataType.VARCHAR(16), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.cognome_denominazione</code>.
+     */
+    public final TableField<VRitenuteRecord, String> COGNOME_DENOMINAZIONE = createField(DSL.name("cognome_denominazione"), SQLDataType.VARCHAR(64), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.nome</code>.
+     */
+    public final TableField<VRitenuteRecord, String> NOME = createField(DSL.name("nome"), SQLDataType.VARCHAR(64), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.sesso</code>.
+     */
+    public final TableField<VRitenuteRecord, String> SESSO = createField(DSL.name("sesso"), SQLDataType.VARCHAR(1), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.citta</code>.
+     */
+    public final TableField<VRitenuteRecord, String> CITTA = createField(DSL.name("citta"), SQLDataType.VARCHAR(64), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.provincia</code>.
+     */
+    public final TableField<VRitenuteRecord, String> PROVINCIA = createField(DSL.name("provincia"), SQLDataType.VARCHAR(2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.codice_catastale</code>.
+     */
+    public final TableField<VRitenuteRecord, String> CODICE_CATASTALE = createField(DSL.name("codice_catastale"), SQLDataType.VARCHAR(4), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.causale</code>.
+     */
+    public final TableField<VRitenuteRecord, String> CAUSALE = createField(DSL.name("causale"), SQLDataType.VARCHAR(1).nullable(false).defaultValue(DSL.inline("", SQLDataType.VARCHAR)), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.lordo</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> LORDO = createField(DSL.name("lordo"), SQLDataType.DECIMAL(11, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.imponibile_8</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> IMPONIBILE_8 = createField(DSL.name("imponibile_8"), SQLDataType.DECIMAL(11, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.ritenuta_acconto</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> RITENUTA_ACCONTO = createField(DSL.name("ritenuta_acconto"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.mese</code>.
+     */
+    public final TableField<VRitenuteRecord, Integer> MESE = createField(DSL.name("mese"), SQLDataType.INTEGER, this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.anno</code>.
+     */
+    public final TableField<VRitenuteRecord, Integer> ANNO = createField(DSL.name("anno"), SQLDataType.INTEGER, this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.ritenute_operate</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> RITENUTE_OPERATE = createField(DSL.name("ritenute_operate"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.importo_versato</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> IMPORTO_VERSATO = createField(DSL.name("importo_versato"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.codice_tributo</code>.
+     */
+    public final TableField<VRitenuteRecord, String> CODICE_TRIBUTO = createField(DSL.name("codice_tributo"), SQLDataType.VARCHAR(4), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.tipologia</code>.
+     */
+    public final TableField<VRitenuteRecord, String> TIPOLOGIA = createField(DSL.name("tipologia"), SQLDataType.VARCHAR(100), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.data_versamento</code>.
+     */
+    public final TableField<VRitenuteRecord, LocalDate> DATA_VERSAMENTO = createField(DSL.name("data_versamento"), SQLDataType.LOCALDATE, this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.imponibile_irap</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> IMPONIBILE_IRAP = createField(DSL.name("imponibile_irap"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.irap_versata</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> IRAP_VERSATA = createField(DSL.name("irap_versata"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.data_di_versamento</code>.
+     */
+    public final TableField<VRitenuteRecord, LocalDate> DATA_DI_VERSAMENTO = createField(DSL.name("data_di_versamento"), SQLDataType.LOCALDATE, this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.pec</code>.
+     */
+    public final TableField<VRitenuteRecord, String> PEC = createField(DSL.name("pec"), SQLDataType.VARCHAR(128), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.nr_opi</code>.
+     */
+    public final TableField<VRitenuteRecord, String> NR_OPI = createField(DSL.name("nr_opi"), SQLDataType.VARCHAR(32).nullable(false), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.opi_del</code>.
+     */
+    public final TableField<VRitenuteRecord, LocalDate> OPI_DEL = createField(DSL.name("opi_del"), SQLDataType.LOCALDATE.nullable(false), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.importo_opi</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> IMPORTO_OPI = createField(DSL.name("importo_opi"), SQLDataType.DECIMAL(10, 2).nullable(false), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.opi_f24_ritenuta</code>.
+     */
+    public final TableField<VRitenuteRecord, String> OPI_F24_RITENUTA = createField(DSL.name("opi_f24_ritenuta"), SQLDataType.VARCHAR(32), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.data_di_versamento_f24</code>.
+     */
+    public final TableField<VRitenuteRecord, LocalDate> DATA_DI_VERSAMENTO_F24 = createField(DSL.name("data_di_versamento_f24"), SQLDataType.LOCALDATE, this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.imponibile</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> IMPONIBILE = createField(DSL.name("imponibile"), SQLDataType.DECIMAL(10, 2).nullable(false), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.cassa</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> CASSA = createField(DSL.name("cassa"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.spese_anticipate</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> SPESE_ANTICIPATE = createField(DSL.name("spese_anticipate"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.iva</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> IVA = createField(DSL.name("iva"), SQLDataType.DECIMAL(10, 2), this, "");
+
+    /**
+     * The column <code>usrbilancio.v_ritenute.importo_ritenuta</code>.
+     */
+    public final TableField<VRitenuteRecord, BigDecimal> IMPORTO_RITENUTA = createField(DSL.name("importo_ritenuta"), SQLDataType.DECIMAL(10, 2), this, "");
+
     private VRitenute(Name alias, Table<VRitenuteRecord> aliased) {
         this(alias, aliased, (Field<?>[]) null, null);
     }
 
     private VRitenute(Name alias, Table<VRitenuteRecord> aliased, Field<?>[] parameters, Condition where) {
-        super(alias, null, aliased, parameters, DSL.comment("View 'usrbilancio.v_ritenute' references invalid table(s) or column(s) or function(s) or definer/invoker of view lack rights to use them"), TableOptions.view("create view `v_ritenute` as select `a`.`cf` AS `cf`,trim(`a`.`cognome_ragsoc`) AS `cognome_denominazione`,trim(`a`.`nome`) AS `nome`,if((length(`a`.`cf`) = 16),if((cast(substr(`a`.`cf`,10,2) as unsigned) > 40),'F','M'),NULL) AS `sesso`,`a`.`citta` AS `citta`,`a`.`provincia` AS `provincia`,`a`.`codice_catastale` AS `codice_catastale`,'A' AS `causale`,(`o`.`importo` + `o`.`importo_ritenuta`) AS `lordo`,(`o`.`importo` + `o`.`importo_ritenuta`) AS `imponibile_8`,`o`.`importo_ritenuta` AS `ritenuta_acconto`,month((select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`))) AS `mese`,year((select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`))) AS `anno`,cast((case when (`r`.`perc_ritenute_operate` is not null) then ((`r`.`perc_ritenute_operate` * `r`.`imponibile`) / 100.0) else NULL end) as decimal(10,2)) AS `ritenute_operate`,cast((case when (`r`.`perc_ritenute_operate` is not null) then ((`r`.`perc_ritenute_operate` * `r`.`imponibile`) / 100.0) else NULL end) as decimal(10,2)) AS `importo_versato`,'1XXE' AS `codice_tributo`,'LAV. AUT/REDD. ASS.' AS `tipologia`,(select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`)) AS `data_versamento`,(case when (`r`.`perc_irap_versata` is not null) then `r`.`imponibile` else NULL end) AS `imponibile_irap`,cast((case when (`r`.`perc_irap_versata` is not null) then ((`r`.`perc_irap_versata` * `r`.`imponibile`) / 100.0) else NULL end) as decimal(10,2)) AS `irap_versata`,(case when (`r`.`perc_irap_versata` is not null) then (select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`)) else NULL end) AS `data_di_versamento`,`a`.`pec` AS `pec`,`o`.`numero_pagamento` AS `nr_opi`,`o`.`data_pagamento` AS `opi_del`,`o`.`importo` AS `importo_opi`,(select `orit`.`numero_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`)) AS `opi_f24_ritenuta`,(select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`)) AS `data_di_versamento_f24`,`r`.`imponibile` AS `imponibile`,`r`.`cassa` AS `cassa`,`r`.`spese_anticipo` AS `spese_anticipate`,`r`.`iva` AS `iva`,`o`.`importo_ritenuta` AS `importo_ritenuta` from ((`usrbilancio`.`anagrafica` `a` join `usrbilancio`.`ritenuta` `r` on((`a`.`id` = `r`.`id_anagrafica`))) join `usrbilancio`.`ordinativo` `o` on((`r`.`id_ordinativo` = `o`.`id`)))"), where);
+        super(alias, null, aliased, parameters, DSL.comment("VIEW"), TableOptions.view("create view `v_ritenute` as select `a`.`cf` AS `cf`,trim(`a`.`cognome_ragsoc`) AS `cognome_denominazione`,trim(`a`.`nome`) AS `nome`,if((length(`a`.`cf`) = 16),if((cast(substr(`a`.`cf`,10,2) as unsigned) > 40),'F','M'),NULL) AS `sesso`,`a`.`citta` AS `citta`,`a`.`provincia` AS `provincia`,`a`.`codice_catastale` AS `codice_catastale`,'A' AS `causale`,(`o`.`importo` + `o`.`importo_ritenuta`) AS `lordo`,(`o`.`importo` + `o`.`importo_ritenuta`) AS `imponibile_8`,`o`.`importo_ritenuta` AS `ritenuta_acconto`,month((select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`))) AS `mese`,year((select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`))) AS `anno`,cast((case when (`r`.`perc_ritenute_operate` is not null) then ((`r`.`perc_ritenute_operate` * `r`.`imponibile`) / 100.0) else NULL end) as decimal(10,2)) AS `ritenute_operate`,cast((case when (`r`.`perc_ritenute_operate` is not null) then ((`r`.`perc_ritenute_operate` * `r`.`imponibile`) / 100.0) else NULL end) as decimal(10,2)) AS `importo_versato`,ifnull(`r`.`codice_tributo`,NULL) AS `codice_tributo`,(case when (`r`.`codice_tributo` is not null) then (select `usrbilancio`.`codici_tributo`.`descrizione` from `usrbilancio`.`codici_tributo` where (`usrbilancio`.`codici_tributo`.`codice` = `r`.`codice_tributo`)) else NULL end) AS `tipologia`,(select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`)) AS `data_versamento`,(case when (`r`.`perc_irap_versata` is not null) then `r`.`imponibile` else NULL end) AS `imponibile_irap`,cast((case when (`r`.`perc_irap_versata` is not null) then ((`r`.`perc_irap_versata` * `r`.`imponibile`) / 100.0) else NULL end) as decimal(10,2)) AS `irap_versata`,(case when (`r`.`perc_irap_versata` is not null) then (select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`)) else NULL end) AS `data_di_versamento`,`a`.`pec` AS `pec`,`o`.`numero_pagamento` AS `nr_opi`,`o`.`data_pagamento` AS `opi_del`,`o`.`importo` AS `importo_opi`,(select `orit`.`numero_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`)) AS `opi_f24_ritenuta`,(select `orit`.`data_pagamento` from `usrbilancio`.`ordinativo` `orit` where (`orit`.`id` = `o`.`ordinativo_ritenuta`)) AS `data_di_versamento_f24`,`r`.`imponibile` AS `imponibile`,`r`.`cassa` AS `cassa`,`r`.`spese_anticipo` AS `spese_anticipate`,`r`.`iva` AS `iva`,`o`.`importo_ritenuta` AS `importo_ritenuta` from ((`usrbilancio`.`anagrafica` `a` join `usrbilancio`.`ritenuta` `r` on((`a`.`id` = `r`.`id_anagrafica`))) join `usrbilancio`.`ordinativo` `o` on((`r`.`id_ordinativo` = `o`.`id`)))"), where);
     }
 
     /**

@@ -6,6 +6,7 @@ package it.usr.web.usrbilancio.service;
 
 import it.usr.web.usrbilancio.domain.Tables;
 import it.usr.web.usrbilancio.domain.tables.records.CapitoloRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.interceptor.LogDatabaseOperation;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
 import java.sql.SQLIntegrityConstraintViolationException;
@@ -15,7 +16,7 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Inject;
 import org.jooq.DSLContext;
-import org.jooq.SelectWhereStep;
+import org.jooq.SelectConditionStep;
 import org.jooq.exception.DataAccessException;
 
 /**
@@ -29,21 +30,29 @@ public class CapitoloService {
     @Inject
     DSLContext ctx;
     
-    public List<CapitoloRecord> getCapitoli() {        
-        return getCapitoli(false);
+    public List<CapitoloRecord> getCapitoli(ContabilitaRecord contabilita) {
+        return getCapitoli(contabilita, false);
     }
     
-    public List<CapitoloRecord> getCapitoli(boolean sort) { 
-        SelectWhereStep s = ctx.selectFrom(Tables.CAPITOLO);
+    public List<CapitoloRecord> getCapitoli(ContabilitaRecord contabilita, boolean sort) { 
+        SelectConditionStep s = ctx.selectFrom(Tables.CAPITOLO).where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()));
         return (sort ? s.orderBy(Tables.CAPITOLO.DESCRIZIONE.asc()) : s).fetch();
     }
     
-    public List<CapitoloRecord> getCapitoliNuovoAnno() {        
-        return ctx.selectFrom(Tables.CAPITOLO).where(Tables.CAPITOLO.NUOVOANNO.eq((byte)1)).fetch();
+    public List<CapitoloRecord> getCapitoliNuovoAnno(ContabilitaRecord contabilita) {        
+        return ctx.selectFrom(Tables.CAPITOLO).where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()).and(Tables.CAPITOLO.NUOVOANNO.eq((byte)1))).fetch();
     }
     
     public CapitoloRecord getCapitolo(int id) {
         return ctx.selectFrom(Tables.CAPITOLO).where(Tables.CAPITOLO.ID.eq(id)).fetchOne();
+    }
+    
+    public List<ContabilitaRecord> getContabilita() {
+        return ctx.selectFrom(Tables.CONTABILITA).fetch();
+    }
+    
+    public ContabilitaRecord getContabilitaById(int id) {
+        return ctx.selectFrom(Tables.CONTABILITA).where(Tables.CONTABILITA.ID.eq(id)).fetchOne();
     }
     
     @LogDatabaseOperation
@@ -90,5 +99,5 @@ public class CapitoloService {
             
             throw dae;
         }
-    }       
+    }          
 }

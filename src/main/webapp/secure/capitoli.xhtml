@@ -22,7 +22,7 @@
                         <div class="grid">
                             <div class="col-12">
                                 <p:dataTable id="capitoli" value="#{capitoliController.capitoli}" var="c" lazy="false" stripedRows="true" selectionMode="single" selection="#{capitoliController.capitoloSelezonato}" rowKey="#{c.id}"
-                                             rows="#{fn:length(capitoliController.capitoli)}" paginator="true" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
+                                             rows="#{fn:length(capitoliController.capitoli) eq 0 ? 5 : fn:length(capitoliController.capitoli)}" paginator="true" paginatorPosition="bottom" paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" 
                                              currentPageReportTemplate="{startRecord}-{endRecord} di {totalRecords} elementi" rowsPerPageTemplate="5,10,100,{ShowAll|'Tutti'}" size="small">
                                     <p:ajax event="rowSelect" process="@this" update="@form" />                                    
                                     <p:column id="descr" headerText="DESCRIZIONE" field="descrizione" filterMatchMode="contains" styleClass="word-wrap">

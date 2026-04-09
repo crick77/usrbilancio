@@ -5,8 +5,10 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -44,7 +46,6 @@ import org.slf4j.Logger;
 @Named
 @ViewScoped
 public class _ImportaOrtesController extends BaseController {
-
     @Inject
     OrdinativoAppoggioService oas;
     @Inject
@@ -52,10 +53,14 @@ public class _ImportaOrtesController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<ImportaOrdinativiController.Result> result;
     UploadedFiles documenti;
 
     public void init() {
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
         result = null;
         documenti = null;
     }
@@ -240,7 +245,7 @@ public class _ImportaOrtesController extends BaseController {
             TipoRtsRecord trr = codServ.getTipoRtsByCodice(cod.substring(0, 1).toUpperCase());
             dd.idTipoRts = (trr != null) ? trr.getId() : null;
 
-            CodiceRecord cr = codServ.getCodiceByCodiceComposto(cod.substring(1));
+            CodiceRecord cr = codServ.getCodiceByCodiceComposto(contabilita, cod.substring(1));
             dd.idCodice = (cr != null) ? cr.getId() : null;
         }
 

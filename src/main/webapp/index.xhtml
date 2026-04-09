@@ -5,6 +5,7 @@
       xmlns:f="jakarta.faces.core"
       xmlns:h="jakarta.faces.html"
       xmlns:ui="jakarta.faces.facelets"
+      xmlns:pt="jakarta.faces.passthrough"
       xmlns:p="primefaces">
     <f:view transient="true">
         <h:head>
@@ -18,8 +19,8 @@
             <title>USRBILANCIO</title>
         </h:head>
 
-        <h:body styleClass="login-body">
-            <h:form id="loginForm">
+        <h:body styleClass="login-body">                        
+            <h:form id="loginForm">                
                 <div class="login-panel ui-fluid">
                     <div class="grid">
                         <div class="col-12 logo-container">
@@ -33,6 +34,12 @@
                         </div>
                         <div class="col-12">
                             <p:password placeholder="Password" feedback="false" value="#{authController.password}" required="true" requiredMessage="Campo obbligatorio" />
+                        </div>
+                        <div class="col-12">
+                            <p:selectOneMenu id="contabilita" value="#{authController.contabilitaSelezionata}" converter="contabilitaConverter" title="Conto di contabilità speciale" required="true" requiredMessage="Contabilità speciale obbligatoria">
+                                <f:selectItems value="#{authController.contabilita}" var="c" itemValue="#{c}" itemLabel="#{c.descrizione}" />
+                            </p:selectOneMenu>
+                            <p:tooltip for="contabilita" position="top"/>
                         </div>
                         <ui:fragment rendered="#{not empty authController.message}">
                             <div class="col-12 chkbox-container red bold">

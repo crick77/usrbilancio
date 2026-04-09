@@ -5,6 +5,7 @@
  */
 package it.usr.web.controller;
 
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.domain.AppUser;
 import java.io.IOException;
 import java.io.Serializable;
@@ -36,7 +37,7 @@ public abstract class BaseController implements Serializable {
     public final static DateTimeFormatter DATE_PATTERN_LONG = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     @Inject
     @AppLogger
-    Logger baseLogger;
+    Logger baseLogger;    
 
     public Map<String, Object> getSessionMap() {
         return FacesContext.getCurrentInstance().getExternalContext().getSessionMap();

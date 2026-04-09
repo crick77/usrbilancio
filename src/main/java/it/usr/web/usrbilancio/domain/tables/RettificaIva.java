@@ -4,18 +4,27 @@
 package it.usr.web.usrbilancio.domain.tables;
 
 
+import it.usr.web.usrbilancio.domain.Indexes;
 import it.usr.web.usrbilancio.domain.Keys;
 import it.usr.web.usrbilancio.domain.Usrbilancio;
+import it.usr.web.usrbilancio.domain.tables.Contabilita.ContabilitaPath;
 import it.usr.web.usrbilancio.domain.tables.records.RettificaIvaRecord;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.jooq.Condition;
 import org.jooq.Field;
+import org.jooq.ForeignKey;
+import org.jooq.Index;
+import org.jooq.InverseForeignKey;
 import org.jooq.Name;
+import org.jooq.Path;
 import org.jooq.PlainSQL;
 import org.jooq.QueryPart;
+import org.jooq.Record;
 import org.jooq.SQL;
 import org.jooq.Schema;
 import org.jooq.Select;
@@ -56,6 +65,11 @@ public class RettificaIva extends TableImpl<RettificaIvaRecord> {
     public final TableField<RettificaIvaRecord, Integer> ANNO = createField(DSL.name("anno"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
+     * The column <code>usrbilancio.rettifica_iva.id_contabilita</code>.
+     */
+    public final TableField<RettificaIvaRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.inline("1", SQLDataType.INTEGER)), this, "");
+
+    /**
      * The column <code>usrbilancio.rettifica_iva.iva_anagrafica</code>.
      */
     public final TableField<RettificaIvaRecord, BigDecimal> IVA_ANAGRAFICA = createField(DSL.name("iva_anagrafica"), SQLDataType.DECIMAL(10, 2).nullable(false), this, "");
@@ -94,14 +108,70 @@ public class RettificaIva extends TableImpl<RettificaIvaRecord> {
         this(DSL.name("rettifica_iva"), null);
     }
 
+    public <O extends Record> RettificaIva(Table<O> path, ForeignKey<O, RettificaIvaRecord> childPath, InverseForeignKey<O, RettificaIvaRecord> parentPath) {
+        super(path, childPath, parentPath, RETTIFICA_IVA);
+    }
+
+    /**
+     * A subtype implementing {@link Path} for simplified path-based joins.
+     */
+    public static class RettificaIvaPath extends RettificaIva implements Path<RettificaIvaRecord> {
+
+        private static final long serialVersionUID = 1L;
+        public <O extends Record> RettificaIvaPath(Table<O> path, ForeignKey<O, RettificaIvaRecord> childPath, InverseForeignKey<O, RettificaIvaRecord> parentPath) {
+            super(path, childPath, parentPath);
+        }
+        private RettificaIvaPath(Name alias, Table<RettificaIvaRecord> aliased) {
+            super(alias, aliased);
+        }
+
+        @Override
+        public RettificaIvaPath as(String alias) {
+            return new RettificaIvaPath(DSL.name(alias), this);
+        }
+
+        @Override
+        public RettificaIvaPath as(Name alias) {
+            return new RettificaIvaPath(alias, this);
+        }
+
+        @Override
+        public RettificaIvaPath as(Table<?> alias) {
+            return new RettificaIvaPath(alias.getQualifiedName(), this);
+        }
+    }
+
     @Override
     public Schema getSchema() {
         return aliased() ? null : Usrbilancio.USRBILANCIO;
     }
 
     @Override
+    public List<Index> getIndexes() {
+        return Arrays.asList(Indexes.RETTIFICA_IVA_FK_RETTIFICAIVA_CONTABILITA_IDX);
+    }
+
+    @Override
     public UniqueKey<RettificaIvaRecord> getPrimaryKey() {
         return Keys.KEY_RETTIFICA_IVA_PRIMARY;
+    }
+
+    @Override
+    public List<ForeignKey<RettificaIvaRecord, ?>> getReferences() {
+        return Arrays.asList(Keys.FK_RETTIFICAIVA_CONTABILITA);
+    }
+
+    private transient ContabilitaPath _contabilita;
+
+    /**
+     * Get the implicit join path to the <code>usrbilancio.contabilita</code>
+     * table.
+     */
+    public ContabilitaPath contabilita() {
+        if (_contabilita == null)
+            _contabilita = new ContabilitaPath(this, Keys.FK_RETTIFICAIVA_CONTABILITA, null);
+
+        return _contabilita;
     }
 
     @Override

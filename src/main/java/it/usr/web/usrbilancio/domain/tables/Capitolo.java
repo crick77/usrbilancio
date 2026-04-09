@@ -4,18 +4,23 @@
 package it.usr.web.usrbilancio.domain.tables;
 
 
+import it.usr.web.usrbilancio.domain.Indexes;
 import it.usr.web.usrbilancio.domain.Keys;
 import it.usr.web.usrbilancio.domain.Usrbilancio;
 import it.usr.web.usrbilancio.domain.tables.Competenza.CompetenzaPath;
+import it.usr.web.usrbilancio.domain.tables.Contabilita.ContabilitaPath;
 import it.usr.web.usrbilancio.domain.tables.records.CapitoloRecord;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.jooq.Condition;
 import org.jooq.Field;
 import org.jooq.ForeignKey;
 import org.jooq.Identity;
+import org.jooq.Index;
 import org.jooq.InverseForeignKey;
 import org.jooq.Name;
 import org.jooq.Path;
@@ -60,6 +65,11 @@ public class Capitolo extends TableImpl<CapitoloRecord> {
      * The column <code>usrbilancio.capitolo.id</code>.
      */
     public final TableField<CapitoloRecord, Integer> ID = createField(DSL.name("id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "");
+
+    /**
+     * The column <code>usrbilancio.capitolo.id_contabilita</code>.
+     */
+    public final TableField<CapitoloRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.inline("1", SQLDataType.INTEGER)), this, "");
 
     /**
      * The column <code>usrbilancio.capitolo.descrizione</code>.
@@ -159,6 +169,11 @@ public class Capitolo extends TableImpl<CapitoloRecord> {
     }
 
     @Override
+    public List<Index> getIndexes() {
+        return Arrays.asList(Indexes.CAPITOLO_FK_CAPITOLO_CONTABILITA_IDX);
+    }
+
+    @Override
     public Identity<CapitoloRecord, Integer> getIdentity() {
         return (Identity<CapitoloRecord, Integer>) super.getIdentity();
     }
@@ -166,6 +181,24 @@ public class Capitolo extends TableImpl<CapitoloRecord> {
     @Override
     public UniqueKey<CapitoloRecord> getPrimaryKey() {
         return Keys.KEY_CAPITOLO_PRIMARY;
+    }
+
+    @Override
+    public List<ForeignKey<CapitoloRecord, ?>> getReferences() {
+        return Arrays.asList(Keys.FK_CAPITOLO_CONTABILITA);
+    }
+
+    private transient ContabilitaPath _contabilita;
+
+    /**
+     * Get the implicit join path to the <code>usrbilancio.contabilita</code>
+     * table.
+     */
+    public ContabilitaPath contabilita() {
+        if (_contabilita == null)
+            _contabilita = new ContabilitaPath(this, Keys.FK_CAPITOLO_CONTABILITA, null);
+
+        return _contabilita;
     }
 
     private transient CompetenzaPath _competenza;

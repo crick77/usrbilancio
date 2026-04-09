@@ -5,9 +5,11 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -56,7 +58,10 @@ public class OrdinativiController extends BaseController {
     DocumentService ds;
     @Inject
     @AppLogger
-    Logger logger;    
+    Logger logger;   
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<OrdinativoRecord> ordinativi;
     List<OrdinativoRecord> ordinativiFiltrati; 
     List<OrdinativoRecord> ordinativiIva;
@@ -87,7 +92,8 @@ public class OrdinativiController extends BaseController {
     String gruppo;
     
     public void init() {
-        codici = codServ.getCodici();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = codServ.getCodici(contabilita);
         codiciMap = new HashMap<>();
         codici.forEach(c -> codiciMap.put(c.getId(), c));
         
@@ -96,7 +102,7 @@ public class OrdinativiController extends BaseController {
         tipiRtsList.forEach(t -> tipiRts.put(t.getId(), t));
         tipiDocumento = codServ.getTipiDocumentoAsMap();
         tipiDocumentoList = new ArrayList<>(tipiDocumento.values());
-        capComp = cs.getCapitoliCompetenze();  
+        capComp = cs.getCapitoliCompetenze(contabilita);  
         mCampComp = new HashMap<>();
         capComp.forEach(cc -> {
             mCampComp.put(cc.getId(), cc);
@@ -529,7 +535,7 @@ public class OrdinativiController extends BaseController {
         
         try {
             // se in consolidaento, copia l'importo nel valore da consolidare
-            if(ordinativo.getConsolidamento()==1) {
+            if(ordinativo.getConsolidamento()!=null && ordinativo.getConsolidamento()==1) {
                 if(ordinativo.getImportoCons()==null) ordinativo.setImportoCons(ordinativo.getImporto());
             }
             
@@ -538,7 +544,7 @@ public class OrdinativiController extends BaseController {
             }
             else {
                 os.modifica(ordinativo);
-            }
+            } 
             
             aggiornaOrdinativi();
             

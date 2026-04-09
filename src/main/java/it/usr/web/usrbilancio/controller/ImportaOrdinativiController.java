@@ -11,8 +11,10 @@ import it.usr.pdfextract.model.RiversamentoSuCS;
 import it.usr.pdfextract.model.RiversamentoSuErario;
 import it.usr.pdfextract.model.RiversamentoSuTU;
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -50,7 +52,10 @@ public class ImportaOrdinativiController extends BaseController {
     @AppLogger
     Logger logger;    
     @Inject
-    PDFExtractor pe;    
+    PDFExtractor pe;  
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<Result> result;
     UploadedFiles documenti;
     
@@ -220,7 +225,7 @@ public class ImportaOrdinativiController extends BaseController {
         if(descrCausale!=null && descrCausale.contains(",")) {
             String[] parts = descrCausale.split("\\,");
             String cod = parts[parts.length-1].trim().replace(".", "").replace(" ", "");
-            return codServ.getCodiceByCodiceComposto(cod);
+            return codServ.getCodiceByCodiceComposto(contabilita, cod);
         }
         
         return null;
@@ -313,7 +318,7 @@ public class ImportaOrdinativiController extends BaseController {
             TipoRtsRecord trr = codServ.getTipoRtsByCodice(cod.substring(0, 1).toUpperCase());
             dd.idTipoRts = (trr!=null) ? trr.getId() : null;
             
-            CodiceRecord cr = codServ.getCodiceByCodiceComposto(cod.substring(1));
+            CodiceRecord cr = codServ.getCodiceByCodiceComposto(contabilita, cod.substring(1));
             dd.idCodice = (cr!=null) ? cr.getId() : null;
         }
         

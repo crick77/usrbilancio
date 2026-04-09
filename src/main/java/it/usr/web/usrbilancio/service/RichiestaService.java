@@ -6,6 +6,7 @@ package it.usr.web.usrbilancio.service;
 
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.Tables;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.RichiestaRecord;
 import it.usr.web.usrbilancio.producer.DSLBilancio;
 import jakarta.ejb.Stateless;
@@ -32,11 +33,14 @@ public class RichiestaService {
     @Inject
     DSLContext ctx;
     
-    public List<RichiestaRecord> getRichieste() {
-        return ctx.selectFrom(Tables.RICHIESTA).fetch();
+    public List<RichiestaRecord> getRichieste(ContabilitaRecord contabilita) {
+        return ctx.select(Tables.RICHIESTA)                
+                .from(Tables.RICHIESTA).join(Tables.COMPETENZA).on(Tables.RICHIESTA.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .fetchInto(Tables.RICHIESTA);
     }
     
-    public List<RichiestaRecord> getRichieste(int idCompetenza) {
+    public List<RichiestaRecord> getRichiesteByCompetenza(int idCompetenza) {
         return ctx.selectFrom(Tables.RICHIESTA).where(Tables.RICHIESTA.ID_COMPETENZA.eq(idCompetenza)).fetch();
     }
     

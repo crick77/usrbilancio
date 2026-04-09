@@ -21,6 +21,12 @@
                 <div class="col-12 md:col-12 lg:col-12">
                     <p:panel header="ELENCO COMPLETO ORDINATIVI" style="min-height: 400px">
                         <div class="grid">     
+                            <div class="col-12">
+                                Mostra solo anno corrente:
+                                <p:toggleSwitch id="soloAnnoAttuale" onIcon="pi pi-check" offIcon="pi pi-times" value="#{elencoOrdinativiController.soloAnnoAttuale}">
+                                    <p:ajax listener="#{elencoOrdinativiController.aggiornaOrdinativi()}" update=":form:ordinativi" />
+                                </p:toggleSwitch>
+                            </div>                       
                             <div class="col-11">
                                 <p:commandButton id="nuovoOrdinativo2" value="Nuovo ordinativo" icon="pi pi-plus-circle" styleClass="ui-button-primary" action="#{elencoOrdinativiController.nuovo()}" process="@this" update=":form:ordinativo-content" oncomplete="PF('ordinativoDialog').show()"/>
                             </div>                       

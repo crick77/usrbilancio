@@ -5,8 +5,10 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -49,7 +51,10 @@ public class QuietanzeController extends BaseController {
     CodiceService codServ;
     @Inject
     @AppLogger
-    Logger logger;    
+    Logger logger; 
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     boolean modifica;
     List<QuietanzaRecord> quietanze;
     QuietanzaRecord quietanza;
@@ -73,7 +78,8 @@ public class QuietanzeController extends BaseController {
     List<FilterMeta> filterBy;
         
     public void init() {
-        codiciList = codServ.getCodici();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codiciList = codServ.getCodici(contabilita);
         codici = new HashMap<>();
         codiciList.forEach(c -> codici.put(c.getId(), c));
         tipiRtsList = codServ.getTipiRts(CodiceService.GruppoRts.RTS_QUIETANZA);
@@ -82,7 +88,7 @@ public class QuietanzeController extends BaseController {
             tipiRts.put(t.getId(), t);
         });
         tipiDocumento = codServ.getTipiDocumentoAsMap();
-        capComp = cs.getCapitoliCompetenze();  
+        capComp = cs.getCapitoliCompetenze(contabilita);  
         mCampComp = new HashMap<>();
         capComp.forEach(cc -> {
             mCampComp.put(cc.getId(), cc);

@@ -5,9 +5,11 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -34,6 +36,7 @@ import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import java.math.BigDecimal;
+import java.time.Month;
 import java.util.Objects;
 import java.util.StringJoiner;
 import org.primefaces.PrimeFaces;
@@ -52,7 +55,6 @@ import org.slf4j.Logger;
 @Named
 @ViewScoped
 public class ElencoOrdinativiController extends BaseController {
-
     @Inject
     DocumentService ds;
     @Inject
@@ -64,6 +66,9 @@ public class ElencoOrdinativiController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<OrdinativoRecord> ordinativi;
     List<OrdinativoRecord> ordinativiFiltrati;
     List<OrdinativoRecord> ordinativiIva;
@@ -95,9 +100,11 @@ public class ElencoOrdinativiController extends BaseController {
     OrdinativoRecord ordinativoImponibile;
     String azione;
     String gruppo;    
+    boolean soloAnnoAttuale;
 
     public void init() {
-        codici = codServ.getCodici();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = codServ.getCodici(contabilita);
         codiciMap = new HashMap<>();
         codici.forEach(c -> codiciMap.put(c.getId(), c));
         tipiRtsList = codServ.getTipiRts(CodiceService.GruppoRts.RTS_ORDINATIVO);
@@ -106,13 +113,13 @@ public class ElencoOrdinativiController extends BaseController {
             tipiRts.put(t.getId(), t);
         });
         tipiDocumento = codServ.getTipiDocumentoAsMap();
-        capComp = cs.getCapitoliCompetenze();
+        capComp = cs.getCapitoliCompetenze(contabilita);
         mCampComp = new HashMap<>();
 
         capComp.forEach(cc -> {
             mCampComp.put(cc.getId(), cc);
         });
-        capCompAperti = cs.getCapitoliCompetenzeAperti();
+        capCompAperti = cs.getCapitoliCompetenzeAperti(contabilita);
 
         ordinativoCapComp = null;
         ordinativoCapCompDest = null;
@@ -127,6 +134,7 @@ public class ElencoOrdinativiController extends BaseController {
         documentFiles = null;
         selectedCapitoli = null;
         ordinativoCodiceFiltro = null;
+        soloAnnoAttuale = true;
 
         filterBy = new ArrayList<>();
 
@@ -197,7 +205,15 @@ public class ElencoOrdinativiController extends BaseController {
             if(!completo) ordinativo.setConsolidamento((byte)0);
         }
     }
-    
+
+    public boolean isSoloAnnoAttuale() {
+        return soloAnnoAttuale;
+    }
+
+    public void setSoloAnnoAttuale(boolean soloAnnoAttuale) {
+        this.soloAnnoAttuale = soloAnnoAttuale;
+    }
+            
     public boolean isConsolidato() {
         return ordinativo!=null ? ordinativo.getConsolidamento()==2 : false;
     }
@@ -435,7 +451,9 @@ public class ElencoOrdinativiController extends BaseController {
     }
     
     public void aggiornaOrdinativi() {
-        ordinativi = os.getOrdinativi();
+        LocalDate from = LocalDate.of(LocalDate.now().getYear(), Month.JANUARY, 1);
+        LocalDate to = from.plusYears(1).minusDays(1);
+        ordinativi = soloAnnoAttuale ? os.getOrdinativiPeriodo(contabilita, from, to) : os.getOrdinativi(contabilita);
         totale = BigDecimal.ZERO;
         if (!isEmpty(ordinativi)) {
             ordinativi.forEach(of -> totale = totale.add(of.getImporto()));

@@ -13,6 +13,7 @@ import it.usr.web.usrbilancio.domain.tables.Codice;
 import it.usr.web.usrbilancio.domain.tables.CodiciTributo;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.Comune;
+import it.usr.web.usrbilancio.domain.tables.Contabilita;
 import it.usr.web.usrbilancio.domain.tables.LogOperazioni;
 import it.usr.web.usrbilancio.domain.tables.MimeType;
 import it.usr.web.usrbilancio.domain.tables.Modelli;
@@ -96,6 +97,11 @@ public class Usrbilancio extends SchemaImpl {
     public final Comune COMUNE = Comune.COMUNE;
 
     /**
+     * The table <code>usrbilancio.contabilita</code>.
+     */
+    public final Contabilita CONTABILITA = Contabilita.CONTABILITA;
+
+    /**
      * The table <code>usrbilancio.log_operazioni</code>.
      */
     public final LogOperazioni LOG_OPERAZIONI = LogOperazioni.LOG_OPERAZIONI;
@@ -166,8 +172,7 @@ public class Usrbilancio extends SchemaImpl {
     public final Utente UTENTE = Utente.UTENTE;
 
     /**
-     * View 'usrbilancio.v_ritenute' references invalid table(s) or column(s) or
-     * function(s) or definer/invoker of view lack rights to use them
+     * VIEW
      */
     public final VRitenute V_RITENUTE = VRitenute.V_RITENUTE;
 
@@ -196,6 +201,7 @@ public class Usrbilancio extends SchemaImpl {
             CodiciTributo.CODICI_TRIBUTO,
             Competenza.COMPETENZA,
             Comune.COMUNE,
+            Contabilita.CONTABILITA,
             LogOperazioni.LOG_OPERAZIONI,
             MimeType.MIME_TYPE,
             Modelli.MODELLI,

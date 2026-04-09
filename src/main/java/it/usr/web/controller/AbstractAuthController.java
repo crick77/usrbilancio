@@ -24,7 +24,7 @@ public abstract class AbstractAuthController extends BaseController {
     @AppLogger
     Logger logger;
     @Inject
-    ActiveUser user;
+    protected ActiveUser user;
     private String username;
     private String password;
     private String message;
@@ -72,5 +72,9 @@ public abstract class AbstractAuthController extends BaseController {
         return message;
     }        
 
+    public void setMessage(String message) {
+        this.message = message;
+    }
+      
     protected abstract Object getUser(String username);
 }

@@ -6,17 +6,467 @@ package it.usr.web.usrbilancio.domain.tables.records;
 
 import it.usr.web.usrbilancio.domain.tables.VRitenute;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 import org.jooq.impl.TableRecordImpl;
 
 
 /**
- * View 'usrbilancio.v_ritenute' references invalid table(s) or column(s) or
- * function(s) or definer/invoker of view lack rights to use them
+ * VIEW
  */
 @SuppressWarnings({ "all", "unchecked", "rawtypes", "this-escape" })
 public class VRitenuteRecord extends TableRecordImpl<VRitenuteRecord> {
 
     private static final long serialVersionUID = 1L;
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.cf</code>.
+     */
+    public void setCf(String value) {
+        set(0, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.cf</code>.
+     */
+    public String getCf() {
+        return (String) get(0);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.cognome_denominazione</code>.
+     */
+    public void setCognomeDenominazione(String value) {
+        set(1, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.cognome_denominazione</code>.
+     */
+    public String getCognomeDenominazione() {
+        return (String) get(1);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.nome</code>.
+     */
+    public void setNome(String value) {
+        set(2, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.nome</code>.
+     */
+    public String getNome() {
+        return (String) get(2);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.sesso</code>.
+     */
+    public void setSesso(String value) {
+        set(3, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.sesso</code>.
+     */
+    public String getSesso() {
+        return (String) get(3);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.citta</code>.
+     */
+    public void setCitta(String value) {
+        set(4, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.citta</code>.
+     */
+    public String getCitta() {
+        return (String) get(4);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.provincia</code>.
+     */
+    public void setProvincia(String value) {
+        set(5, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.provincia</code>.
+     */
+    public String getProvincia() {
+        return (String) get(5);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.codice_catastale</code>.
+     */
+    public void setCodiceCatastale(String value) {
+        set(6, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.codice_catastale</code>.
+     */
+    public String getCodiceCatastale() {
+        return (String) get(6);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.causale</code>.
+     */
+    public void setCausale(String value) {
+        set(7, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.causale</code>.
+     */
+    public String getCausale() {
+        return (String) get(7);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.lordo</code>.
+     */
+    public void setLordo(BigDecimal value) {
+        set(8, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.lordo</code>.
+     */
+    public BigDecimal getLordo() {
+        return (BigDecimal) get(8);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.imponibile_8</code>.
+     */
+    public void setImponibile_8(BigDecimal value) {
+        set(9, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.imponibile_8</code>.
+     */
+    public BigDecimal getImponibile_8() {
+        return (BigDecimal) get(9);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.ritenuta_acconto</code>.
+     */
+    public void setRitenutaAcconto(BigDecimal value) {
+        set(10, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.ritenuta_acconto</code>.
+     */
+    public BigDecimal getRitenutaAcconto() {
+        return (BigDecimal) get(10);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.mese</code>.
+     */
+    public void setMese(Integer value) {
+        set(11, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.mese</code>.
+     */
+    public Integer getMese() {
+        return (Integer) get(11);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.anno</code>.
+     */
+    public void setAnno(Integer value) {
+        set(12, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.anno</code>.
+     */
+    public Integer getAnno() {
+        return (Integer) get(12);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.ritenute_operate</code>.
+     */
+    public void setRitenuteOperate(BigDecimal value) {
+        set(13, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.ritenute_operate</code>.
+     */
+    public BigDecimal getRitenuteOperate() {
+        return (BigDecimal) get(13);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.importo_versato</code>.
+     */
+    public void setImportoVersato(BigDecimal value) {
+        set(14, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.importo_versato</code>.
+     */
+    public BigDecimal getImportoVersato() {
+        return (BigDecimal) get(14);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.codice_tributo</code>.
+     */
+    public void setCodiceTributo(String value) {
+        set(15, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.codice_tributo</code>.
+     */
+    public String getCodiceTributo() {
+        return (String) get(15);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.tipologia</code>.
+     */
+    public void setTipologia(String value) {
+        set(16, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.tipologia</code>.
+     */
+    public String getTipologia() {
+        return (String) get(16);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.data_versamento</code>.
+     */
+    public void setDataVersamento(LocalDate value) {
+        set(17, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.data_versamento</code>.
+     */
+    public LocalDate getDataVersamento() {
+        return (LocalDate) get(17);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.imponibile_irap</code>.
+     */
+    public void setImponibileIrap(BigDecimal value) {
+        set(18, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.imponibile_irap</code>.
+     */
+    public BigDecimal getImponibileIrap() {
+        return (BigDecimal) get(18);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.irap_versata</code>.
+     */
+    public void setIrapVersata(BigDecimal value) {
+        set(19, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.irap_versata</code>.
+     */
+    public BigDecimal getIrapVersata() {
+        return (BigDecimal) get(19);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.data_di_versamento</code>.
+     */
+    public void setDataDiVersamento(LocalDate value) {
+        set(20, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.data_di_versamento</code>.
+     */
+    public LocalDate getDataDiVersamento() {
+        return (LocalDate) get(20);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.pec</code>.
+     */
+    public void setPec(String value) {
+        set(21, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.pec</code>.
+     */
+    public String getPec() {
+        return (String) get(21);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.nr_opi</code>.
+     */
+    public void setNrOpi(String value) {
+        set(22, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.nr_opi</code>.
+     */
+    public String getNrOpi() {
+        return (String) get(22);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.opi_del</code>.
+     */
+    public void setOpiDel(LocalDate value) {
+        set(23, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.opi_del</code>.
+     */
+    public LocalDate getOpiDel() {
+        return (LocalDate) get(23);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.importo_opi</code>.
+     */
+    public void setImportoOpi(BigDecimal value) {
+        set(24, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.importo_opi</code>.
+     */
+    public BigDecimal getImportoOpi() {
+        return (BigDecimal) get(24);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.opi_f24_ritenuta</code>.
+     */
+    public void setOpiF24Ritenuta(String value) {
+        set(25, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.opi_f24_ritenuta</code>.
+     */
+    public String getOpiF24Ritenuta() {
+        return (String) get(25);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.data_di_versamento_f24</code>.
+     */
+    public void setDataDiVersamentoF24(LocalDate value) {
+        set(26, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.data_di_versamento_f24</code>.
+     */
+    public LocalDate getDataDiVersamentoF24() {
+        return (LocalDate) get(26);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.imponibile</code>.
+     */
+    public void setImponibile(BigDecimal value) {
+        set(27, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.imponibile</code>.
+     */
+    public BigDecimal getImponibile() {
+        return (BigDecimal) get(27);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.cassa</code>.
+     */
+    public void setCassa(BigDecimal value) {
+        set(28, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.cassa</code>.
+     */
+    public BigDecimal getCassa() {
+        return (BigDecimal) get(28);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.spese_anticipate</code>.
+     */
+    public void setSpeseAnticipate(BigDecimal value) {
+        set(29, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.spese_anticipate</code>.
+     */
+    public BigDecimal getSpeseAnticipate() {
+        return (BigDecimal) get(29);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.iva</code>.
+     */
+    public void setIva(BigDecimal value) {
+        set(30, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.iva</code>.
+     */
+    public BigDecimal getIva() {
+        return (BigDecimal) get(30);
+    }
+
+    /**
+     * Setter for <code>usrbilancio.v_ritenute.importo_ritenuta</code>.
+     */
+    public void setImportoRitenuta(BigDecimal value) {
+        set(31, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.v_ritenute.importo_ritenuta</code>.
+     */
+    public BigDecimal getImportoRitenuta() {
+        return (BigDecimal) get(31);
+    }
 
     // -------------------------------------------------------------------------
     // Constructors
@@ -27,5 +477,46 @@ public class VRitenuteRecord extends TableRecordImpl<VRitenuteRecord> {
      */
     public VRitenuteRecord() {
         super(VRitenute.V_RITENUTE);
+    }
+
+    /**
+     * Create a detached, initialised VRitenuteRecord
+     */
+    public VRitenuteRecord(String cf, String cognomeDenominazione, String nome, String sesso, String citta, String provincia, String codiceCatastale, String causale, BigDecimal lordo, BigDecimal imponibile_8, BigDecimal ritenutaAcconto, Integer mese, Integer anno, BigDecimal ritenuteOperate, BigDecimal importoVersato, String codiceTributo, String tipologia, LocalDate dataVersamento, BigDecimal imponibileIrap, BigDecimal irapVersata, LocalDate dataDiVersamento, String pec, String nrOpi, LocalDate opiDel, BigDecimal importoOpi, String opiF24Ritenuta, LocalDate dataDiVersamentoF24, BigDecimal imponibile, BigDecimal cassa, BigDecimal speseAnticipate, BigDecimal iva, BigDecimal importoRitenuta) {
+        super(VRitenute.V_RITENUTE);
+
+        setCf(cf);
+        setCognomeDenominazione(cognomeDenominazione);
+        setNome(nome);
+        setSesso(sesso);
+        setCitta(citta);
+        setProvincia(provincia);
+        setCodiceCatastale(codiceCatastale);
+        setCausale(causale);
+        setLordo(lordo);
+        setImponibile_8(imponibile_8);
+        setRitenutaAcconto(ritenutaAcconto);
+        setMese(mese);
+        setAnno(anno);
+        setRitenuteOperate(ritenuteOperate);
+        setImportoVersato(importoVersato);
+        setCodiceTributo(codiceTributo);
+        setTipologia(tipologia);
+        setDataVersamento(dataVersamento);
+        setImponibileIrap(imponibileIrap);
+        setIrapVersata(irapVersata);
+        setDataDiVersamento(dataDiVersamento);
+        setPec(pec);
+        setNrOpi(nrOpi);
+        setOpiDel(opiDel);
+        setImportoOpi(importoOpi);
+        setOpiF24Ritenuta(opiF24Ritenuta);
+        setDataDiVersamentoF24(dataDiVersamentoF24);
+        setImponibile(imponibile);
+        setCassa(cassa);
+        setSpeseAnticipate(speseAnticipate);
+        setIva(iva);
+        setImportoRitenuta(importoRitenuta);
+        resetChangedOnNotNull();
     }
 }

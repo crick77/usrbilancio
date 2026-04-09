@@ -6,11 +6,14 @@ package it.usr.web.usrbilancio.domain;
 
 import it.usr.web.usrbilancio.domain.tables.Allegato;
 import it.usr.web.usrbilancio.domain.tables.AllegatoCodice;
+import it.usr.web.usrbilancio.domain.tables.Capitolo;
+import it.usr.web.usrbilancio.domain.tables.Codice;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.MovimentiVirtuali;
 import it.usr.web.usrbilancio.domain.tables.Ordinativo;
 import it.usr.web.usrbilancio.domain.tables.OrdinativoAppoggio;
 import it.usr.web.usrbilancio.domain.tables.Quietanza;
+import it.usr.web.usrbilancio.domain.tables.RettificaIva;
 import it.usr.web.usrbilancio.domain.tables.Richiesta;
 import it.usr.web.usrbilancio.domain.tables.Ritenuta;
 
@@ -33,6 +36,8 @@ public class Indexes {
     public static final Index ALLEGATO_FK_ALLEGATO_ORDINATIVO_IDX = Internal.createIndex(DSL.name("fk_allegato_ordinativo_idx"), Allegato.ALLEGATO, new OrderField[] { Allegato.ALLEGATO.ID_ORDINATIVO }, false);
     public static final Index ALLEGATO_CODICE_FK_ALLEGATOCODICE_CODICE_IDX = Internal.createIndex(DSL.name("fk_allegatocodice_codice_idx"), AllegatoCodice.ALLEGATO_CODICE, new OrderField[] { AllegatoCodice.ALLEGATO_CODICE.ID_CODICE }, false);
     public static final Index COMPETENZA_FK_ANNUALITA_CAPITOLO_IDX = Internal.createIndex(DSL.name("fk_annualita_capitolo_idx"), Competenza.COMPETENZA, new OrderField[] { Competenza.COMPETENZA.ID_CAPITOLO }, false);
+    public static final Index CAPITOLO_FK_CAPITOLO_CONTABILITA_IDX = Internal.createIndex(DSL.name("fk_capitolo_contabilita_idx"), Capitolo.CAPITOLO, new OrderField[] { Capitolo.CAPITOLO.ID_CONTABILITA }, false);
+    public static final Index CODICE_FK_CODICE_CONTABILITA_IDX = Internal.createIndex(DSL.name("fk_codice_contabilita_idx"), Codice.CODICE, new OrderField[] { Codice.CODICE.ID_CONTABILITA }, false);
     public static final Index ORDINATIVO_FK_ORDINATIVO_ANNUALITA_IDX = Internal.createIndex(DSL.name("fk_ordinativo_annualita_idx"), Ordinativo.ORDINATIVO, new OrderField[] { Ordinativo.ORDINATIVO.ID_COMPETENZA }, false);
     public static final Index ORDINATIVO_FK_ORDINATIVO_CODICE_IDX = Internal.createIndex(DSL.name("fk_ordinativo_codice_idx"), Ordinativo.ORDINATIVO, new OrderField[] { Ordinativo.ORDINATIVO.ID_CODICE }, false);
     public static final Index ORDINATIVO_FK_ORDINATIVO_TIPODOCUMENTO_IDX = Internal.createIndex(DSL.name("fk_ordinativo_tipodocumento_idx"), Ordinativo.ORDINATIVO, new OrderField[] { Ordinativo.ORDINATIVO.ID_TIPO_DOCUMENTO }, false);
@@ -47,6 +52,7 @@ public class Indexes {
     public static final Index QUIETANZA_FK_QUIETANZA_COMPETENZA_IDX = Internal.createIndex(DSL.name("fk_quietanza_competenza_idx"), Quietanza.QUIETANZA, new OrderField[] { Quietanza.QUIETANZA.ID_COMPETENZA }, false);
     public static final Index QUIETANZA_FK_QUIETANZA_TIPODOCUMENTO_IDX = Internal.createIndex(DSL.name("fk_quietanza_tipodocumento_idx"), Quietanza.QUIETANZA, new OrderField[] { Quietanza.QUIETANZA.ID_TIPO_DOCUMENTO }, false);
     public static final Index QUIETANZA_FK_QUIETANZA_TIPORTS_IDX = Internal.createIndex(DSL.name("fk_quietanza_tiports_idx"), Quietanza.QUIETANZA, new OrderField[] { Quietanza.QUIETANZA.ID_TIPO_RTS }, false);
+    public static final Index RETTIFICA_IVA_FK_RETTIFICAIVA_CONTABILITA_IDX = Internal.createIndex(DSL.name("fk_rettificaiva_contabilita_idx"), RettificaIva.RETTIFICA_IVA, new OrderField[] { RettificaIva.RETTIFICA_IVA.ID_CONTABILITA }, false);
     public static final Index RICHIESTA_FK_RICHIESTA_COMPETENZA_IDX = Internal.createIndex(DSL.name("fk_richiesta_competenza_idx"), Richiesta.RICHIESTA, new OrderField[] { Richiesta.RICHIESTA.ID_COMPETENZA }, false);
     public static final Index RITENUTA_FK_RITENUTA_ANAGRAFICA_IDX = Internal.createIndex(DSL.name("fk_ritenuta_anagrafica_idx"), Ritenuta.RITENUTA, new OrderField[] { Ritenuta.RITENUTA.ID_ANAGRAFICA }, false);
     public static final Index RITENUTA_FK_RITENUTA_ORDINATIVO_IDX = Internal.createIndex(DSL.name("fk_ritenuta_ordinativo_idx"), Ritenuta.RITENUTA, new OrderField[] { Ritenuta.RITENUTA.ID_ORDINATIVO }, false);

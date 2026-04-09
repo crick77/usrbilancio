@@ -19,7 +19,13 @@
             <h:panelGroup id="page" layout="block" styleClass="grid">
                 <div class="col-12 md:col-12 lg:col-12">
                     <p:panel header="ELENCO COMPLETO QUIETANZE" style="min-height: 400px">
-                        <div class="grid">                            
+                        <div class="grid">      
+                            <div class="col-12">
+                                Mostra solo anno corrente:
+                                <p:toggleSwitch id="soloAnnoAttuale" onIcon="pi pi-check" offIcon="pi pi-times" value="#{elencoQuietanzeController.soloAnnoAttuale}">
+                                    <p:ajax listener="#{elencoQuietanzeController.aggiornaQuietanze()}" update=":form:quietanze" />
+                                </p:toggleSwitch>
+                            </div>                       
                             <div class="col-12">
                                 <p:remoteCommand name="handleFilterEvent" actionListener="#{elencoQuietanzeController.aggiornaTotale()}" update="quietanze:totaleParziale" process="@this" />
                                 <p:dataTable id="quietanze" value="#{elencoQuietanzeController.quietanze}" var="q" paginator="true" rows="100" paginatorPosition="bottom" rowKey="#{q.id}" selectionMode="single"

@@ -5,7 +5,9 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.RichiestaRecord;
 import it.usr.web.usrbilancio.model.CapitoloCompetenza;
 import it.usr.web.usrbilancio.model.Documento;
@@ -38,7 +40,6 @@ import org.slf4j.Logger;
 @Named
 @ViewScoped
 public class SituazioneController extends BaseController {
-
     @Inject
     CompetenzaService cs;
     @Inject
@@ -52,6 +53,9 @@ public class SituazioneController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     boolean annoCorrente;
     List<Situazione> situazione;
     TreeNode<Situazione> situazioneTree;
@@ -62,6 +66,7 @@ public class SituazioneController extends BaseController {
     UploadedFile documento;
 
     public void init() {
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
         annoCorrente = true;
 
         aggiornaSituazione();
@@ -161,7 +166,7 @@ public class SituazioneController extends BaseController {
     }
 
     public void aggiornaSituazione() {
-        List<CapitoloCompetenza> capComp = cs.getCapitoliCompetenzeConStanziamento(annoCorrente ? getAnnoAttuale() : null);
+        List<CapitoloCompetenza> capComp = cs.getCapitoliCompetenzeConStanziamento(contabilita, annoCorrente ? getAnnoAttuale() : null);
         situazione = new ArrayList<>(capComp.size());
         capComp.forEach((var cc) -> {
             Situazione s = new Situazione();

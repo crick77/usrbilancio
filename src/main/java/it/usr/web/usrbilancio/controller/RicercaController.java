@@ -5,8 +5,10 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
@@ -51,6 +53,9 @@ public class RicercaController extends BaseController {
     CodiceService codServ;
     @Inject
     CompetenzaService cs;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<RisultatoRicerca> risultato;    
     List<TipoRtsRecord> tipiRts;    
     TipoRtsRecord[] tipiRtsSelezionati;
@@ -87,6 +92,7 @@ public class RicercaController extends BaseController {
     BigDecimal totaleMovimenti;
     
     public void init() {
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
         risultato = null;
         testo = null;
         dataDocDa = null;
@@ -119,11 +125,11 @@ public class RicercaController extends BaseController {
         
         tipiRts = codServ.getTipiRts(CodiceService.GruppoRts.RTS_TUTTI);        
         tipiRts.forEach(t -> mTipiRts.put(t.getId(), t));
-        cs.getCapitoliCompetenze().forEach(cc -> mCapComp.put(cc.getId(), cc));        
+        cs.getCapitoliCompetenze(contabilita).forEach(cc -> mCapComp.put(cc.getId(), cc));        
         mTipoDoc = codServ.getTipiDocumentoAsMap();
-        codici = codServ.getCodici();
+        codici = codServ.getCodici(contabilita);
         codici.forEach(c -> mCodici.put(c.getId(), c));
-        competenze = cs.getCapitoliCompetenze();
+        competenze = cs.getCapitoliCompetenze(contabilita);
         
         completato = false;
     }
@@ -387,9 +393,9 @@ public class RicercaController extends BaseController {
         sc.setAnnoCompetenza(annoCompetenza);
         sc.setCompetenze(competenzeSelezionate);
         
-        List<OrdinativoRecord> ordinativi = tipSel.contains("O") ? os.cerca(sc) : new ArrayList();
-        List<QuietanzaRecord> quietanze = tipSel.contains("Q") ? qs.cerca(sc) : new ArrayList();
-        List<MovimentiVirtualiRecord> movimenti = tipSel.contains("MV") ? mvs.cerca(sc) : new ArrayList();
+        List<OrdinativoRecord> ordinativi = tipSel.contains("O") ? os.cerca(contabilita, sc) : new ArrayList();
+        List<QuietanzaRecord> quietanze = tipSel.contains("Q") ? qs.cerca(contabilita, sc) : new ArrayList();
+        List<MovimentiVirtualiRecord> movimenti = tipSel.contains("MV") ? mvs.cerca(contabilita, sc) : new ArrayList();
          
         totale = BigDecimal.ZERO;
         totaleQuietanze = BigDecimal.ZERO;

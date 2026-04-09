@@ -5,9 +5,12 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
+import it.usr.web.domain.AppUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CapitoloRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CompetenzaRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.service.CapitoloService;
 import it.usr.web.usrbilancio.service.CompetenzaService;
 import it.usr.web.usrbilancio.service.DuplicationException;
@@ -40,13 +43,15 @@ public class CapitoliController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     
     public void init() {
-        capitoli = capServ.getCapitoli(true);
-       
-        competenze = null;
-        capitolo = null;
-        capitoloSelezonato = null;       
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        aggiornaCapitoli();
+               
+        capitolo = null;        
         competenza = null;
     }
 
@@ -87,6 +92,7 @@ public class CapitoliController extends BaseController {
     public void nuovo() {
         capitoloSelezonato = null;
         capitolo = new CapitoloRecord();
+        capitolo.setIdContabilita(contabilita.getId());
         capitolo.setNuovoanno((byte)0);
         capitolo.setVersione(0L);        
     }
@@ -135,7 +141,7 @@ public class CapitoliController extends BaseController {
     }
     
     public void aggiornaCapitoli() {
-        capitoli = capServ.getCapitoli();
+        capitoli = capServ.getCapitoli(contabilita, true);
         capitoloSelezonato = null;
         competenze = null;
     }
@@ -177,7 +183,7 @@ public class CapitoliController extends BaseController {
                 logger.debug("Errore imprevisto {} durante il salvataggio della competenza {}. Errrore: {}", ex.getCausedByException().getClass(), competenza, ex.getCausedByException());
             }
         }  
-    }
+    } 
     
     public void eliminaCompetenza() {
         try {
@@ -198,7 +204,7 @@ public class CapitoliController extends BaseController {
     
     public void generaCompetenze() {
         try {
-            int inseriti = compServ.generaCompetenze(getAnnoAttuale());
+            int inseriti = compServ.generaCompetenze(contabilita, getAnnoAttuale());
             CapitoloRecord sel = capitoloSelezonato;
             aggiornaCapitoli();
             capitoloSelezonato = sel;

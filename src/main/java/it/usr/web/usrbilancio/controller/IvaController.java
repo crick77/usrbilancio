@@ -5,8 +5,10 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -72,6 +74,9 @@ public class IvaController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     Map<Integer, CapitoloCompetenza> mCampComp;
     Map<Integer, CodiceRecord> codici;
     Map<Integer, TipoRtsRecord> tipiRts;
@@ -95,7 +100,8 @@ public class IvaController extends BaseController {
     UploadedFile ordinativoCaricato;
 
     public void init() {
-        codici = codServ.getCodiciAsMap();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = codServ.getCodiciAsMap(contabilita);
         tipiRtsList = codServ.getTipiRts(CodiceService.GruppoRts.RTS_ORDINATIVO);
         tipiRts = new HashMap<>();
         tipiRtsList.forEach(t -> {
@@ -104,7 +110,7 @@ public class IvaController extends BaseController {
         });
         tipiDocumento = codServ.getTipiDocumentoAsMap();
         mCampComp = new HashMap<>();
-        cs.getCapitoliCompetenze().forEach(cc -> {
+        cs.getCapitoliCompetenze(contabilita).forEach(cc -> {
             mCampComp.put(cc.getId(), cc);
         });
 
@@ -335,14 +341,14 @@ public class IvaController extends BaseController {
             return;
         }
 
-        ordinativiAggancio = os.getOrdinativiPagamento(LocalDate.now());
+        ordinativiAggancio = os.getOrdinativiPagamento(contabilita, LocalDate.now());
         ordinativoAggancioSelezionato = null;
 
         //PrimeFaces.current().executeScript("PF('ordinativoTargetDialog').show();");
     }
 
     public void agganciaSingolo(OrdinativoRecord o) {
-        ordinativiAggancio = os.getOrdinativiPagamento(o.getDataPagamento());
+        ordinativiAggancio = os.getOrdinativiPagamento(contabilita, o.getDataPagamento());
         ordinativoAggancioSelezionato = (o.getOrdinativoIva() != null) ? os.getOrdinativoById(o.getOrdinativoIva()) : null;
         ordinativiIvaSelezionati = new ArrayList<>();
         ordinativiIvaSelezionati.add(o);
@@ -639,7 +645,7 @@ public class IvaController extends BaseController {
             TipoRtsRecord trr = codServ.getTipoRtsByCodice(cod.substring(0, 1).toUpperCase());
             dd.idTipoRts = (trr!=null) ? trr.getId() : null;
             
-            CodiceRecord cr = codServ.getCodiceByCodiceComposto(cod.substring(1));
+            CodiceRecord cr = codServ.getCodiceByCodiceComposto(contabilita, cod.substring(1));
             dd.idCodice = (cr!=null) ? cr.getId() : null;
         }
         

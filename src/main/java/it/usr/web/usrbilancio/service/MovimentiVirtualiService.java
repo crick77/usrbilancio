@@ -7,6 +7,7 @@ package it.usr.web.usrbilancio.service;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.Tables;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.interceptor.LogDatabaseOperation;
 import it.usr.web.usrbilancio.model.CapitoloCompetenza;
@@ -41,7 +42,6 @@ import org.slf4j.Logger;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class MovimentiVirtualiService {
-
     @Inject
     @AppLogger
     Logger logger;
@@ -52,15 +52,44 @@ public class MovimentiVirtualiService {
     @Inject
     String documentFolder;
 
-    public List<MovimentiVirtualiRecord> getMovimentiVirtuali(int statoCap) {
+    public List<MovimentiVirtualiRecord> getMovimentiVirtuali(ContabilitaRecord contabilita, int statoCap) {
         if(statoCap==-1) {
-            return ctx.selectFrom(Tables.MOVIMENTI_VIRTUALI).fetch();
+            return ctx.select()
+                    .from(Tables.MOVIMENTI_VIRTUALI)
+                    .join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                    .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                    .fetchInto(Tables.MOVIMENTI_VIRTUALI);
         }
         else {
-            return ctx.select().from(Tables.MOVIMENTI_VIRTUALI.join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID))).where(Tables.COMPETENZA.CHIUSO.eq((byte)statoCap)).fetchInto(MovimentiVirtualiRecord.class);
+            return ctx.select().from(Tables.MOVIMENTI_VIRTUALI)
+                    .join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID))
+                    .join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                    .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                    .and(Tables.COMPETENZA.CHIUSO.eq((byte)statoCap))
+                    .fetchInto(Tables.MOVIMENTI_VIRTUALI);
         }
     }
 
+    public List<MovimentiVirtualiRecord> getMovimentiVirtualiPeriodo(ContabilitaRecord contabilita, int statoCap, LocalDate from, LocalDate to) {
+        if(statoCap==-1) {
+            return ctx.select()
+                    .from(Tables.MOVIMENTI_VIRTUALI)
+                    .join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                    .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                    .and(Tables.MOVIMENTI_VIRTUALI.DATA_PAGAMENTO.between(from, to))
+                    .fetchInto(Tables.MOVIMENTI_VIRTUALI);
+        }
+        else {
+            return ctx.select().from(Tables.MOVIMENTI_VIRTUALI)
+                    .join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID))
+                    .join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                    .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                    .and(Tables.COMPETENZA.CHIUSO.eq((byte)statoCap))
+                    .and(Tables.MOVIMENTI_VIRTUALI.DATA_PAGAMENTO.between(from, to))
+                    .fetchInto(Tables.MOVIMENTI_VIRTUALI);
+        }
+    }
+    
     public List<MovimentiVirtualiRecord> getMovimentiVirtuali(int idCapComp, int statoCap) {
         if(statoCap==-1) {
             return ctx.selectFrom(Tables.MOVIMENTI_VIRTUALI).where(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(idCapComp)).fetch();
@@ -212,7 +241,7 @@ public class MovimentiVirtualiService {
         }
     }
 
-    public List<MovimentiVirtualiRecord> cerca(SearchCriteria sc) {
+    public List<MovimentiVirtualiRecord> cerca(ContabilitaRecord contabilita, SearchCriteria sc) {
         Condition cond = DSL.noCondition();
 
         if (notEmpty(sc.testo)) {
@@ -314,11 +343,14 @@ public class MovimentiVirtualiService {
         }
 
         if (sc.annoCompetenza != null) {
-            return ctx.select().from(Tables.MOVIMENTI_VIRTUALI).join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.MOVIMENTI_VIRTUALI);
+            return ctx.select(Tables.MOVIMENTI_VIRTUALI).from(Tables.MOVIMENTI_VIRTUALI).join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.MOVIMENTI_VIRTUALI);
         } else {
-            return ctx.selectFrom(Tables.MOVIMENTI_VIRTUALI).where(cond).fetch();
+            return ctx.select(Tables.MOVIMENTI_VIRTUALI).from(Tables.MOVIMENTI_VIRTUALI)
+                    .join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                    .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                    .and(cond).fetchInto(Tables.MOVIMENTI_VIRTUALI);
         }
-    }
+    } 
 
     private boolean notEmpty(String s) {
         return (s == null) ? false : s.trim().length() > 0;

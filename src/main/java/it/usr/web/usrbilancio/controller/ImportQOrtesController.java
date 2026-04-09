@@ -5,8 +5,10 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.QuietanzaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -53,6 +55,9 @@ public class ImportQOrtesController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;  
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     QuietanzaRecord quietanza;
     UploadedFile file;
     CapitoloCompetenza quietanzaCapComp;
@@ -68,14 +73,15 @@ public class ImportQOrtesController extends BaseController {
     Map<Integer, TipoDocumentoRecord> tipiDocumento;    
     
     public void init() {
-        codici = codServ.getCodiciAsMap();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = codServ.getCodiciAsMap(contabilita);
         tipiRtsList = codServ.getTipiRts(CodiceService.GruppoRts.RTS_QUIETANZA);
         tipiRts = new HashMap<>();
         tipiRtsList.forEach(t -> tipiRts.put(t.getId(), t));        
         List<TipoDocumentoRecord> lTipoDoc = codServ.getTipiDocumentoNuovi();
         tipiDocumento = new HashMap<>();
         lTipoDoc.forEach(d -> tipiDocumento.put(d.getId(), d));
-        capComp = cs.getCapitoliCompetenzeApertiNonFuturi();  
+        capComp = cs.getCapitoliCompetenzeApertiNonFuturi(contabilita);  
         mCampComp = new HashMap<>();
         capComp.forEach(cc -> mCampComp.put(cc.getId(), cc));
          

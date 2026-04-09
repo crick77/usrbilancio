@@ -5,7 +5,9 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
 import it.usr.web.usrbilancio.model.CapitoloCompetenza;
@@ -34,6 +36,9 @@ public class TableExporterController extends BaseController {
     CompetenzaService cs;
     @Inject
     CodiceService codServ;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     Map<Integer, CapitoloCompetenza> capComp;
     Map<Integer, CodiceRecord> codici;
     Map<Integer, TipoDocumentoRecord> documenti;
@@ -42,13 +47,14 @@ public class TableExporterController extends BaseController {
     
     @PostConstruct
     public void init() {
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
         capComp = new HashMap<>();
         codici = new HashMap<>();
         documenti = new HashMap<>();
         rts = new HashMap<>();
                  
-        cs.getCapitoliCompetenze().forEach(cc -> capComp.put(cc.getId(), cc));
-        codServ.getCodici().forEach(c -> codici.put(c.getId(), c));
+        cs.getCapitoliCompetenze(contabilita).forEach(cc -> capComp.put(cc.getId(), cc));
+        codServ.getCodici(contabilita).forEach(c -> codici.put(c.getId(), c));
         codServ.getTipiDocumento().forEach(t -> documenti.put(t.getId(), t));
         codServ.getTipiRts(CodiceService.GruppoRts.RTS_TUTTI).forEach(t -> rts.put(t.getId(), t));
         

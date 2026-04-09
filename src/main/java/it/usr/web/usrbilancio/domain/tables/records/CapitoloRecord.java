@@ -35,87 +35,101 @@ public class CapitoloRecord extends UpdatableRecordImpl<CapitoloRecord> {
     }
 
     /**
+     * Setter for <code>usrbilancio.capitolo.id_contabilita</code>.
+     */
+    public void setIdContabilita(Integer value) {
+        set(1, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.capitolo.id_contabilita</code>.
+     */
+    public Integer getIdContabilita() {
+        return (Integer) get(1);
+    }
+
+    /**
      * Setter for <code>usrbilancio.capitolo.descrizione</code>.
      */
     public void setDescrizione(String value) {
-        set(1, value);
+        set(2, value);
     }
 
     /**
      * Getter for <code>usrbilancio.capitolo.descrizione</code>.
      */
     public String getDescrizione() {
-        return (String) get(1);
+        return (String) get(2);
     }
 
     /**
      * Setter for <code>usrbilancio.capitolo.nuovoanno</code>.
      */
     public void setNuovoanno(Byte value) {
-        set(2, value);
+        set(3, value);
     }
 
     /**
      * Getter for <code>usrbilancio.capitolo.nuovoanno</code>.
      */
     public Byte getNuovoanno() {
-        return (Byte) get(2);
+        return (Byte) get(3);
     }
 
     /**
      * Setter for <code>usrbilancio.capitolo.daconsolidare</code>.
      */
     public void setDaconsolidare(Byte value) {
-        set(3, value);
+        set(4, value);
     }
 
     /**
      * Getter for <code>usrbilancio.capitolo.daconsolidare</code>.
      */
     public Byte getDaconsolidare() {
-        return (Byte) get(3);
+        return (Byte) get(4);
     }
 
     /**
      * Setter for <code>usrbilancio.capitolo.stanziamento</code>.
      */
     public void setStanziamento(BigDecimal value) {
-        set(4, value);
+        set(5, value);
     }
 
     /**
      * Getter for <code>usrbilancio.capitolo.stanziamento</code>.
      */
     public BigDecimal getStanziamento() {
-        return (BigDecimal) get(4);
+        return (BigDecimal) get(5);
     }
 
     /**
      * Setter for <code>usrbilancio.capitolo.mostrasituazione</code>.
      */
     public void setMostrasituazione(Byte value) {
-        set(5, value);
+        set(6, value);
     }
 
     /**
      * Getter for <code>usrbilancio.capitolo.mostrasituazione</code>.
      */
     public Byte getMostrasituazione() {
-        return (Byte) get(5);
+        return (Byte) get(6);
     }
 
     /**
      * Setter for <code>usrbilancio.capitolo.versione</code>.
      */
     public void setVersione(Long value) {
-        set(6, value);
+        set(7, value);
     }
 
     /**
      * Getter for <code>usrbilancio.capitolo.versione</code>.
      */
     public Long getVersione() {
-        return (Long) get(6);
+        return (Long) get(7);
     }
 
     // -------------------------------------------------------------------------
@@ -141,10 +155,11 @@ public class CapitoloRecord extends UpdatableRecordImpl<CapitoloRecord> {
     /**
      * Create a detached, initialised CapitoloRecord
      */
-    public CapitoloRecord(Integer id, String descrizione, Byte nuovoanno, Byte daconsolidare, BigDecimal stanziamento, Byte mostrasituazione, Long versione) {
+    public CapitoloRecord(Integer id, Integer idContabilita, String descrizione, Byte nuovoanno, Byte daconsolidare, BigDecimal stanziamento, Byte mostrasituazione, Long versione) {
         super(Capitolo.CAPITOLO);
 
         setId(id);
+        setIdContabilita(idContabilita);
         setDescrizione(descrizione);
         setNuovoanno(nuovoanno);
         setDaconsolidare(daconsolidare);

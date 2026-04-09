@@ -13,6 +13,7 @@ import it.usr.web.usrbilancio.domain.tables.Codice;
 import it.usr.web.usrbilancio.domain.tables.CodiciTributo;
 import it.usr.web.usrbilancio.domain.tables.Competenza;
 import it.usr.web.usrbilancio.domain.tables.Comune;
+import it.usr.web.usrbilancio.domain.tables.Contabilita;
 import it.usr.web.usrbilancio.domain.tables.LogOperazioni;
 import it.usr.web.usrbilancio.domain.tables.MimeType;
 import it.usr.web.usrbilancio.domain.tables.Modelli;
@@ -80,6 +81,11 @@ public class Tables {
      * The table <code>usrbilancio.comune</code>.
      */
     public static final Comune COMUNE = Comune.COMUNE;
+
+    /**
+     * The table <code>usrbilancio.contabilita</code>.
+     */
+    public static final Contabilita CONTABILITA = Contabilita.CONTABILITA;
 
     /**
      * The table <code>usrbilancio.log_operazioni</code>.
@@ -152,8 +158,7 @@ public class Tables {
     public static final Utente UTENTE = Utente.UTENTE;
 
     /**
-     * View 'usrbilancio.v_ritenute' references invalid table(s) or column(s) or
-     * function(s) or definer/invoker of view lack rights to use them
+     * VIEW
      */
     public static final VRitenute V_RITENUTE = VRitenute.V_RITENUTE;
 }

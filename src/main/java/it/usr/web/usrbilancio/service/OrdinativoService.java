@@ -9,6 +9,7 @@ import it.usr.web.usrbilancio.domain.Tables;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -50,6 +51,7 @@ import org.vandeseer.easytable.structure.Table;
 import org.vandeseer.easytable.structure.cell.TextCell;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -68,7 +70,6 @@ import static org.vandeseer.easytable.settings.VerticalAlignment.TOP;
 @Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class OrdinativoService {
-
     private static final float POINTS_PER_INCH = 72;
     private static final float MM_PER_INCH = 1 / (10 * 2.54f) * POINTS_PER_INCH;
     private final static Color BLUE_DARK = new Color(76, 129, 190);
@@ -86,12 +87,25 @@ public class OrdinativoService {
     @Inject
     String documentFolder;
 
-    public List<OrdinativoRecord> getOrdinativi() {
-        return ctx.selectFrom(Tables.ORDINATIVO).orderBy(Tables.ORDINATIVO.DATA_PAGAMENTO.desc()).fetch();
+    public List<OrdinativoRecord> getOrdinativi(ContabilitaRecord contabilita) {
+        return ctx.select()
+                .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .orderBy(Tables.ORDINATIVO.DATA_PAGAMENTO.desc())
+                .fetchInto(Tables.ORDINATIVO);
     }
 
+    public List<OrdinativoRecord> getOrdinativiPeriodo(ContabilitaRecord contabilita, LocalDate from, LocalDate to) {
+        return ctx.select()
+                .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to))
+                .orderBy(Tables.ORDINATIVO.DATA_PAGAMENTO.desc())
+                .fetchInto(Tables.ORDINATIVO);
+    }
+    
     public OrdinativoRecord getOrdinativoById(int id) {
-        return ctx.selectFrom(Tables.ORDINATIVO).where(Tables.ORDINATIVO.ID.eq(id)).fetchOne();
+        return ctx.selectFrom(Tables.ORDINATIVO).where(Tables.ORDINATIVO.ID.eq(id)).fetchOne(); 
     }
 
     public OrdinativoRecord getOrdinativoOrdinativoIva(int ordinativoIva) {
@@ -138,26 +152,40 @@ public class OrdinativoService {
         return q.fetch();
     }
     
-    public List<OrdinativoRecord> getOrdinativiIncompleti() {
-        return ctx.selectFrom(Tables.ORDINATIVO).where(Tables.ORDINATIVO.RTS_COMPLETO.eq((byte) 0)).orderBy(Tables.ORDINATIVO.NUMERO_PAGAMENTO).fetch();
+    public List<OrdinativoRecord> getOrdinativiIncompleti(ContabilitaRecord contabilita) {
+        return ctx.select(Tables.ORDINATIVO)
+                .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.RTS_COMPLETO.eq((byte) 0))
+                .orderBy(Tables.ORDINATIVO.NUMERO_PAGAMENTO).fetchInto(OrdinativoRecord.class);
     }
 
-    public List<OrdinativoRecord> getOrdinativiDaStampare() {
-        return ctx.selectFrom(Tables.ORDINATIVO)
-                .where(Tables.ORDINATIVO.ID_TIPO_DOCUMENTO.in(DSL.select(Tables.TIPO_DOCUMENTO.ID).from(Tables.TIPO_DOCUMENTO).where(Tables.TIPO_DOCUMENTO.STAMPABILE.eq((byte) 1))))
+    public List<OrdinativoRecord> getOrdinativiDaStampare(ContabilitaRecord contabilita) {
+        return ctx.select(Tables.ORDINATIVO)
+                .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.ID_TIPO_DOCUMENTO.in(DSL.select(Tables.TIPO_DOCUMENTO.ID).from(Tables.TIPO_DOCUMENTO).where(Tables.TIPO_DOCUMENTO.STAMPABILE.eq((byte) 1))))
                 .and(Tables.ORDINATIVO.RTS_COMPLETO.eq((byte) 1))
                 .and(Tables.ORDINATIVO.RTS_STAMPATO.eq((byte) 0))
                 .orderBy(Tables.ORDINATIVO.NUMERO_PAGAMENTO)
-                .fetch();
+                .fetchInto(OrdinativoRecord.class);
     }
 
-    public List<OrdinativoRecord> getOrdinativiDaConsolidare() {
-        return ctx.selectFrom(Tables.ORDINATIVO).where(Tables.ORDINATIVO.CONSOLIDAMENTO.eq((byte) 1)).orderBy(Tables.ORDINATIVO.NUMERO_PAGAMENTO).fetch();
+    public List<OrdinativoRecord> getOrdinativiDaConsolidare(ContabilitaRecord contabilita) {
+        return ctx.select(Tables.ORDINATIVO)
+                .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.CONSOLIDAMENTO.eq((byte) 1))
+                .orderBy(Tables.ORDINATIVO.NUMERO_PAGAMENTO)
+                .fetchInto(OrdinativoRecord.class);
     }
 
-    public List<OrdinativoRecord> getOrdinativiPagamento(LocalDate end) {
+    public List<OrdinativoRecord> getOrdinativiPagamento(ContabilitaRecord contabilita, LocalDate end) {
         LocalDate start = end.minusYears(1);
-        return ctx.selectFrom(Tables.ORDINATIVO).where(Tables.ORDINATIVO.IMPORTO_IVA.isNull()).and(Tables.ORDINATIVO.IMPORTO_RITENUTA.isNull()).and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(start, end)).fetch();
+        return ctx.select(Tables.ORDINATIVO)
+                .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.IMPORTO_IVA.isNull()).and(Tables.ORDINATIVO.IMPORTO_RITENUTA.isNull()).and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(start, end)).fetchInto(OrdinativoRecord.class);
     }
         
     public List<AllegatoRecord> getAllegatiOrdinativo(int idOrdinativo) {
@@ -775,17 +803,23 @@ public class OrdinativoService {
         }
     }
 
-    public int getNumeroOrdinativiPeriodo(LocalDate from, LocalDate to) {
+    public int getNumeroOrdinativiPeriodo(ContabilitaRecord contabilita, LocalDate from, LocalDate to) {        
         Integer codice98 = ctx.select(Tables.TIPO_RTS.ID).from(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.eq("98")).fetchOneInto(Integer.class);
         Integer codice99 = ctx.select(Tables.TIPO_RTS.ID).from(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.eq("99")).fetchOneInto(Integer.class);
-        return ctx.select(DSL.countDistinct(Tables.ORDINATIVO.NUMERO_PAGAMENTO)).from(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to).
+        return ctx.select(DSL.countDistinct(Tables.ORDINATIVO.NUMERO_PAGAMENTO)).from(Tables.ORDINATIVO)
+                .join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to).
                 and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice98)).and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice99))).
                 fetchSingle().into(Integer.class);
     }
 
-    public Integer getUltimoNumeroOrdinativo(int anno) {
+    public Integer getUltimoNumeroOrdinativo(ContabilitaRecord contabilita, int anno) {
         LocalDate from = LocalDate.now().withMonth(1).withDayOfMonth(1).withYear(anno);
-        String v = ctx.select(DSL.max(Tables.ORDINATIVO.NUMERO_PAGAMENTO.cast(Long.class))).from(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.ge(from)).fetchSingle().into(String.class);
+        String v = ctx.select(DSL.max(Tables.ORDINATIVO.NUMERO_PAGAMENTO.cast(Long.class))).from(Tables.ORDINATIVO)
+                .join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.DATA_PAGAMENTO.ge(from)).fetchSingle().into(String.class);
         try {
             return Integer.valueOf(v);
         } catch (NumberFormatException nfe) { 
@@ -794,44 +828,69 @@ public class OrdinativoService {
         }
     }
 
-    public BigDecimal getImportoIVADaPagare(int annoAttuale) {
+    public BigDecimal getImportoIVADaPagare(ContabilitaRecord contabilita, int annoAttuale) {
         LocalDate from = LocalDate.now().withMonth(1).withDayOfMonth(1).withYear(annoAttuale);
         LocalDate to = from.plusYears(1).minusDays(1);
-        return ctx.select(DSL.sum(Tables.ORDINATIVO.IMPORTO_IVA)).from(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to)).and(Tables.ORDINATIVO.ORDINATIVO_IVA.isNull()).fetchSingle().into(BigDecimal.class);
+        return ctx.select(DSL.sum(Tables.ORDINATIVO.IMPORTO_IVA)).from(Tables.ORDINATIVO)
+                .join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to)).and(Tables.ORDINATIVO.ORDINATIVO_IVA.isNull()).fetchSingle().into(BigDecimal.class);
     }
 
-    public BigDecimal getImportoIVAPagata(int annoAttuale) {
-        BigDecimal rettifica = ctx.select(Tables.RETTIFICA_IVA.IVA_PAGATA).from(Tables.RETTIFICA_IVA).where(Tables.RETTIFICA_IVA.ANNO.eq(annoAttuale)).fetchOneInto(BigDecimal.class);
+    public BigDecimal getImportoIVAPagata(ContabilitaRecord contabilita, int annoAttuale) {
+        BigDecimal rettifica = ctx.select(Tables.RETTIFICA_IVA.IVA_PAGATA).from(Tables.RETTIFICA_IVA)
+                .where(Tables.RETTIFICA_IVA.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.RETTIFICA_IVA.ANNO.eq(annoAttuale)).fetchOneInto(BigDecimal.class);
+        
         LocalDate from = LocalDate.now().withMonth(1).withDayOfMonth(1).withYear(annoAttuale);
         LocalDate to = from.plusYears(1).withMonth(1).withDayOfYear(1).minusDays(1);
-        BigDecimal res = ctx.select(DSL.coalesce(DSL.sum(Tables.ORDINATIVO.IMPORTO), 0)).from(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to))
+        BigDecimal res = ctx.select(DSL.coalesce(DSL.sum(Tables.ORDINATIVO.IMPORTO), 0)).from(Tables.ORDINATIVO)
+                .join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to))
                 .and(Tables.ORDINATIVO.ID.in(
-                        DSL.select(Tables.ORDINATIVO.ORDINATIVO_IVA).from(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to)).and(Tables.ORDINATIVO.ORDINATIVO_IVA.isNotNull()))
+                        DSL.select(Tables.ORDINATIVO.ORDINATIVO_IVA).from(Tables.ORDINATIVO)
+                                .join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                                .and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to)).and(Tables.ORDINATIVO.ORDINATIVO_IVA.isNotNull()))
                 ).fetchSingle().into(BigDecimal.class);
         BigDecimal tot = rettifica != null ? res.add(rettifica) : res;
         logger.info("Valore IVA Da Pagare prima della rettifica [{}], rettifica [{}] totale [{}].", res, rettifica, tot);
         return tot;
     }
 
-    public BigDecimal getImportoIVAAnagrafica(int annoAttuale) {
-        BigDecimal rettifica = ctx.select(Tables.RETTIFICA_IVA.IVA_ANAGRAFICA).from(Tables.RETTIFICA_IVA).where(Tables.RETTIFICA_IVA.ANNO.eq(annoAttuale)).fetchOneInto(BigDecimal.class);
+    public BigDecimal getImportoIVAAnagrafica(ContabilitaRecord contabilita, int annoAttuale) {
+        BigDecimal rettifica = ctx.select(Tables.RETTIFICA_IVA.IVA_ANAGRAFICA).from(Tables.RETTIFICA_IVA)
+                .where(Tables.RETTIFICA_IVA.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.RETTIFICA_IVA.ANNO.eq(annoAttuale)).fetchOneInto(BigDecimal.class);
+        
         LocalDate from = LocalDate.now().withMonth(1).withDayOfMonth(1).withYear(annoAttuale);
         LocalDate to = from.plusYears(1).withMonth(1).withDayOfYear(1).minusDays(1);
-        BigDecimal res = ctx.select(DSL.coalesce(DSL.sum(Tables.ORDINATIVO.IMPORTO_IVA), 0)).from(Tables.ORDINATIVO).where(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to)).fetchSingle().into(BigDecimal.class);
+        BigDecimal res = ctx.select(DSL.coalesce(DSL.sum(Tables.ORDINATIVO.IMPORTO_IVA), 0)).from(Tables.ORDINATIVO)
+                .join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(from, to)).fetchSingle().into(BigDecimal.class);
         BigDecimal tot = rettifica != null ? res.add(rettifica) : res;
         logger.info("Valore IVA Anagrafica prima della rettifica [{}], rettifica [{}] totale [{}].", res, rettifica, tot);
         return tot;
     } 
 
-    public int getNumeroOrdinativiAnno(int anno) {
+    public int getNumeroOrdinativiAnno(ContabilitaRecord contabilita, int anno) {
+        LocalDate first = LocalDate.of(anno, Month.JANUARY, 1);
+        LocalDate last = LocalDate.of(anno, Month.DECEMBER, 31);
+        
         Integer codice98 = ctx.select(Tables.TIPO_RTS.ID).from(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.eq("98")).fetchOneInto(Integer.class);
         Integer codice99 = ctx.select(Tables.TIPO_RTS.ID).from(Tables.TIPO_RTS).where(Tables.TIPO_RTS.CODICE.eq("99")).fetchOneInto(Integer.class);
-        return ctx.select(DSL.countDistinct(Tables.ORDINATIVO.NUMERO_PAGAMENTO)).from(Tables.ORDINATIVO).where(DSL.year(Tables.ORDINATIVO.DATA_PAGAMENTO).eq(anno).
-                and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice98)).and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice99))).
-                fetchOneInto(Integer.class);
+        
+        return ctx.select(DSL.countDistinct(Tables.ORDINATIVO.NUMERO_PAGAMENTO)).from(Tables.ORDINATIVO)
+                .join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                .and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice98)).and(Tables.ORDINATIVO.ID_TIPO_RTS.ne(codice99))
+                .and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(first, last))
+                .fetchOneInto(Integer.class);
     }
     
-    public List<OrdinativoRecord> cerca(SearchCriteria sc) {
+    public List<OrdinativoRecord> cerca(ContabilitaRecord contabilita, SearchCriteria sc) {
         Condition cond = DSL.noCondition();
 
         if (notEmpty(sc.testo)) {
@@ -942,7 +1001,10 @@ public class OrdinativoService {
         if (sc.annoCompetenza != null) {
             return ctx.select().from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.ORDINATIVO);
         } else {
-            return ctx.selectFrom(Tables.ORDINATIVO).where(cond).fetch();
+            return ctx.select(Tables.ORDINATIVO)
+                    .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
+                    .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+                    .and(cond).fetchInto(OrdinativoRecord.class);
         }
     }
 
@@ -1085,9 +1147,9 @@ public class OrdinativoService {
         return (d != null) ? new DecimalFormat("#,##0.00").format(d) : "";
     }
     
-    public BigDecimal getTotaleOrdinativiPeriodo(LocalDate min, LocalDate max) {
-        String sql = "SELECT sum(importo) as tot from ordinativo o where (o.data_pagamento between {0} and {1})";
-        return ctx.fetchSingle(sql, min, max).into(BigDecimal.class);
+    public BigDecimal getTotaleOrdinativiPeriodo(ContabilitaRecord contabilita, LocalDate min, LocalDate max) {
+        String sql = "SELECT coalesce(sum(importo), 0) as tot from ordinativo o join competenza co on o.id_competenza = co.id join capitolo ca on co.id_capitolo = ca.id where (ca.id_contabilita = {2}) and (o.data_pagamento between {0} and {1})";
+        return ctx.fetchSingle(sql, min, max, contabilita.getId()).into(BigDecimal.class);
     }
     
     public String notNull(String s) {

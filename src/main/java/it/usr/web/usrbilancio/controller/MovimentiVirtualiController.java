@@ -11,8 +11,10 @@ import it.usr.pdfextract.model.RiversamentoSuCS;
 import it.usr.pdfextract.model.RiversamentoSuErario;
 import it.usr.pdfextract.model.RiversamentoSuTU;
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.MovimentiVirtualiRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
@@ -53,7 +55,6 @@ import org.slf4j.Logger;
 @Named
 @ViewScoped
 public class MovimentiVirtualiController extends BaseController {
-
     @Inject
     PDFExtractor pe;
     @Inject
@@ -67,6 +68,9 @@ public class MovimentiVirtualiController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     CapitoloCompetenza capCompSelezionato;
     CapitoloCompetenza movimentoCapComp;
     CodiceRecord movimentoCodice;
@@ -87,11 +91,12 @@ public class MovimentiVirtualiController extends BaseController {
     String azione;
 
     public void init() {
-        codiciList = codServ.getCodici();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codiciList = codServ.getCodici(contabilita);
         codici = new HashMap<>();
         codiciList.forEach(c -> codici.put(c.getId(), c));
-        capComp = cs.getCapitoliCompetenze();
-        capCompAperti = cs.getCapitoliCompetenzeAperti();
+        capComp = cs.getCapitoliCompetenze(contabilita);
+        capCompAperti = cs.getCapitoliCompetenzeAperti(contabilita);
         mCampComp = new HashMap<>();
         capComp.forEach(cc -> mCampComp.put(cc.getId(), cc));
         tipiDocumento = codServ.getTipiDocumentoAsMap();
@@ -508,7 +513,7 @@ public class MovimentiVirtualiController extends BaseController {
         if (descrCausale != null && descrCausale.contains(",")) {
             String[] parts = descrCausale.split("\\,");
             String cod = parts[parts.length - 1].trim().replace(".", "").replace(" ", "");
-            return codServ.getCodiceByCodiceComposto(cod);
+            return codServ.getCodiceByCodiceComposto(contabilita, cod);
         }
 
         return null;
@@ -547,7 +552,7 @@ public class MovimentiVirtualiController extends BaseController {
             TipoRtsRecord trr = codServ.getTipoRtsByCodice(cod.substring(0, 1).toUpperCase());
             dd.idTipoRts = (trr != null) ? trr.getId() : null;
 
-            CodiceRecord cr = codServ.getCodiceByCodiceComposto(cod.substring(1));
+            CodiceRecord cr = codServ.getCodiceByCodiceComposto(contabilita, cod.substring(1));
             dd.idCodice = (cr != null) ? cr.getId() : null;
         }
 

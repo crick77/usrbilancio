@@ -5,9 +5,11 @@
 package it.usr.web.usrbilancio.controller;
 
 import it.usr.web.controller.BaseController;
+import it.usr.web.domain.ActiveUser;
 import it.usr.web.producer.AppLogger;
 import it.usr.web.usrbilancio.domain.tables.records.AllegatoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.CodiceRecord;
+import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoDocumentoRecord;
 import it.usr.web.usrbilancio.domain.tables.records.TipoRtsRecord;
@@ -53,6 +55,9 @@ public class OrdinativiDaConsolidareController extends BaseController {
     @Inject
     @AppLogger
     Logger logger;
+    @Inject
+    ActiveUser activeUser;
+    ContabilitaRecord contabilita;
     List<OrdinativoRecord> ordinativi;
     List<OrdinativoRecord> ordinativiFiltrati; 
     List<AllegatoRecord> allegati;
@@ -70,14 +75,15 @@ public class OrdinativiDaConsolidareController extends BaseController {
     BigDecimal importoDifferenza;
     
     public void init() {
-        codici = codServ.getCodiciAsMap();
+        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
+        codici = codServ.getCodiciAsMap(contabilita);
         tipiRtsList = codServ.getTipiRts(CodiceService.GruppoRts.RTS_ORDINATIVO);
         tipiRts = new HashMap<>();
         tipiRtsList.forEach(t -> {
             tipiRts.put(t.getId(), t);
         });
         tipiDocumento = codServ.getTipiDocumentoAsMap();
-        capComp = cs.getCapitoliCompetenze();  
+        capComp = cs.getCapitoliCompetenze(contabilita);  
         mCampComp = new HashMap<>();
         capComp.forEach(cc -> {
             mCampComp.put(cc.getId(), cc);
@@ -175,7 +181,7 @@ public class OrdinativiDaConsolidareController extends BaseController {
     }
                  
     public void aggiornaOrdinativi() {
-        ordinativi = os.getOrdinativiDaConsolidare();    
+        ordinativi = os.getOrdinativiDaConsolidare(contabilita);    
         ordinativo = null;
         ordinativiFiltrati = null;
         allegati = null;
