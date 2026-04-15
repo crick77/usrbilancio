@@ -500,7 +500,8 @@ public class IvaController extends BaseController {
                     oIva.put(oi, _o);               
                 });
                 
-                os.inserisciIVA(oIva, doc, MESI[periodo.get(0).getMonthValue()-1], periodo.get(0).getYear());
+                //os.inserisciIVA(oIva, doc, MESI[periodo.get(0).getMonthValue()-1], periodo.get(0).getYear());
+                os.inserisciIVA(oIva, doc, periodo.get(0).getMonthValue(), periodo.get(0).getYear());
             }
                         
             aggiornaOrdinativiIva();

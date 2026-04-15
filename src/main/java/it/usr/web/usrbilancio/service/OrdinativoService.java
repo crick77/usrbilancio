@@ -296,7 +296,7 @@ public class OrdinativoService {
     }
 
     @LogDatabaseOperation
-    public void inserisciIVA(Map<OrdinativoRecord, OrdinativoRecord> ordinativiIva, final Documento documento, String mese, int anno) {
+    public void inserisciIVA(Map<OrdinativoRecord, OrdinativoRecord> ordinativiIva, final Documento documento, int mese, int anno) {
         final String localFileName = UUID.randomUUID().toString() + "." + FilenameUtils.getExtension(documento.getFileName());
 
         try {
@@ -327,7 +327,7 @@ public class OrdinativoService {
                     oRiep.setNumeroDocumento(null);
                     oRiep.setDataDocumento(null);
                     oRiep.setBeneficiario("ERARIO");
-                    oRiep.setDescrizioneRts("RIEPILOGO VERSAMENTO IVA " + anno + "-" + String.format("%02d", anno));
+                    oRiep.setDescrizioneRts("RIEPILOGO VERSAMENTO IVA " + anno + "-" + String.format("%02d", mese));
                     oRiep.setFatturaNumero(null);
                     oRiep.setFatturaData(null);
                     oRiep.setImporto(BigDecimal.ZERO);
@@ -1020,7 +1020,7 @@ public class OrdinativoService {
         return (o == null) ? false : o.length > 0;
     }
 
-    private String generaDocumentoRiepilogativoIVA(String mese, int anno, Map<OrdinativoRecord, OrdinativoRecord> ordinaitiviIva) throws IOException {
+    private String generaDocumentoRiepilogativoIVA(int mese, int anno, Map<OrdinativoRecord, OrdinativoRecord> ordinaitiviIva) throws IOException {
         final Table.TableBuilder tableBuilder = Table.builder()
                 .addColumnsOfWidth(50, 50, 400, 120, 50, 60, 50, 60, 50, 80, 80)
                 .fontSize(8)
@@ -1108,7 +1108,7 @@ public class OrdinativoService {
             document.addPage(page);
             float startY = page.getMediaBox().getHeight() - PADDING;
             try (final PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                String title = "DETTAGLIO PAGAMENTO IVA MESE DI " + mese + " " + anno;
+                String title = "DETTAGLIO PAGAMENTO IVA " + String.format("%02d", mese) + "/" + anno;
                 int fontSize = 14;
                 int marginTop = 20;
                 PDFont font = new PDType1Font(HELVETICA_BOLD);
