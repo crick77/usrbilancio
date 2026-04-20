@@ -114,17 +114,16 @@
                             <p:graphicImage name="images/infinity.svg" library="verona-layout"/>
                         </div>
                         <div class="col-9">
-                            <span class="overview-box-count card-header" style="font-size: 25px !important;">
+                            <span class="overview-box-count card-header" style="font-size: #{indexController.computeSize(indexController.totaleQuietanze)}px !important;">
                                 € <h:outputText id="totqui" value="#{indexController.totaleQuietanze}">
                                     <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText> / 
-                                € <h:outputText id="totord" value="#{indexController.totaleOrdinativi}">
+                                </h:outputText> /€ <h:outputText id="totord" value="#{indexController.totaleOrdinativi}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </span>
                             <span class="overview-box-name">TOTALE QUIETANZE/ORDINATIVI</span>
                             <span>
-                                al 
+                                il 
                                 <p:commandButton icon="pi pi-calendar" styleClass="rounded-button ui-button-success ui-button-flat" title="Cambia data"
                                                  process="@this" onclick="PF('wvdataTotOrdQuiDialog').show();">
                                     <h:outputText id="dataOrdQui" value="#{indexController.dataOrdQui}">

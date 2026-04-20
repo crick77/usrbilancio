@@ -69,7 +69,7 @@ public class Capitolo extends TableImpl<CapitoloRecord> {
     /**
      * The column <code>usrbilancio.capitolo.id_contabilita</code>.
      */
-    public final TableField<CapitoloRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.inline("1", SQLDataType.INTEGER)), this, "");
+    public final TableField<CapitoloRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
      * The column <code>usrbilancio.capitolo.descrizione</code>.

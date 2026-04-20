@@ -8,6 +8,7 @@ import it.usr.web.usrbilancio.domain.Keys;
 import it.usr.web.usrbilancio.domain.Usrbilancio;
 import it.usr.web.usrbilancio.domain.tables.Capitolo.CapitoloPath;
 import it.usr.web.usrbilancio.domain.tables.Codice.CodicePath;
+import it.usr.web.usrbilancio.domain.tables.OrdinativoAppoggio.OrdinativoAppoggioPath;
 import it.usr.web.usrbilancio.domain.tables.RettificaIva.RettificaIvaPath;
 import it.usr.web.usrbilancio.domain.tables.records.ContabilitaRecord;
 
@@ -191,6 +192,19 @@ public class Contabilita extends TableImpl<ContabilitaRecord> {
             _codice = new CodicePath(this, null, Keys.FK_CODICE_CONTABILITA.getInverseKey());
 
         return _codice;
+    }
+
+    private transient OrdinativoAppoggioPath _ordinativoAppoggio;
+
+    /**
+     * Get the implicit to-many join path to the
+     * <code>usrbilancio.ordinativo_appoggio</code> table
+     */
+    public OrdinativoAppoggioPath ordinativoAppoggio() {
+        if (_ordinativoAppoggio == null)
+            _ordinativoAppoggio = new OrdinativoAppoggioPath(this, null, Keys.FK_ORDINATIVOAPP_CONTABILITA.getInverseKey());
+
+        return _ordinativoAppoggio;
     }
 
     private transient RettificaIvaPath _rettificaIva;

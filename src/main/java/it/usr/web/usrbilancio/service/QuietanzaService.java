@@ -332,7 +332,7 @@ public class QuietanzaService {
             return ctx.select().from(Tables.QUIETANZA).join(Tables.COMPETENZA).on(Tables.QUIETANZA.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.QUIETANZA);
         }
         else {
-            return ctx.select(Tables.QUIETANZA)
+            return ctx.select(Tables.QUIETANZA.fields())
                 .from(Tables.QUIETANZA).join(Tables.COMPETENZA).on(Tables.QUIETANZA.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
                 .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))                           
                 .and(cond)

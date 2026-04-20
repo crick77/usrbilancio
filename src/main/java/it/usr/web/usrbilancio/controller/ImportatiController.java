@@ -610,7 +610,7 @@ public class ImportatiController extends BaseController {
     public String rowColor(OrdinativoAppoggioRecord o) {
         if(o==null) return "";
         if(isTrasferibile(o)) return "lightgreen";
-        if(o.getDataElaborazione().equals(LocalDate.now())) return "lightyellow";
+        if(LocalDate.now().equals(o.getDataElaborazione())) return "lightyellow";
         return "";
     }
     

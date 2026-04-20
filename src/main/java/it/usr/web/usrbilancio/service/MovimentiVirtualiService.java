@@ -343,9 +343,9 @@ public class MovimentiVirtualiService {
         }
 
         if (sc.annoCompetenza != null) {
-            return ctx.select(Tables.MOVIMENTI_VIRTUALI).from(Tables.MOVIMENTI_VIRTUALI).join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.MOVIMENTI_VIRTUALI);
+            return ctx.select(Tables.MOVIMENTI_VIRTUALI.fields()).from(Tables.MOVIMENTI_VIRTUALI).join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.MOVIMENTI_VIRTUALI);
         } else {
-            return ctx.select(Tables.MOVIMENTI_VIRTUALI).from(Tables.MOVIMENTI_VIRTUALI)
+            return ctx.select(Tables.MOVIMENTI_VIRTUALI.fields()).from(Tables.MOVIMENTI_VIRTUALI)
                     .join(Tables.COMPETENZA).on(Tables.MOVIMENTI_VIRTUALI.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
                     .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
                     .and(cond).fetchInto(Tables.MOVIMENTI_VIRTUALI);

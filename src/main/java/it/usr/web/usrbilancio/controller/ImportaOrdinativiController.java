@@ -102,6 +102,7 @@ public class ImportaOrdinativiController extends BaseController {
                 }
 
                 OrdinativoAppoggioRecord o = new OrdinativoAppoggioRecord();
+                o.setIdContabilita(contabilita.getId());
                 o.setNumeroPagamento(String.valueOf(pdfO.getNumeroOrdine()));
                 o.setDataPagamento(toLocalDate(pdfO.getDataOrdine()));
                 o.setImporto(pdfO.getImporto());

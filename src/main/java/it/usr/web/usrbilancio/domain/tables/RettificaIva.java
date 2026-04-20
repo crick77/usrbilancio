@@ -67,7 +67,7 @@ public class RettificaIva extends TableImpl<RettificaIvaRecord> {
     /**
      * The column <code>usrbilancio.rettifica_iva.id_contabilita</code>.
      */
-    public final TableField<RettificaIvaRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.inline("1", SQLDataType.INTEGER)), this, "");
+    public final TableField<RettificaIvaRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
      * The column <code>usrbilancio.rettifica_iva.iva_anagrafica</code>.

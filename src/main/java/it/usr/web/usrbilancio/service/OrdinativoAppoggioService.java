@@ -44,28 +44,25 @@ public class OrdinativoAppoggioService {
     String documentFolder;
 
     public List<OrdinativoAppoggioRecord> getOrdinativi(ContabilitaRecord contabilita) {
-        return ctx.select(Tables.ORDINATIVO_APPOGGIO)
-                .from(Tables.ORDINATIVO_APPOGGIO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO_APPOGGIO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
-                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
-                .orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc()).fetchInto(OrdinativoAppoggioRecord.class);
+        return ctx.selectFrom(Tables.ORDINATIVO_APPOGGIO)                
+                .where(Tables.ORDINATIVO_APPOGGIO.ID_CONTABILITA.eq(contabilita.getId()))
+                .orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc()).fetch();
     }
 
     public List<OrdinativoAppoggioRecord> getOrdinativiUtente(ContabilitaRecord contabilita, String userName) {
-        return ctx.select(Tables.ORDINATIVO_APPOGGIO)
-                .from(Tables.ORDINATIVO_APPOGGIO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO_APPOGGIO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
-                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+        return ctx.selectFrom(Tables.ORDINATIVO_APPOGGIO)                
+                .where(Tables.ORDINATIVO_APPOGGIO.ID_CONTABILITA.eq(contabilita.getId()))
                 .and(Tables.ORDINATIVO_APPOGGIO.PROPRIETARIO.eq(userName))
                 .orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc())
-                .fetchInto(OrdinativoAppoggioRecord.class);
+                .fetch();
     }
 
     public List<OrdinativoAppoggioRecord> getOrdinativiDataUtente(ContabilitaRecord contabilita, LocalDate d, String userName) {
-        return ctx.select(Tables.ORDINATIVO_APPOGGIO)
-                .from(Tables.ORDINATIVO_APPOGGIO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO_APPOGGIO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
-                .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
+        return ctx.selectFrom(Tables.ORDINATIVO_APPOGGIO)                
+                .where(Tables.ORDINATIVO_APPOGGIO.ID_CONTABILITA.eq(contabilita.getId()))
                 .and(Tables.ORDINATIVO_APPOGGIO.PROPRIETARIO.eq(userName).and(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.eq(d)))
                 .orderBy(Tables.ORDINATIVO_APPOGGIO.DATA_ELABORAZIONE.desc())
-                .fetchInto(OrdinativoAppoggioRecord.class);
+                .fetch();
     }
     
     public List<AllegatoAppoggioRecord> getAllegatiOrdinativoAppoggio(int idOrdinativoAppoggio) {

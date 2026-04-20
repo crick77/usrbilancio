@@ -20,6 +20,7 @@ import java.util.List;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -35,6 +36,7 @@ import org.slf4j.Logger;
 @Named
 @ViewScoped
 public class IndexController extends BaseController {
+    final static BigDecimal ONE_MILION = new BigDecimal(1000000);
     @Inject
     CompetenzaService compServ;
     @Inject
@@ -43,13 +45,13 @@ public class IndexController extends BaseController {
     QuietanzaService qs;
     @Inject
     @AppLogger
-    Logger logger;   
+    Logger logger;
     @Inject
     ActiveUser activeUser;
     ContabilitaRecord contabilita;
     List<StatoCapitolo> statoCapitoli;
     List<StatoCapitolo> statoCapitoliFiltrato;
-    List<StatoCapitolo> statoCapitoliAnnoCorrente;    
+    List<StatoCapitolo> statoCapitoliAnnoCorrente;
     StatoCapitolo capitoloSelezionato;
     StatoCapitolo capitoloAnnoCorrenteSelezionato;
     List<Integer> anni;
@@ -73,12 +75,14 @@ public class IndexController extends BaseController {
     Integer[] selectedAnni;
     LocalDate dataSaldo;
     LocalDate dataOrdQui;
-    
+
     public String init() {
-        contabilita = (ContabilitaRecord)activeUser.getAttributes().get("contabilita");
-        UtenteRecord u = (UtenteRecord)getUtente().getAttributes();
-        if(u.getPubblica()==1) return "pubblica/index";
-        
+        contabilita = (ContabilitaRecord) activeUser.getAttributes().get("contabilita");
+        UtenteRecord u = (UtenteRecord) getUtente().getAttributes();
+        if (u.getPubblica() == 1) {
+            return "pubblica/index";
+        }
+
         dataSaldo = LocalDate.now();
         dataOrdQui = dataSaldo;
         totaliAnnoCorrente = new HashMap<>();
@@ -89,23 +93,23 @@ public class IndexController extends BaseController {
         totaliAnnoCorrente.put("SV", BigDecimal.ZERO);
         totaliComplessivo = new HashMap<>();
         totaliComplessivo.putAll(totaliAnnoCorrente);
-        
+
         aggiornaAnnoCorrente();
         aggiornaSaldo();
-        aggiornaSaldoLR8();        
+        aggiornaSaldoLR8();
         aggiornaOrdinativiMese();
         aggiornaOrdinativiAnno();
         aggiornaUltimoNumeroOrdinativo();
         aggiornaIVA();
         aggiornaTotaliQuietanzeOrdintivi();
-        
+
         statoCapitoliFiltrato = null;
         capitoloSelezionato = null;
         capitoloAnnoCorrenteSelezionato = null;
         filterBy = new ArrayList<>();
         selectedCapitoli = null;
         selectedAnni = null;
-        
+
         return SAME_VIEW;
     }
 
@@ -116,7 +120,7 @@ public class IndexController extends BaseController {
     public BigDecimal getTotaleOrdinativi() {
         return totaleOrdinativi;
     }
-        
+
     public LocalDate getDataOrdQui() {
         return dataOrdQui;
     }
@@ -124,21 +128,21 @@ public class IndexController extends BaseController {
     public void setDataOrdQui(LocalDate dataOrdQui) {
         this.dataOrdQui = dataOrdQui;
     }
-        
+
     public LocalDate getDataSaldo() {
         return dataSaldo;
     }
 
-    public void setDataSaldo(LocalDate dataSaldo) { 
-        this.dataSaldo = dataSaldo!=null ? dataSaldo : getToday();
+    public void setDataSaldo(LocalDate dataSaldo) {
+        this.dataSaldo = dataSaldo != null ? dataSaldo : getToday();
     }
-        
+
     public String[] getSelectedCapitoli() {
         return selectedCapitoli;
     }
 
     public void setSelectedCapitoli(String[] selectedCapitoli) {
-        this.selectedCapitoli = selectedCapitoli;       
+        this.selectedCapitoli = selectedCapitoli;
     }
 
     public Integer[] getSelectedAnni() {
@@ -148,7 +152,7 @@ public class IndexController extends BaseController {
     public void setSelectedAnni(Integer[] selectedAnni) {
         this.selectedAnni = selectedAnni;
     }
-                
+
     public Map<String, BigDecimal> getTotaliAnnoCorrente() {
         return totaliAnnoCorrente;
     }
@@ -156,7 +160,7 @@ public class IndexController extends BaseController {
     public Map<String, BigDecimal> getTotaliComplessivo() {
         return totaliComplessivo;
     }
-        
+
     public List<StatoCapitolo> getStatoCapitoli() {
         return statoCapitoli;
     }
@@ -167,7 +171,7 @@ public class IndexController extends BaseController {
 
     public void setStatoCapitoliFiltrato(List<StatoCapitolo> statoCapitoliFiltrato) {
         this.statoCapitoliFiltrato = statoCapitoliFiltrato;
-    }    
+    }
 
     public List<Integer> getAnni() {
         return anni;
@@ -176,11 +180,11 @@ public class IndexController extends BaseController {
     public List<String> getCapitoli() {
         return capitoli;
     }
-        
+
     public List<FilterMeta> getFilterBy() {
         return filterBy;
     }
-        
+
     public StatoCapitolo getCapitoloSelezionato() {
         return capitoloSelezionato;
     }
@@ -224,7 +228,7 @@ public class IndexController extends BaseController {
     public int getNumeroOrdinativiAnnoCorr() {
         return numeroOrdinativiAnnoCorr;
     }
-        
+
     public Integer getUltimoNumeroOrdinativo() {
         return ultimoNumeroOrdinativo;
     }
@@ -240,118 +244,129 @@ public class IndexController extends BaseController {
     public BigDecimal getIvaAnagrafica() {
         return ivaAnagrafica;
     }
-                      
+
     public String getFormat(BigDecimal i) {
-        if(i!=null) {
+        if (i != null) {
             int res = i.compareTo(BigDecimal.ZERO);
-            return res==-1 ?
-                   "red" :
-                   (res>0 ? "green" : "");
+            return res == -1
+                    ? "red"
+                    : (res > 0 ? "green" : "");
         }
-        
+
         return "";
-    }        
-    
+    }
+
     public void aggiornaAnnoCorrente() {
         //statoCapitoliAnnoCorrente = compServ.getSituazione(getAnnoAttuale());
         statoCapitoliAnnoCorrente = compServ.getSituazioneAperti(contabilita);
         aggiornaTotaliAnnoCorrente();
         capitoloAnnoCorrenteSelezionato = null;
-        
+
         statoCapitoli = null;
         anni = null;
         capitoli = null;
         statoCapitoliFiltrato = null;
-        capitoloSelezionato = null;                
+        capitoloSelezionato = null;
     }
-    
+
     public void aggiornaStatoCapitoli() {
         statoCapitoli = compServ.getSituazione(contabilita, null);
         statoCapitoliFiltrato = statoCapitoli;
         aggiornaTotaliComplessivi();
-        
+
         anni = new ArrayList<>();
         capitoli = new ArrayList<>();
         statoCapitoli.forEach(sc -> {
-            if(!anni.contains(sc.getAnno())) anni.add(sc.getAnno());
-            if(!capitoli.contains(sc.getDescrizione())) capitoli.add(sc.getDescrizione());
+            if (!anni.contains(sc.getAnno())) {
+                anni.add(sc.getAnno());
+            }
+            if (!capitoli.contains(sc.getDescrizione())) {
+                capitoli.add(sc.getDescrizione());
+            }
         });
-        
+
         statoCapitoliAnnoCorrente = null;
         capitoloAnnoCorrenteSelezionato = null;
-        
+
         clearFilters(false);
     }
-    
+
     public void aggiornaSaldo() {
         saldo = compServ.getSaldoGeocos(contabilita, dataSaldo);
     }
-    
+
     public void aggiornaSaldoLR8() {
         saldoLR8 = compServ.getSaldoLR8(contabilita);
     }
-    
+
     public void aggiornaOrdinativiMese() {
         LocalDate initial = LocalDate.now().minusMonths(1);
         LocalDate start = initial.withDayOfMonth(1);
         LocalDate end = initial.withDayOfMonth(initial.getMonth().length(initial.isLeapYear()));
         numeroOrdinativiMesePrec = os.getNumeroOrdinativiPeriodo(contabilita, start, end);
-        
+
         LocalDate now = LocalDate.now();
-        start = now.withDayOfMonth(1);        
+        start = now.withDayOfMonth(1);
         numeroOrdinativiMeseCorr = os.getNumeroOrdinativiPeriodo(contabilita, start, now);
     }
-    
+
     public void aggiornaOrdinativiAnno() {
         int annoCorr = LocalDate.now().getYear();
         numeroOrdinativiAnnoCorr = os.getNumeroOrdinativiAnno(contabilita, annoCorr);
-        numeroOrdinativiAnnoPrec = os.getNumeroOrdinativiAnno(contabilita, annoCorr-1);
+        numeroOrdinativiAnnoPrec = os.getNumeroOrdinativiAnno(contabilita, annoCorr - 1);
     }
-             
+
     public void aggiornaUltimoNumeroOrdinativo() {
         ultimoNumeroOrdinativo = os.getUltimoNumeroOrdinativo(contabilita, getAnnoAttuale());
     }
-    
+
     public void aggiornaTotaliQuietanzeOrdintivi() {
-        LocalDate min = dataOrdQui.withMonth(1).withDayOfMonth(1);        
+        //LocalDate min = dataOrdQui.withMonth(1).withDayOfMonth(1);
+        LocalDate min = dataOrdQui; // 20/04/2026 richiestad a Emanuele -> conto al giorno esatto
         BigDecimal to = os.getTotaleOrdinativiPeriodo(contabilita, min, dataOrdQui);
         BigDecimal tq = qs.getTotaleQuietanzePeriodo(contabilita, min, dataOrdQui);
-        totaleOrdinativi = (to!=null) ? to : BigDecimal.ZERO;
-        totaleQuietanze = (tq!=null) ? tq : BigDecimal.ZERO;
+        totaleOrdinativi = (to != null) ? to : BigDecimal.ZERO;
+        totaleQuietanze = (tq != null) ? tq : BigDecimal.ZERO;
     }
-    
+
     public void aggiornaIVA() {
         ivaDaPagare = os.getImportoIVADaPagare(contabilita, getAnnoAttuale());
-        if(ivaDaPagare==null) ivaDaPagare = BigDecimal.ZERO;
+        if (ivaDaPagare == null) {
+            ivaDaPagare = BigDecimal.ZERO;
+        }
         ivaPagata = os.getImportoIVAPagata(contabilita, getAnnoAttuale());
-        if(ivaPagata==null) ivaPagata = BigDecimal.ZERO;
+        if (ivaPagata == null) {
+            ivaPagata = BigDecimal.ZERO;
+        }
         ivaAnagrafica = os.getImportoIVAAnagrafica(contabilita, getAnnoAttuale());
-        if(ivaAnagrafica==null) ivaAnagrafica = BigDecimal.ZERO;
+        if (ivaAnagrafica == null) {
+            ivaAnagrafica = BigDecimal.ZERO;
+        }
     }
-    
+
     public String getIVAOk() {
         BigDecimal res = ivaAnagrafica.subtract(ivaPagata).subtract(ivaDaPagare);
         logger.info("IVA ANAGRAFICA {}, IVA PAGATA {}, IVA DA PAGARE {}, RES {}.", ivaAnagrafica, ivaPagata, ivaDaPagare, res);
-        return (res.compareTo(BigDecimal.ZERO)==0) ? "green" : "red";
+        return (res.compareTo(BigDecimal.ZERO) == 0) ? "green" : "red";
     }
-    
+
     public void onChange(TabChangeEvent event) {
-        switch(event.getTab().getId().toUpperCase()) {
-            case "ANNOCORRENTE" ->  {
+        switch (event.getTab().getId().toUpperCase()) {
+            case "ANNOCORRENTE" -> {
                 aggiornaAnnoCorrente();
             }
-            case "TUTTIGLIANNI" ->  {
+            case "TUTTIGLIANNI" -> {
                 aggiornaStatoCapitoli();
-            }            
+            }
         }
-    }       
+    }
 
-    public void aggiornaTotaliAnnoCorrente() {        
-        for(String k : totaliAnnoCorrente.keySet()) {
+    public void aggiornaTotaliAnnoCorrente() {
+        for (String k : totaliAnnoCorrente.keySet()) {
             totaliAnnoCorrente.put(k, BigDecimal.ZERO);
         }
-        
-        for(StatoCapitolo sc : statoCapitoliAnnoCorrente) {
+
+        for (StatoCapitolo sc : statoCapitoliAnnoCorrente) {
             totaliAnnoCorrente.put("O", totaliAnnoCorrente.get("O").add(sc.getImportoOrdinativi()));
             totaliAnnoCorrente.put("Q", totaliAnnoCorrente.get("Q").add(sc.getImportoQuietanze()));
             totaliAnnoCorrente.put("S", totaliAnnoCorrente.get("S").add(sc.getSaldo()));
@@ -363,15 +378,17 @@ public class IndexController extends BaseController {
     public boolean isSaldoLR8ChiusiDifferente() {
         return !saldoLR8.equals(compServ.getSaldoVirtualeChiusi(contabilita));
     }
-    
+
     public void aggiornaTotaliComplessivi() {
-        for(String k : totaliComplessivo.keySet()) {
+        for (String k : totaliComplessivo.keySet()) {
             totaliComplessivo.put(k, BigDecimal.ZERO);
         }
-        
-        if(isEmpty(statoCapitoliFiltrato)) return;
-        
-        for(StatoCapitolo sc : statoCapitoliFiltrato) {
+
+        if (isEmpty(statoCapitoliFiltrato)) {
+            return;
+        }
+
+        for (StatoCapitolo sc : statoCapitoliFiltrato) {
             totaliComplessivo.put("O", totaliComplessivo.get("O").add(sc.getImportoOrdinativi()));
             totaliComplessivo.put("Q", totaliComplessivo.get("Q").add(sc.getImportoQuietanze()));
             totaliComplessivo.put("S", totaliComplessivo.get("S").add(sc.getSaldo()));
@@ -379,44 +396,64 @@ public class IndexController extends BaseController {
             totaliComplessivo.put("SV", totaliComplessivo.get("SV").add(sc.getSaldoVirtuale()));
         }
     }
-    
+
     public boolean filterFunctionCapitoli(Object value, Object filter, Locale locale) {
-        if(value==null || !(value instanceof String)) return true;
-        String sVal = (String)value;
-        if(selectedCapitoli==null || selectedCapitoli.length==0) return false;
-        for(String sel : selectedCapitoli) {
-            if(sel.equalsIgnoreCase(sVal)) return true;
+        if (value == null || !(value instanceof String)) {
+            return true;
         }
-        
+        String sVal = (String) value;
+        if (selectedCapitoli == null || selectedCapitoli.length == 0) {
+            return false;
+        }
+        for (String sel : selectedCapitoli) {
+            if (sel.equalsIgnoreCase(sVal)) {
+                return true;
+            }
+        }
+
         return false;
     }
-    
+
     public boolean filterFunctionAnni(Object value, Object filter, Locale locale) {
-        if(value==null || !(value instanceof Integer)) return true;
-        int iVal = (Integer)value;
-        if(selectedAnni==null || selectedAnni.length==0) return false;
-        for(int sel : selectedAnni) {
-            if(sel==iVal) return true;
+        if (value == null || !(value instanceof Integer)) {
+            return true;
         }
-        
+        int iVal = (Integer) value;
+        if (selectedAnni == null || selectedAnni.length == 0) {
+            return false;
+        }
+        for (int sel : selectedAnni) {
+            if (sel == iVal) {
+                return true;
+            }
+        }
+
         return false;
     }
-    
+
     public void clearFilters(boolean resetFilters) {
         selectedCapitoli = new String[statoCapitoli.size()];
-        for(int i=0;i<statoCapitoli.size();i++) {
+        for (int i = 0; i < statoCapitoli.size(); i++) {
             selectedCapitoli[i] = statoCapitoli.get(i).getDescrizione();
         }
-        
+
         selectedAnni = new Integer[anni.size()];
-        for(int i=0;i<anni.size();i++) {
+        for (int i = 0; i < anni.size(); i++) {
             selectedAnni[i] = anni.get(i);
         }
-        
+
         filterBy = new ArrayList<>();
-        
-        if(resetFilters) {
+
+        if (resetFilters) {
             PrimeFaces.current().executeScript("PF('statoTable').clearFilters();PF('capcompcbm').checkAll();PF('annicbm').checkAll();");
         }
+    }
+
+    public int computeSize(BigDecimal d) {
+        DecimalFormat df = new DecimalFormat("0.00");
+
+        if (d == null || d.compareTo(ONE_MILION) < 0)  return 20;        
+        d = d.divide(ONE_MILION);
+        return 17 - (df.format(d).length() / 5);
     }
 }

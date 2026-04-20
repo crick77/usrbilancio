@@ -73,7 +73,7 @@ public class Codice extends TableImpl<CodiceRecord> {
     /**
      * The column <code>usrbilancio.codice.id_contabilita</code>.
      */
-    public final TableField<CodiceRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false).defaultValue(DSL.inline("1", SQLDataType.INTEGER)), this, "");
+    public final TableField<CodiceRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
      * The column <code>usrbilancio.codice.codice</code>.

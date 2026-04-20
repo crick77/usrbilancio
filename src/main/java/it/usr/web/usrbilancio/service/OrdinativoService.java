@@ -1001,7 +1001,7 @@ public class OrdinativoService {
         if (sc.annoCompetenza != null) {
             return ctx.select().from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).where(cond).fetchInto(Tables.ORDINATIVO);
         } else {
-            return ctx.select(Tables.ORDINATIVO)
+            return ctx.select(Tables.ORDINATIVO.fields())
                     .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
                     .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
                     .and(cond).fetchInto(OrdinativoRecord.class);

@@ -10,6 +10,7 @@ import it.usr.web.usrbilancio.domain.Usrbilancio;
 import it.usr.web.usrbilancio.domain.tables.AllegatoAppoggio.AllegatoAppoggioPath;
 import it.usr.web.usrbilancio.domain.tables.Codice.CodicePath;
 import it.usr.web.usrbilancio.domain.tables.Competenza.CompetenzaPath;
+import it.usr.web.usrbilancio.domain.tables.Contabilita.ContabilitaPath;
 import it.usr.web.usrbilancio.domain.tables.TipoDocumento.TipoDocumentoPath;
 import it.usr.web.usrbilancio.domain.tables.TipoRts.TipoRtsPath;
 import it.usr.web.usrbilancio.domain.tables.records.OrdinativoAppoggioRecord;
@@ -69,6 +70,11 @@ public class OrdinativoAppoggio extends TableImpl<OrdinativoAppoggioRecord> {
      * The column <code>usrbilancio.ordinativo_appoggio.id</code>.
      */
     public final TableField<OrdinativoAppoggioRecord, Integer> ID = createField(DSL.name("id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "");
+
+    /**
+     * The column <code>usrbilancio.ordinativo_appoggio.id_contabilita</code>.
+     */
+    public final TableField<OrdinativoAppoggioRecord, Integer> ID_CONTABILITA = createField(DSL.name("id_contabilita"), SQLDataType.INTEGER.nullable(false), this, "");
 
     /**
      * The column <code>usrbilancio.ordinativo_appoggio.id_competenza</code>.
@@ -248,7 +254,7 @@ public class OrdinativoAppoggio extends TableImpl<OrdinativoAppoggioRecord> {
 
     @Override
     public List<Index> getIndexes() {
-        return Arrays.asList(Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_CODICE_IDX, Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_COMPETENZA_IDX, Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_TIPODOCUMENTO_IDX, Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_TIPORTS_IDX);
+        return Arrays.asList(Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_CODICE_IDX, Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_COMPETENZA_IDX, Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_CONTABILITA_IDX, Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_TIPODOCUMENTO_IDX, Indexes.ORDINATIVO_APPOGGIO_FK_ORDINATIVOAPP_TIPORTS_IDX);
     }
 
     @Override
@@ -263,7 +269,20 @@ public class OrdinativoAppoggio extends TableImpl<OrdinativoAppoggioRecord> {
 
     @Override
     public List<ForeignKey<OrdinativoAppoggioRecord, ?>> getReferences() {
-        return Arrays.asList(Keys.FK_ORDINATIVOAPP_COMPETENZA, Keys.FK_ORDINATIVOAPP_TIPODOCUMENTO, Keys.FK_ORDINATIVOAPP_TIPORTS, Keys.FK_ORDINATIVOAPP_CODICE);
+        return Arrays.asList(Keys.FK_ORDINATIVOAPP_CONTABILITA, Keys.FK_ORDINATIVOAPP_COMPETENZA, Keys.FK_ORDINATIVOAPP_TIPODOCUMENTO, Keys.FK_ORDINATIVOAPP_TIPORTS, Keys.FK_ORDINATIVOAPP_CODICE);
+    }
+
+    private transient ContabilitaPath _contabilita;
+
+    /**
+     * Get the implicit join path to the <code>usrbilancio.contabilita</code>
+     * table.
+     */
+    public ContabilitaPath contabilita() {
+        if (_contabilita == null)
+            _contabilita = new ContabilitaPath(this, Keys.FK_ORDINATIVOAPP_CONTABILITA, null);
+
+        return _contabilita;
     }
 
     private transient CompetenzaPath _competenza;

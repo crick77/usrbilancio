@@ -36,17 +36,31 @@ public class OrdinativoAppoggioRecord extends UpdatableRecordImpl<OrdinativoAppo
     }
 
     /**
+     * Setter for <code>usrbilancio.ordinativo_appoggio.id_contabilita</code>.
+     */
+    public void setIdContabilita(Integer value) {
+        set(1, value);
+    }
+
+    /**
+     * Getter for <code>usrbilancio.ordinativo_appoggio.id_contabilita</code>.
+     */
+    public Integer getIdContabilita() {
+        return (Integer) get(1);
+    }
+
+    /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.id_competenza</code>.
      */
     public void setIdCompetenza(Integer value) {
-        set(1, value);
+        set(2, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.id_competenza</code>.
      */
     public Integer getIdCompetenza() {
-        return (Integer) get(1);
+        return (Integer) get(2);
     }
 
     /**
@@ -54,7 +68,7 @@ public class OrdinativoAppoggioRecord extends UpdatableRecordImpl<OrdinativoAppo
      * <code>usrbilancio.ordinativo_appoggio.id_tipo_documento</code>.
      */
     public void setIdTipoDocumento(Integer value) {
-        set(2, value);
+        set(3, value);
     }
 
     /**
@@ -62,245 +76,245 @@ public class OrdinativoAppoggioRecord extends UpdatableRecordImpl<OrdinativoAppo
      * <code>usrbilancio.ordinativo_appoggio.id_tipo_documento</code>.
      */
     public Integer getIdTipoDocumento() {
-        return (Integer) get(2);
+        return (Integer) get(3);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.id_tipo_rts</code>.
      */
     public void setIdTipoRts(Integer value) {
-        set(3, value);
+        set(4, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.id_tipo_rts</code>.
      */
     public Integer getIdTipoRts() {
-        return (Integer) get(3);
+        return (Integer) get(4);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.id_codice</code>.
      */
     public void setIdCodice(Integer value) {
-        set(4, value);
+        set(5, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.id_codice</code>.
      */
     public Integer getIdCodice() {
-        return (Integer) get(4);
+        return (Integer) get(5);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.numero_pagamento</code>.
      */
     public void setNumeroPagamento(String value) {
-        set(5, value);
+        set(6, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.numero_pagamento</code>.
      */
     public String getNumeroPagamento() {
-        return (String) get(5);
+        return (String) get(6);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.data_pagamento</code>.
      */
     public void setDataPagamento(LocalDate value) {
-        set(6, value);
+        set(7, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.data_pagamento</code>.
      */
     public LocalDate getDataPagamento() {
-        return (LocalDate) get(6);
+        return (LocalDate) get(7);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.numero_documento</code>.
      */
     public void setNumeroDocumento(String value) {
-        set(7, value);
+        set(8, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.numero_documento</code>.
      */
     public String getNumeroDocumento() {
-        return (String) get(7);
+        return (String) get(8);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.data_documento</code>.
      */
     public void setDataDocumento(LocalDate value) {
-        set(8, value);
+        set(9, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.data_documento</code>.
      */
     public LocalDate getDataDocumento() {
-        return (LocalDate) get(8);
+        return (LocalDate) get(9);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.data_ricevimento</code>.
      */
     public void setDataRicevimento(LocalDate value) {
-        set(9, value);
+        set(10, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.data_ricevimento</code>.
      */
     public LocalDate getDataRicevimento() {
-        return (LocalDate) get(9);
+        return (LocalDate) get(10);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.beneficiario</code>.
      */
     public void setBeneficiario(String value) {
-        set(10, value);
+        set(11, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.beneficiario</code>.
      */
     public String getBeneficiario() {
-        return (String) get(10);
+        return (String) get(11);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.descrizione_rts</code>.
      */
     public void setDescrizioneRts(String value) {
-        set(11, value);
+        set(12, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.descrizione_rts</code>.
      */
     public String getDescrizioneRts() {
-        return (String) get(11);
+        return (String) get(12);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.importo</code>.
      */
     public void setImporto(BigDecimal value) {
-        set(12, value);
+        set(13, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.importo</code>.
      */
     public BigDecimal getImporto() {
-        return (BigDecimal) get(12);
+        return (BigDecimal) get(13);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.note</code>.
      */
     public void setNote(String value) {
-        set(13, value);
+        set(14, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.note</code>.
      */
     public String getNote() {
-        return (String) get(13);
+        return (String) get(14);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.fattura_numero</code>.
      */
     public void setFatturaNumero(String value) {
-        set(14, value);
+        set(15, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.fattura_numero</code>.
      */
     public String getFatturaNumero() {
-        return (String) get(14);
+        return (String) get(15);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.fattura_data</code>.
      */
     public void setFatturaData(LocalDate value) {
-        set(15, value);
+        set(16, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.fattura_data</code>.
      */
     public LocalDate getFatturaData() {
-        return (LocalDate) get(15);
+        return (LocalDate) get(16);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.importo_iva</code>.
      */
     public void setImportoIva(BigDecimal value) {
-        set(16, value);
+        set(17, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.importo_iva</code>.
      */
     public BigDecimal getImportoIva() {
-        return (BigDecimal) get(16);
+        return (BigDecimal) get(17);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.importo_ritenuta</code>.
      */
     public void setImportoRitenuta(BigDecimal value) {
-        set(17, value);
+        set(18, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.importo_ritenuta</code>.
      */
     public BigDecimal getImportoRitenuta() {
-        return (BigDecimal) get(17);
+        return (BigDecimal) get(18);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.noterag</code>.
      */
     public void setNoterag(String value) {
-        set(18, value);
+        set(19, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.noterag</code>.
      */
     public String getNoterag() {
-        return (String) get(18);
+        return (String) get(19);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.proprietario</code>.
      */
     public void setProprietario(String value) {
-        set(19, value);
+        set(20, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.proprietario</code>.
      */
     public String getProprietario() {
-        return (String) get(19);
+        return (String) get(20);
     }
 
     /**
@@ -308,7 +322,7 @@ public class OrdinativoAppoggioRecord extends UpdatableRecordImpl<OrdinativoAppo
      * <code>usrbilancio.ordinativo_appoggio.data_elaborazione</code>.
      */
     public void setDataElaborazione(LocalDate value) {
-        set(20, value);
+        set(21, value);
     }
 
     /**
@@ -316,21 +330,21 @@ public class OrdinativoAppoggioRecord extends UpdatableRecordImpl<OrdinativoAppo
      * <code>usrbilancio.ordinativo_appoggio.data_elaborazione</code>.
      */
     public LocalDate getDataElaborazione() {
-        return (LocalDate) get(20);
+        return (LocalDate) get(21);
     }
 
     /**
      * Setter for <code>usrbilancio.ordinativo_appoggio.flag</code>.
      */
     public void setFlag(Integer value) {
-        set(21, value);
+        set(22, value);
     }
 
     /**
      * Getter for <code>usrbilancio.ordinativo_appoggio.flag</code>.
      */
     public Integer getFlag() {
-        return (Integer) get(21);
+        return (Integer) get(22);
     }
 
     // -------------------------------------------------------------------------
@@ -356,10 +370,11 @@ public class OrdinativoAppoggioRecord extends UpdatableRecordImpl<OrdinativoAppo
     /**
      * Create a detached, initialised OrdinativoAppoggioRecord
      */
-    public OrdinativoAppoggioRecord(Integer id, Integer idCompetenza, Integer idTipoDocumento, Integer idTipoRts, Integer idCodice, String numeroPagamento, LocalDate dataPagamento, String numeroDocumento, LocalDate dataDocumento, LocalDate dataRicevimento, String beneficiario, String descrizioneRts, BigDecimal importo, String note, String fatturaNumero, LocalDate fatturaData, BigDecimal importoIva, BigDecimal importoRitenuta, String noterag, String proprietario, LocalDate dataElaborazione, Integer flag) {
+    public OrdinativoAppoggioRecord(Integer id, Integer idContabilita, Integer idCompetenza, Integer idTipoDocumento, Integer idTipoRts, Integer idCodice, String numeroPagamento, LocalDate dataPagamento, String numeroDocumento, LocalDate dataDocumento, LocalDate dataRicevimento, String beneficiario, String descrizioneRts, BigDecimal importo, String note, String fatturaNumero, LocalDate fatturaData, BigDecimal importoIva, BigDecimal importoRitenuta, String noterag, String proprietario, LocalDate dataElaborazione, Integer flag) {
         super(OrdinativoAppoggio.ORDINATIVO_APPOGGIO);
 
         setId(id);
+        setIdContabilita(idContabilita);
         setIdCompetenza(idCompetenza);
         setIdTipoDocumento(idTipoDocumento);
         setIdTipoRts(idTipoRts);
