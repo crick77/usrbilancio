@@ -201,7 +201,7 @@ public class OrdinativiDaConsolidareController extends BaseController {
         totaleImportoCons = BigDecimal.ZERO;
         List<OrdinativoRecord> lO = (ordinativiFiltrati!=null) ? ordinativiFiltrati : ordinativi;
         lO.forEach(o -> {
-            totaleImporto = totaleImporto.add(o.getImporto());
+            if(o.getImporto()!=null) totaleImporto = totaleImporto.add(o.getImporto());
             if(o.getImportoCons()!=null) totaleImportoCons = totaleImportoCons.add(o.getImportoCons());
         });
         
