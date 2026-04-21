@@ -153,7 +153,7 @@ public class OrdinativoService {
     }
     
     public List<OrdinativoRecord> getOrdinativiIncompleti(ContabilitaRecord contabilita) {
-        return ctx.select(Tables.ORDINATIVO)
+        return ctx.select(Tables.ORDINATIVO.fields())
                 .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
                 .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
                 .and(Tables.ORDINATIVO.RTS_COMPLETO.eq((byte) 0))
@@ -161,7 +161,7 @@ public class OrdinativoService {
     }
 
     public List<OrdinativoRecord> getOrdinativiDaStampare(ContabilitaRecord contabilita) {
-        return ctx.select(Tables.ORDINATIVO)
+        return ctx.select(Tables.ORDINATIVO.fields())
                 .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
                 .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
                 .and(Tables.ORDINATIVO.ID_TIPO_DOCUMENTO.in(DSL.select(Tables.TIPO_DOCUMENTO.ID).from(Tables.TIPO_DOCUMENTO).where(Tables.TIPO_DOCUMENTO.STAMPABILE.eq((byte) 1))))
@@ -172,7 +172,7 @@ public class OrdinativoService {
     }
 
     public List<OrdinativoRecord> getOrdinativiDaConsolidare(ContabilitaRecord contabilita) {
-        return ctx.select(Tables.ORDINATIVO)
+        return ctx.select(Tables.ORDINATIVO.fields())
                 .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
                 .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
                 .and(Tables.ORDINATIVO.CONSOLIDAMENTO.eq((byte) 1))
@@ -182,7 +182,7 @@ public class OrdinativoService {
 
     public List<OrdinativoRecord> getOrdinativiPagamento(ContabilitaRecord contabilita, LocalDate end) {
         LocalDate start = end.minusYears(1);
-        return ctx.select(Tables.ORDINATIVO)
+        return ctx.select(Tables.ORDINATIVO.fields())
                 .from(Tables.ORDINATIVO).join(Tables.COMPETENZA).on(Tables.ORDINATIVO.ID_COMPETENZA.eq(Tables.COMPETENZA.ID)).join(Tables.CAPITOLO).on(Tables.COMPETENZA.ID_CAPITOLO.eq(Tables.CAPITOLO.ID))
                 .where(Tables.CAPITOLO.ID_CONTABILITA.eq(contabilita.getId()))
                 .and(Tables.ORDINATIVO.IMPORTO_IVA.isNull()).and(Tables.ORDINATIVO.IMPORTO_RITENUTA.isNull()).and(Tables.ORDINATIVO.DATA_PAGAMENTO.between(start, end)).fetchInto(OrdinativoRecord.class);
