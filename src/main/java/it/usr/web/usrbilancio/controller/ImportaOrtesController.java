@@ -202,6 +202,7 @@ public class ImportaOrtesController extends BaseController {
             }
             
             OrdinativoAppoggioRecord oar = new OrdinativoAppoggioRecord();
+            oar.setIdContabilita(contabilita.getId());
             oar.setBeneficiario(denominazione);
             oar.setDataPagamento(dataDisposizione);
             oar.setNumeroPagamento(idOpi);
@@ -258,6 +259,7 @@ public class ImportaOrtesController extends BaseController {
         }
 
         OrdinativoAppoggioRecord _ord = new OrdinativoAppoggioRecord();
+        _ord.setIdContabilita(contabilita.getId());
         _ord.setImporto(importo);        
         _ord.setNumeroPagamento(id); 
         _ord.setDataPagamento(dataContabile);        
